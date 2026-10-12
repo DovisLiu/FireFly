@@ -1,0 +1,147 @@
+plugins {
+    id 'com.android.library'
+    id 'com.chaquo.python'
+}
+
+android {
+    namespace = 'com.firefly.chaquo'
+
+    compileSdk libs.versions.compileSdk.get().toInteger()
+
+    defaultConfig {
+        minSdk libs.versions.minSdk.get().toInteger()
+        targetSdk libs.versions.targetSdk.get().toInteger()
+        python {
+            version = "3.10"
+            pip {
+                install("-r", "requirements.txt")
+            }
+        }
+    }
+
+    flavorDimensions = ["abi"]
+
+    productFlavors {
+        arm64_v8a {
+            dimension "abi"
+            ndk { abiFilters "arm64-v8a" }
+        }
+        armeabi_v7a {
+            dimension "abi"
+            ndk { abiFilters "armeabi-v7a" }
+        }
+        universal {
+            dimension "abi"
+            ndk { abiFilters "arm64-v8a", "armeabi-v7a" }
+        }
+    }
+
+    sourceSets {
+        main {
+            python.srcDirs = ["src/main/python"]
+        }
+    }
+
+    compileOptions {
+        coreLibraryDesugaringEnabled = true
+        sourceCompatibility JavaVersion.VERSION_21
+        targetCompatibility JavaVersion.VERSION_21
+    }
+}
+
+dependencies {
+    implementation project(':catvod')
+    coreLibraryDesugaring libs.desugar
+}
+
+// WORKBUDDY-PATCH: 修复 Chaquopy 在 Windows 上构建时 pip_install.py 的若干文件系统竞态/递归删目录问题。
+// 这些修复在 chaquo install 任务 doFirst 时自动注入到 env 内的 pip_install.py，每次(含 clean 后重建 env)
+// 都会重新注入，属于 Windows 专用且无害的兜底修复。核心修复为「拦截 os.rmdir 禁止删除 self.target 及其
+// common / ABI 子目录」，避免单 flavor 构建时 os.removedirs 向上递归误删整个 ABI 目录(连同 lxml/Crypto 等
+// 非纯包)与 common，导致 gradle 报 "common was not created"。
+afterEvaluate {
+    tasks.findAll { it.name =~ /install\w+PythonRequirements/ }.each { installTask ->
+        installTask.doFirst {
+            def envBase = file("build/python/env")
+            if (envBase.exists()) {
+                envBase.eachDir { envDir ->
+                    def candidates = [
+                        new File(envDir, "Lib/site-packages/chaquopy/pip_install.py"),
+                        new File(envDir, "lib/site-packages/chaquopy/pip_install.py"),
+                        new File(envDir, "lib/python3.10/site-packages/chaquopy/pip_install.py"),
+                    ]
+                    def f = candidates.find { it.exists() }
+                    if (f != null) {
+                        def text = f.getText("UTF-8")
+                        if (!text.contains("WORKBUDDY_PATCH_RMDIRS")) {
+                            def patched = text
+                            // 修复1: remove() 容忍 Windows 上未解压文件导致的 FileNotFoundError
+                            patched = patched.replace(
+                                "def remove(path, remove_empty_dirs=False):\n    (rmtree if isdir(path) else os.remove)(path)",
+                                "def remove(path, remove_empty_dirs=False):\n    try:\n        (rmtree if isdir(path) else os.remove)(path)\n    except OSError:\n        pass  # WORKBUDDY_PATCH: 文件可能未被 pip 解压(Windows 竞态)，忽略即可"
+                            )
+                            // 修复2: RECORD 路径逃逸但文件不存在(如 Windows 控制台脚本 idna.exe)时跳过而非中断
+                            patched = patched.replaceAll(
+                                /(?s)if path_abs\.startswith\(abi_dir\) and exists\(path_abs\):\s+exclude = True\s+else:\s+raise ValueError\(f"invalid path in RECORD:/,
+                                "if path_abs.startswith(abi_dir) and exists(path_abs):\n                            exclude = True\n                        elif not exists(path_abs):\n                            exclude = True  # WORKBUDDY_PATCH: 逃逸路径但文件不存在, 无害, 跳过\n                        else:\n                            raise ValueError(f\"invalid path in RECORD:"
+                            )
+                            // 修复3: renames 源不存在则跳过 / 目标已存在则忽略(Windows 重命名竞态)
+                            patched = patched.replace(
+                                "def renames(src, dst):\n    os.renames(src, dst)",
+                                "def renames(src, dst):\n    if not exists(src):\n        return  # WORKBUDDY_PATCH: 源不存在, 跳过\n    try:\n        os.renames(src, dst)\n    except OSError:\n        pass  # WORKBUDDY_PATCH: 目标已存在, 忽略"
+                            )
+                            // 修复4: move_to_common 源不存在则跳过
+                            patched = patched.replace(
+                                "        if exists(common_filename):",
+                                "        if not exists(abi_filename):\n            return  # WORKBUDDY_PATCH: 源不存在, 跳过\n        if exists(common_filename):"
+                            )
+                            // 修复5: merge_common 重建 abi_dir 时父目录可能缺失, 用 makedirs 递归创建
+                            patched = patched.replace(
+                                "            if not exists(abi_dir):\n                os.mkdir(abi_dir)",
+                                "            os.makedirs(abi_dir, exist_ok=True)  # WORKBUDDY_PATCH: 父目录可能缺失, 递归创建"
+                            )
+                            // 修复6: line 48 os.mkdir(common) 改用 makedirs(exist_ok=True)
+                            patched = patched.replace(
+                                "            os.mkdir(join(self.target, \"common\"))",
+                                "            os.makedirs(join(self.target, \"common\"), exist_ok=True)  # WORKBUDDY_PATCH: 容忍 common 已存在或 self.target 缺失"
+                            )
+                            // 修复7: __main__ 包 try/except, 把任何未捕获异常(含非 CommandError)写到文件, 便于排查(即使 gradle 隐藏 stderr)
+                            patched = patched.replace(
+                                "if __name__ == \"__main__\":\n    PipInstall().main()",
+                                "if __name__ == \"__main__\":  # WORKBUDDY_PATCH\n    import traceback as _wb_tb\n    try:\n        PipInstall().main()\n    except BaseException as _wb_e:\n        with open(join(dirname(__file__), \"pip_install_main_traceback.txt\"), \"w\") as _wb_f:\n            _wb_tb.print_exc(file=_wb_f)\n        raise"
+                            )
+                            // 修复8: 启动时把 sys.argv 落盘，确认 gradle 传入的 --target 真实值 (带标记防跳过)
+                            patched = patched.replace(
+                                "    def main(self):\n        # This matches pip's own logging setup in pip/basecommand.py.\n        self.parse_args()",
+                                "    def main(self):  # WORKBUDDY_PATCH\n        with open(join(dirname(__file__), \"pip_install_argv.txt\"), \"w\") as _wb_f:\n            _wb_f.write(\" \".join(sys.argv) + \"\\n\")\n        # This matches pip's own logging setup in pip/basecommand.py.\n        self.parse_args()"
+                            )
+                            // 修复9+13: main 结束前打印 common 是否存在及 android_abis，确认是创建失败还是被 gradle 事后删除
+                            patched = patched.replace(
+                                "            self.merge_common(abi_trees)\n            logger.debug(\"Finished\")",
+                                "            self.merge_common(abi_trees)\n            logger.debug(\"Finished\")\n            _wb_cdir = join(self.target, \"common\")  # WORKBUDDY_PATCH\n            print(\"WORKBUDDY_DIAG target=%s android_abis=%s common_exists=%s common_list=%s\" % (self.target, self.android_abis, exists(_wb_cdir), (os.listdir(_wb_cdir) if exists(_wb_cdir) else \"MISSING\")), flush=True)"
+                            )
+                            // 修复10(核心): 拦截 os.rmdir，禁止删除 self.target 与 self.target/common 及各 ABI 子目录。
+                            // 根因：Chaquopy 用 os.removedirs/os.renames 的向上递归删空目录来清理目录，递归爬升全部经 os.rmdir 实现。
+                            // 当 ABI 目录(arm64-v8a/armeabi-v7a)被判定为空时，os.removedirs 会连同其内非纯包(lxml/Crypto 等)
+                            // 一并删除，导致 merge_common 后续处理这些包时源已消失、common 内容残缺。
+                            // 守卫遇受保护目录时抛 OSError，使 os.removedirs 的 except 捕获后停止爬升，保住 ABI 目录与全部包。
+                            // 绝不能静默 return(会骗得 os.removedirs 继续往上爬父目录，连 target 父目录也删掉)。
+                            patched = patched.replace(
+                                "        self.parse_args()",
+                                "        self.parse_args()\n        # WORKBUDDY_PATCH_RMDIRS: 拦截 os.rmdir, 禁止删除 self.target 及其下的 common 与各个 ABI 子目录。\n        _wb_root = self.target\n        _wb_protected = set()\n        _wb_protected.add(os.path.abspath(_wb_root).lower())\n        _wb_protected.add(os.path.abspath(os.path.join(_wb_root, \"common\")).lower())\n        for _wb_abi in (getattr(self, \"android_abis\", []) or []):\n            _wb_protected.add(os.path.abspath(os.path.join(_wb_root, _wb_abi)).lower())\n        _wb_orig_rmdir = os.rmdir\n        def _wb_safe_rmdir(path):\n            _ap = os.path.abspath(path).lower()\n            if _ap in _wb_protected:\n                raise OSError(\"WORKBUDDY_PATCH_RMDIRS: protected %s from deletion\" % path)  # 抛异常使 os.removedirs 停止爬升\n            _wb_orig_rmdir(path)\n        os.rmdir = _wb_safe_rmdir"
+                            )
+                            f.write(patched, "UTF-8")
+                            println "WORKBUDDY: patched pip_install.py in ${envDir.name}"
+                        } else {
+                            println "WORKBUDDY: pip_install.py already patched in ${envDir.name}"
+                        }
+                    } else {
+                        println "WORKBUDDY: pip_install.py not found under ${envDir.name}, skip (env 可能尚未生成)"
+                    }
+                }
+            } else {
+                println "WORKBUDDY: env dir not found at ${envBase}, skip (clean 构建时 env 尚未生成，请改用非 clean 构建或在首次生成后重试)"
+            }
+        }
+    }
+}

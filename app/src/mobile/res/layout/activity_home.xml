@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true">
+
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/navigation" />
+
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/navigation"
+        android:layout_width="match_parent"
+        android:layout_height="68dp"
+        android:layout_alignParentBottom="true"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="14dp"
+        android:background="@drawable/bg_nav"
+        app:elevation="8dp"
+        app:itemActiveIndicatorStyle="@style/Widget.App.Nav.Indicator"
+        app:itemIconTint="@color/selector_nav"
+        app:itemPaddingTop="4dp"
+        app:itemPaddingBottom="8dp"
+        app:itemTextColor="@color/selector_nav"
+        app:labelVisibilityMode="labeled"
+        app:menu="@menu/menu_nav" />
+
+    <FrameLayout
+        android:id="@+id/splash"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:elevation="16dp"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true">
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            android:src="@drawable/splash" />
+    </FrameLayout>
+
+</RelativeLayout>

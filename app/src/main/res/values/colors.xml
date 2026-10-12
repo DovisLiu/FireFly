@@ -1,0 +1,59 @@
+<resources>
+
+    <!-- 流萤品牌色板（花瓣紫系）—— 浅色模式取值，深色模式由 values-night 覆盖 -->
+    <color name="brand_primary">#7B5EA7</color>
+    <color name="brand_on_primary">#FFFFFF</color>
+    <color name="brand_primary_container">#EADCFF</color>
+    <color name="brand_on_primary_container">#301D4B</color>
+
+    <!-- 清新浅色语言（VirPulse 风）：极浅冷调页面底 + 白色浮卡 -->
+    <color name="bg_page">#F2F7F9</color>
+    <color name="bg_card">#FFFFFF</color>
+    <color name="focus_card">#EADCFF</color>
+    <color name="text_secondary">#8A8F98</color>
+
+    <color name="transparent">#00000000</color>
+    <color name="black">#000000</color>
+    <color name="black_05">#0D000000</color>
+    <color name="black_10">#1A000000</color>
+    <color name="black_15">#26000000</color>
+    <color name="black_20">#33000000</color>
+    <color name="black_30">#4D000000</color>
+    <color name="black_40">#66000000</color>
+    <color name="black_50">#80000000</color>
+    <color name="black_60">#99000000</color>
+    <color name="black_70">#B3000000</color>
+    <color name="black_80">#CC000000</color>
+    <color name="black_90">#E6000000</color>
+    <color name="white">#FFFFFF</color>
+    <color name="white_05">#0DFFFFFF</color>
+    <color name="white_15">#26FFFFFF</color>
+    <color name="white_10">#1AFFFFFF</color>
+    <color name="white_20">#33FFFFFF</color>
+    <color name="white_30">#4DFFFFFF</color>
+    <color name="white_40">#66FFFFFF</color>
+    <color name="white_50">#80FFFFFF</color>
+    <color name="white_60">#99FFFFFF</color>
+    <color name="white_70">#B3FFFFFF</color>
+    <color name="white_80">#CCFFFFFF</color>
+    <color name="white_90">#E6FFFFFF</color>
+
+    <color name="icon_purple_bg">#EEEDFE</color>
+    <color name="icon_purple">#534AB7</color>
+
+    <color name="icon_teal_bg">#E1F5EE</color>
+    <color name="icon_teal">#0F6E56</color>
+
+    <color name="icon_blue_bg">#E6F1FB</color>
+    <color name="icon_blue">#185FA5</color>
+
+    <color name="icon_orange_bg">#FAEEDA</color>
+    <color name="icon_orange">#854F0B</color>
+
+    <color name="icon_green_bg">#EAF3DE</color>
+    <color name="icon_green">#3B6D11</color>
+
+    <color name="icon_pink_bg">#FBEAF0</color>
+    <color name="icon_pink">#993556</color>
+
+</resources>

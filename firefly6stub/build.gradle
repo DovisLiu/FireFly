@@ -1,0 +1,24 @@
+plugins {
+    alias libs.plugins.android.library
+}
+
+android {
+    namespace = 'androidx.media3.mpvplayer'
+
+    compileSdk libs.versions.compileSdk.get().toInteger()
+
+    defaultConfig {
+        minSdk libs.versions.minSdk.get().toInteger()
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_21
+        targetCompatibility JavaVersion.VERSION_21
+    }
+}
+
+dependencies {
+    // 提供 androidx.media3.* 编译期类型（运行时由 app/libs 的同源 media3 aar 提供）
+    implementation fileTree(dir: "../app/libs", include: ["*.aar"])
+    implementation "androidx.annotation:annotation:1.10.0"
+}

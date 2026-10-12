@@ -1,0 +1,14 @@
+.idea
+.vscode
+.gradle
+.settings
+*build
+*.jks
+*.properties
+fireflykey.txt
+/Release
+# 构建日志与临时目录（调试产物，不入库）
+*.log
+.gradle-tmp/
+backgrounds_gen/
+LOGO_backup.png

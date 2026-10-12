@@ -1,0 +1,33 @@
+<resources>
+
+    <!-- 流萤品牌色板（花瓣紫系）—— 深色模式覆盖 -->
+    <color name="brand_primary">#D3BBF5</color>
+    <color name="brand_on_primary">#452A6D</color>
+    <color name="brand_primary_container">#5D4385</color>
+    <color name="brand_on_primary_container">#EADCFF</color>
+
+    <!-- 深色语言（爱奇艺 TV 风）：深灰蓝底 + 深灰卡 + 白底选中 -->
+    <color name="bg_page">#14161A</color>
+    <color name="bg_card">#1E2126</color>
+    <color name="focus_card">#2C313A</color>
+    <color name="text_secondary">#9BA1A8</color>
+
+    <color name="icon_purple_bg">#3A3450</color>
+    <color name="icon_purple">#CECBF6</color>
+
+    <color name="icon_teal_bg">#1E3A34</color>
+    <color name="icon_teal">#9FE1CB</color>
+
+    <color name="icon_blue_bg">#22303F</color>
+    <color name="icon_blue">#B5D4F4</color>
+
+    <color name="icon_orange_bg">#3D3222</color>
+    <color name="icon_orange">#FAC775</color>
+
+    <color name="icon_green_bg">#28331E</color>
+    <color name="icon_green">#C0DD97</color>
+
+    <color name="icon_pink_bg">#3A2A31</color>
+    <color name="icon_pink">#F4C0D1</color>
+
+</resources>

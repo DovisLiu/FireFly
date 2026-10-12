@@ -1,0 +1,312 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:tag="port">
+
+    <View
+        android:id="@+id/statusBar"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:background="@color/black" />
+
+    <FrameLayout
+        android:id="@+id/video"
+        android:layout_width="match_parent"
+        android:layout_height="220dp"
+        android:layout_below="@+id/statusBar"
+        android:background="@color/black"
+        android:clickable="true"
+        android:focusable="true">
+
+        <androidx.media3.ui.PlayerView
+            android:id="@+id/player"
+            style="@style/Player.Vod"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:surface_type="none" />
+
+        <include
+            android:id="@+id/widget"
+            layout="@layout/view_widget_vod"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <include
+            android:id="@+id/control"
+            layout="@layout/view_control_vod"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone" />
+
+        <include
+            android:id="@+id/progress"
+            layout="@layout/view_progress"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+    </FrameLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="4dp"
+        android:layout_below="@+id/video"
+        android:background="@drawable/shadow" />
+
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/swipeLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/video">
+
+        <com.firefly.tv.ui.custom.ProgressLayout
+            android:id="@+id/progressLayout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <androidx.core.widget.NestedScrollView
+                android:id="@+id/scroll"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:fillViewport="true">
+
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:clipChildren="false"
+                    android:clipToPadding="false"
+                    android:orientation="vertical"
+                    android:paddingTop="16dp"
+                    android:paddingBottom="8dp">
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/name"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginEnd="16dp"
+                        android:ellipsize="end"
+                        android:maxLines="3"
+                        android:textColor="?android:attr/textColorPrimary"
+                        android:textSize="20sp"
+                        tools:text="庆余年第二季" />
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/remark"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginTop="8dp"
+                        android:layout_marginEnd="16dp"
+                        android:singleLine="true"
+                        android:textColor="?android:attr/textColorPrimary"
+                        android:textSize="14sp"
+                        tools:text="更新到第二季" />
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/site"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginTop="8dp"
+                        android:layout_marginEnd="16dp"
+                        android:singleLine="true"
+                        android:textColor="?android:attr/textColorPrimary"
+                        android:textSize="14sp"
+                        tools:text="站源：泥巴" />
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/other"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginTop="8dp"
+                        android:layout_marginEnd="16dp"
+                        android:singleLine="true"
+                        android:textColor="?android:attr/textColorPrimary"
+                        android:textSize="14sp"
+                        tools:text="年份：2022 地区：台湾 类型：科幻" />
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/director"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginTop="8dp"
+                        android:layout_marginEnd="16dp"
+                        android:singleLine="true"
+                        android:textColor="?android:attr/textColorPrimary"
+                        android:textSize="14sp"
+                        tools:text="导演：Firefly" />
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/actor"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginTop="8dp"
+                        android:layout_marginEnd="16dp"
+                        android:ellipsize="end"
+                        android:maxLines="1"
+                        android:textColor="?android:attr/textColorPrimary"
+                        android:textSize="14sp"
+                        tools:text="演员：Firefly" />
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginTop="16dp"
+                        android:layout_marginEnd="16dp"
+                        android:text="@string/detail_flag"
+                        android:textColor="?android:attr/textColorPrimary"
+                        android:textSize="16sp" />
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/flag"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:clipChildren="false"
+                        android:clipToPadding="false"
+                        android:orientation="horizontal"
+                        android:paddingStart="16dp"
+                        android:paddingEnd="16dp"
+                        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/quality_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginTop="16dp"
+                        android:layout_marginEnd="16dp"
+                        android:text="@string/detail_quality"
+                        android:textColor="?android:attr/textColorPrimary"
+                        android:textSize="16sp"
+                        android:visibility="gone"
+                        tools:visibility="visible" />
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/quality"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:clipChildren="false"
+                        android:clipToPadding="false"
+                        android:orientation="horizontal"
+                        android:paddingStart="16dp"
+                        android:paddingEnd="16dp"
+                        android:visibility="gone"
+                        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                        tools:visibility="visible" />
+
+                    <androidx.appcompat.widget.LinearLayoutCompat
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginTop="16dp"
+                        android:layout_marginEnd="12dp"
+                        android:gravity="center_vertical">
+
+                        <com.google.android.material.textview.MaterialTextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/detail_episode"
+                            android:textColor="?android:attr/textColorPrimary"
+                            android:textSize="16sp" />
+
+                        <androidx.appcompat.widget.AppCompatImageView
+                            android:id="@+id/reverse"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_marginStart="8dp"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:src="@drawable/ic_action_reverse"
+                            android:visibility="gone"
+                            tools:visibility="visible" />
+
+                        <View
+                            android:layout_width="0dp"
+                            android:layout_height="0dp"
+                            android:layout_weight="1" />
+
+                        <androidx.appcompat.widget.AppCompatImageView
+                            android:id="@+id/more"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:src="@drawable/ic_action_more"
+                            android:visibility="gone"
+                            tools:visibility="visible" />
+
+                    </androidx.appcompat.widget.LinearLayoutCompat>
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/episode"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:layout_marginBottom="8dp"
+                        android:clipChildren="false"
+                        android:clipToPadding="false"
+                        android:orientation="horizontal"
+                        android:paddingStart="16dp"
+                        android:paddingEnd="16dp"
+                        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+
+                    <androidx.appcompat.widget.LinearLayoutCompat
+                        android:id="@+id/content_layout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <com.google.android.material.textview.MaterialTextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="16dp"
+                            android:layout_marginTop="8dp"
+                            android:layout_marginEnd="16dp"
+                            android:text="@string/detail_content"
+                            android:textColor="?android:attr/textColorPrimary"
+                            android:textSize="16sp" />
+
+                        <com.google.android.material.textview.MaterialTextView
+                            android:id="@+id/content"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="16dp"
+                            android:layout_marginTop="8dp"
+                            android:layout_marginEnd="16dp"
+                            android:layout_marginBottom="8dp"
+                            android:ellipsize="end"
+                            android:lineSpacingExtra="4dp"
+                            android:maxLines="3"
+                            android:textColor="?android:attr/textColorPrimary"
+                            android:textSize="14sp"
+                            tools:text="一个身世神秘的少年范闲（张若昀饰），因对自身身世的好奇而离开故乡澹州，前赴南庆京都。范闲在京中各大势力之间游走，以探查自己屡遭刺杀的原因。其间结识靖王世子、二皇子，与太子、长公主等人对抗，并游历四方、闯荡江湖，却意外发现这世界隐藏著的秘密。本剧第一季上半部主要描述范闲在南庆京都追查刺杀的幕后黑手，京中各式人等对范闲继承内库的态度和应对，以及监察院院长陈萍萍希望范闲接掌监察院所做的一切举动。下半部剧情发生在北齐上京。南庆驻北齐上京谍报首领言冰云被北齐官方抓获，庆帝与陈萍萍同意用已被关在监察院大牢多年的前北魏谍报首领肖恩交换言冰云，并派范闲亲率南庆使团负责此事。" />
+
+                    </androidx.appcompat.widget.LinearLayoutCompat>
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/quick"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:clipChildren="false"
+                        android:clipToPadding="false"
+                        android:nestedScrollingEnabled="false"
+                        android:paddingStart="8dp"
+                        android:paddingEnd="8dp"
+                        android:visibility="gone"
+                        app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+                        app:spanCount="2"
+                        tools:listitem="@layout/adapter_quick"
+                        tools:visibility="visible" />
+
+                </androidx.appcompat.widget.LinearLayoutCompat>
+            </androidx.core.widget.NestedScrollView>
+        </com.firefly.tv.ui.custom.ProgressLayout>
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+</RelativeLayout>

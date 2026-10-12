@@ -1,0 +1,74 @@
+<resources>
+
+    <style name="Theme.Base" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/brand_primary</item>
+        <item name="colorOnPrimary">@color/brand_on_primary</item>
+        <item name="colorPrimaryContainer">@color/brand_primary_container</item>
+        <item name="colorOnPrimaryContainer">@color/brand_on_primary_container</item>
+        <item name="android:colorBackground">@color/bg_page</item>
+        <item name="colorSurface">@color/bg_card</item>
+        <item name="colorSurfaceContainer">@color/bg_card</item>
+        <item name="colorSecondaryContainer">@color/brand_primary_container</item>
+        <item name="colorOnSecondaryContainer">@color/brand_on_primary_container</item>
+        <item name="android:statusBarColor">@color/transparent</item>
+        <item name="android:navigationBarColor">@color/transparent</item>
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+        <item name="android:fontFamily">@font/misans</item>
+        <item name="fontFamily">@font/misans</item>
+        <item name="android:textViewStyle">@style/Text.App</item>
+        <item name="materialButtonStyle">@style/Button.App</item>
+    </style>
+
+    <style name="Text.App" parent="android:Widget.Material.TextView">
+        <item name="android:fontFamily">@font/misans</item>
+        <item name="fontFamily">@font/misans</item>
+    </style>
+
+    <style name="Button.App" parent="Widget.Material3.Button">
+        <item name="android:fontFamily">@font/misans</item>
+        <item name="fontFamily">@font/misans</item>
+        <item name="shapeAppearanceOverlay">@style/Shape.Pill</item>
+        <item name="android:stateListAnimator">@null</item>
+    </style>
+
+    <style name="Shape.Pill" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">24dp</item>
+    </style>
+
+    <style name="Widget.App.Nav.Indicator" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
+        <item name="android:color">@android:color/transparent</item>
+        <item name="shapeAppearanceOverlay">@style/Shape.Pill</item>
+    </style>
+
+    <style name="Theme.Splash" parent="Theme.SplashScreen">
+        <item name="postSplashScreenTheme">@style/Theme.App</item>
+        <item name="windowSplashScreenBackground">#F2F7FA</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>
+    </style>
+
+    <style name="Theme.App" parent="Theme.Base" />
+
+    <style name="Theme.Crash" parent="Theme.Base">
+        <item name="android:windowDisablePreview">true</item>
+        <item name="android:windowBackground">?android:attr/colorBackground</item>
+    </style>
+
+    <style name="Control">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:background">?attr/selectableItemBackgroundBorderless</item>
+        <item name="android:textColor">@color/yellow</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:padding">8dp</item>
+    </style>
+
+    <style name="ToolbarTextAppearance" parent="TextAppearance.Material3.TitleLarge">
+        <item name="android:textSize">20sp</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
+        <item name="titleTextColor">?attr/colorOnSurface</item>
+        <item name="android:fontFamily">@font/misans</item>
+        <item name="fontFamily">@font/misans</item>
+    </style>
+
+</resources>

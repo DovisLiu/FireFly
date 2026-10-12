@@ -1,0 +1,25 @@
+plugins {
+    alias libs.plugins.android.application apply false
+    alias libs.plugins.android.library apply false
+    alias libs.plugins.chaquo.python apply false
+}
+
+tasks.register('clean', Delete) {
+    delete rootProject.layout.buildDirectory
+}
+
+// 产物拷贝（2026-10-08 刘先生拍板：只出手机64位 + TV合版两包）
+// 只拷这两个 flavor 目录，防止 build 目录里的历史变体（如 leanbackArm64 分包）
+// 被连带刷新时间戳，造成"看似新包实为旧版"的假象
+project(':app').tasks.matching { it.name ==~ /assemble.+Release/ }.configureEach {
+    doLast {
+        copy {
+            from fileTree("$rootDir/app/build/outputs/apk") {
+                include 'mobileArm64_v8a/release/*.apk', 'leanbackUniversal/release/*.apk'
+            }
+            into "$rootDir/Release/apk"
+            eachFile { it.path = it.name }
+            includeEmptyDirs = false
+        }
+    }
+}

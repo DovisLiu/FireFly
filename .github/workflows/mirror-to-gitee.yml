@@ -1,0 +1,25 @@
+name: Mirror to Gitee
+
+on:
+  push:
+  delete:
+  workflow_dispatch:
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Mirror repository to Gitee via PAT
+        env:
+          GITEE_TOKEN: ${{ secrets.GITEE_TOKEN }}
+        run: |
+          set -e
+          REPO_NAME="${{ github.event.repository.name }}"
+          SRC="https://github.com/${{ github.repository }}.git"
+          DST="https://dovisliu:${GITEE_TOKEN}@gitee.com/dovisliu/${REPO_NAME}.git"
+          echo "Mirroring: ${SRC} -> ${DST}"
+          rm -rf /tmp/mirror-repo
+          git clone --mirror "$SRC" /tmp/mirror-repo
+          cd /tmp/mirror-repo
+          git remote set-url --push origin "$DST"
+          git push --mirror
