@@ -25,6 +25,20 @@ import me.jessyan.autosize.AutoSizeCompat;
 
 public abstract class BaseActivity extends AppCompatActivity {
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // 运行期间抑制系统屏保（与爱奇艺等一致）；退出应用后自动恢复
+        getWindow().addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        getWindow().clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+    }
+
+
     protected abstract ViewBinding getBinding();
 
     @Override

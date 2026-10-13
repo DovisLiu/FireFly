@@ -1,5 +1,7 @@
 package com.firefly.tv.ui.activity;
 
+import com.firefly.tv.ui.activity.HistoryActivity;
+
 import android.app.PendingIntent;
 import android.app.SearchManager;
 import android.content.Intent;
@@ -176,6 +178,7 @@ public class HomeActivity extends BaseActivity implements NavigationBarView.OnIt
         mBinding.navigation.getMenu().findItem(R.id.setting).setVisible(true);
         mBinding.navigation.getMenu().findItem(R.id.local).setVisible(true);
         mBinding.navigation.getMenu().findItem(R.id.live).setVisible(LiveConfig.hasUrl());
+        mBinding.navigation.getMenu().findItem(R.id.history).setVisible(true);
     }
 
     private boolean openLive() {
@@ -232,6 +235,10 @@ public class HomeActivity extends BaseActivity implements NavigationBarView.OnIt
         if (item.getItemId() == R.id.setting) return mManager.change(1);
         if (item.getItemId() == R.id.vod) return mManager.change(0);
         if (item.getItemId() == R.id.live) return openLive();
+        if (item.getItemId() == R.id.history) {
+            HistoryActivity.start(this);
+            return true;
+        }
         if (item.getItemId() == R.id.local) return openLocal();
         return false;
     }

@@ -1,6 +1,8 @@
 package com.firefly.tv.ui.activity;
 
 import android.app.Activity;
+import org.json.JSONObject;
+import com.firefly.tv.utils.Task;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
@@ -44,6 +46,8 @@ import com.firefly.tv.utils.PermissionUtil;
 import com.firefly.tv.utils.ResUtil;
 import com.github.catvod.bean.Doh;
 import com.github.catvod.net.OkHttp;
+import android.os.Looper;
+import android.os.Handler;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
@@ -55,7 +59,6 @@ import java.util.List;
 public class SettingActivity extends BaseActivity implements ConfigListener, SiteListener, LiveListener, DohDialog.Listener {
 
     private ActivitySettingBinding mBinding;
-    private String[] size;
 
     public static void start(Activity activity) {
         activity.startActivity(new Intent(activity, SettingActivity.class));
@@ -89,20 +92,42 @@ public class SettingActivity extends BaseActivity implements ConfigListener, Sit
     private void setOtherText() {
         mBinding.dohText.setText(getDohList()[getDohIndex()]);
         mBinding.incognitoText.setText(Setting.getSwitch(Setting.isIncognito()));
-        mBinding.sizeText.setText((size = ResUtil.getStringArray(R.array.select_size))[PlayerSetting.getSize()]);
-        mBinding.appearanceText.setText(ResUtil.getStringArray(R.array.select_appearance)[Setting.getThemeMode()]);
+    }
+
+    private void onDisplay(View view) {
+        SettingDisplayActivity.start(this);
+    }
+
+    private void onAbout(View view) {
+        Task.execute(() -> {
+            String json;
+            try {
+                json = OkHttp.string("https://download.dovisliu.cn/firefly/about.json");
+            } catch (Exception e) {
+                postAbout("关于获取失败(网络): " + e.getMessage());
+                return;
+            }
+            try {
+                JSONObject object = new JSONObject(json);
+                String msg = object.optString("name") + "\n" + object.optString("site") + "\n\n" + object.optString("disclaimer");
+                new Handler(Looper.getMainLooper()).post(() -> showAboutDialog(msg));
+            } catch (Exception e) {
+                postAbout("关于解析失败: " + e.getMessage());
+            }
+        });
+    }
+
+    private void postAbout(String msg) {
+        new Handler(Looper.getMainLooper()).post(() -> Notify.show(msg));
+    }
+
+    private void showAboutDialog(String msg) {
+        androidx.appcompat.app.AlertDialog d = new MaterialAlertDialogBuilder(this).setTitle(R.string.setting_about).setMessage(msg).setPositiveButton(android.R.string.ok, null).show();
+        if (d.getButton(android.app.AlertDialog.BUTTON_POSITIVE) != null) d.getButton(android.app.AlertDialog.BUTTON_POSITIVE).requestFocus(); // TV 焦点：落在确认按钮
     }
 
     private void onAppearance(View view) {
-        new MaterialAlertDialogBuilder(this)
-                .setTitle(R.string.setting_appearance)
-                .setSingleChoiceItems(R.array.select_appearance, Setting.getThemeMode(), (dialog, which) -> {
-                    Setting.putThemeMode(which);
-                    AppCompatDelegate.setDefaultNightMode(which == Setting.MODE_SYSTEM ? AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM : which == Setting.MODE_LIGHT ? AppCompatDelegate.MODE_NIGHT_NO : AppCompatDelegate.MODE_NIGHT_YES);
-                    dialog.dismiss();
-                })
-                .setNegativeButton(R.string.dialog_negative, null)
-                .show();
+        // 已收敛至显示设置子页（保留方法避免外部引用断裂）
     }
 
     private void setCacheText() {
@@ -119,7 +144,6 @@ public class SettingActivity extends BaseActivity implements ConfigListener, Sit
         mBinding.vod.setOnClickListener(this::onVod);
         mBinding.doh.setOnClickListener(this::setDoh);
         mBinding.live.setOnClickListener(this::onLive);
-        mBinding.size.setOnClickListener(this::setSize);
         mBinding.cache.setOnClickListener(this::onCache);
         mBinding.backup.setOnClickListener(this::onBackup);
         mBinding.export.setOnClickListener(this::onExport);
@@ -132,7 +156,8 @@ public class SettingActivity extends BaseActivity implements ConfigListener, Sit
         mBinding.live.setOnLongClickListener(this::onLiveEdit);
         mBinding.liveHome.setOnClickListener(this::onLiveHome);
         mBinding.incognito.setOnClickListener(this::setIncognito);
-        mBinding.appearance.setOnClickListener(this::onAppearance);
+        mBinding.display.setOnClickListener(this::onDisplay);
+        mBinding.about.setOnClickListener(this::onAbout);
         mBinding.vodHistory.setOnClickListener(this::onVodHistory);
         mBinding.liveHistory.setOnClickListener(this::onLiveHistory);
     }
@@ -253,13 +278,6 @@ public class SettingActivity extends BaseActivity implements ConfigListener, Sit
     private void setIncognito(View view) {
         Setting.putIncognito(!Setting.isIncognito());
         mBinding.incognitoText.setText(Setting.getSwitch(Setting.isIncognito()));
-    }
-
-    private void setSize(View view) {
-        int index = (PlayerSetting.getSize() + 1) % size.length;
-        mBinding.sizeText.setText(size[index]);
-        PlayerSetting.putSize(index);
-        RefreshEvent.size();
     }
 
     private void setDoh(View view) {

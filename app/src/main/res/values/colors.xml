@@ -7,7 +7,8 @@
     <color name="brand_on_primary_container">#301D4B</color>
 
     <!-- 清新浅色语言（VirPulse 风）：极浅冷调页面底 + 白色浮卡 -->
-    <color name="bg_page">#F2F7F9</color>
+    <color name="bg_page">#E8EEF2</color>
+    <color name="splash_bg">#E8EEF2</color>
     <color name="bg_card">#FFFFFF</color>
     <color name="focus_card">#EADCFF</color>
     <color name="text_secondary">#8A8F98</color>
@@ -56,4 +57,6 @@
     <color name="icon_pink_bg">#FBEAF0</color>
     <color name="icon_pink">#993556</color>
 
+    <color name="icon_amber">#B87700</color>
+    <color name="icon_amber_bg">#FFF3D6</color>
 </resources>

@@ -33,13 +33,15 @@ public final class PlayerEngineFactory {
     }
 
     private static PlayerEngine.Type resolve(PlaySpec spec) {
-        if (requiresExo(spec)) return EXO;
-        if (!isMpvReady()) return EXO;
-        return MPV;
+        if (requiresExo(spec)) return EXO; // DRM/SMB 仅 EXO 支持，强制回退
+        if (!isMpvReady()) return EXO;     // MPV 未就绪时回退
+        // 用户设置优先：设置选 MPV 用 MPV，选 EXO 用 EXO
+        return com.firefly.tv.setting.PlayerSetting.getEngine() == com.firefly.tv.setting.PlayerSetting.ENGINE_MPV ? MPV : EXO;
     }
 
     private static PlayerEngine.Type resolve() {
-        return isMpvReady() ? MPV : EXO;
+        if (!isMpvReady()) return EXO;
+        return com.firefly.tv.setting.PlayerSetting.getEngine() == com.firefly.tv.setting.PlayerSetting.ENGINE_MPV ? MPV : EXO;
     }
 
     private static boolean requiresExo(PlaySpec spec) {
@@ -47,7 +49,7 @@ public final class PlayerEngineFactory {
     }
 
     private static boolean isMpvReady() {
-        // Firefly EXO-only: 当前构建缺少 lib-media3-mpvplayer.aar，禁用 MPV 创建路径
-        return false;
+        // mpvplayer AAR（含 libmpv.so 双 ABI）已接入 libs，MPV 引擎恢复
+        return true;
     }
 }

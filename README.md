@@ -1,7 +1,7 @@
 # 流萤 (FireFly)
 
-开源的 Android 播放应用，同时支持 **Android TV 大屏** 与 **手机** 两种使用场景。
-本项目仅提供播放能力，不包含任何内容源，内容源由用户通过外部配置自行扩展。
+开源的 Android 影音播放应用，同时支持 **Android TV 大屏** 与 **手机** 两种使用场景。
+本项目仅提供播放能力，不包含任何影音内容源，内容源由用户通过外部配置自行扩展。
 
 > 本项目遵循 **GPL v3** 许可证（见 [LICENSE.md](LICENSE.md)）。
 
@@ -72,6 +72,18 @@
 | 手机版 64 位 | `FireFly.Phone.arm64.1.0.0.apk` |
 | 手机版 32 位 | `FireFly.Phone.arm32.1.0.0.apk` |
 
+### 签名
+
+正式包使用 `firefly_release.jks` 签名（别名 `firefly`），配置由根目录 `local.properties` 驱动（该文件不入库，需自行创建）：
+
+```properties
+storeFile=firefly_release.jks
+keyAlias=firefly
+keyPassword=你的密码
+storePassword=你的密码
+```
+
+请使用自己的签名密钥；切勿将 `.jks` 或密码提交到版本库。
 
 ### 构建命令
 
@@ -112,4 +124,4 @@ export JAVA_HOME="/path/to/your/jdk-21"
 
 ## 下载
 
-Https://download.dovisliu.cn/firefly
+安装包将在首发版本发布后提供下载渠道（本节待补充）。

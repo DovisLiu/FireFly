@@ -23,8 +23,8 @@
         app:elevation="8dp"
         app:itemActiveIndicatorStyle="@style/Widget.App.Nav.Indicator"
         app:itemIconTint="@color/selector_nav"
-        app:itemPaddingTop="4dp"
-        app:itemPaddingBottom="8dp"
+        app:itemPaddingTop="12dp"
+        app:itemPaddingBottom="0dp"
         app:itemTextColor="@color/selector_nav"
         app:labelVisibilityMode="labeled"
         app:menu="@menu/menu_nav" />

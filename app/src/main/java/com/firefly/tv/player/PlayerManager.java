@@ -290,7 +290,28 @@ public class PlayerManager implements ParseCallback {
         return Util.timeMs(Math.max(0, getDuration()));
     }
 
+    /** 外挂字幕编码检测：非 UTF-8 文件统一转为 UTF-8 回写，EXO/MPV 双端生效 */
+    private void normalizeSubtitleCharset(Sub sub) {
+        if (sub == null) return;
+        try {
+            String url = sub.getUrl();
+            if (url == null || !url.startsWith("file:")) return;
+            java.io.File file = new java.io.File(java.net.URI.create(url).getPath());
+            if (!file.isFile() || file.length() == 0 || file.length() > 4L * 1024 * 1024) return;
+            byte[] bytes = java.nio.file.Files.readAllBytes(file.toPath());
+            int head = (int) Math.min(bytes.length, 65536);
+            byte[] headBytes = java.util.Arrays.copyOf(bytes, head);
+            java.nio.charset.Charset detected = com.firefly.tv.player.subs.SubtitleCharsetDetector.INSTANCE.detectCharset(headBytes, 0, head, sub.getLang());
+            if (detected == null || java.nio.charset.StandardCharsets.UTF_8.name().equalsIgnoreCase(detected.name())) return;
+            String text = com.firefly.tv.player.subs.SubtitleCharsetDetector.INSTANCE.decode(bytes, 0, bytes.length, sub.getLang());
+            java.nio.file.Files.write(file.toPath(), text.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        } catch (Throwable e) {
+            // 检测/转码失败不影响原字幕播放
+        }
+    }
+
     public void setSub(Sub sub) {
+        normalizeSubtitleCharset(sub);
         if (spec != null) spec.setSub(sub);
         if (engine.addSubtitle(sub)) play();
         else startCurrent();

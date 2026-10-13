@@ -20,7 +20,7 @@ public class ExitInfo {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) return "系统不支持查询退出原因（需 Android 11+）";
         try {
             ActivityManager am = (ActivityManager) App.get().getSystemService(Context.ACTIVITY_SERVICE);
-            List<ApplicationExitInfo> list = am == null ? null : am.getHistoricalProcessExitReasons(App.get().getPackageName(), 0, 3);
+            List<ApplicationExitInfo> list = am == null ? null : am.getHistoricalProcessExitReasons(App.get().getPackageName(), 0, 2);
             if (list == null || list.isEmpty()) return "无历史退出记录";
             StringBuilder sb = new StringBuilder();
             for (ApplicationExitInfo info : list) {

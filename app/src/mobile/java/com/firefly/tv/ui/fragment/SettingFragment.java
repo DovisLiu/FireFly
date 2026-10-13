@@ -1,6 +1,7 @@
 package com.firefly.tv.ui.fragment;
 
 import android.content.Intent;
+import org.json.JSONObject;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -43,6 +44,7 @@ import com.firefly.tv.utils.PermissionUtil;
 import com.firefly.tv.utils.ResUtil;
 import com.github.catvod.bean.Doh;
 import com.github.catvod.net.OkHttp;
+import com.firefly.tv.utils.Task;
 import com.github.catvod.utils.Path;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
@@ -112,6 +114,7 @@ public class SettingFragment extends BaseFragment implements ConfigListener, Sit
         mBinding.doh.setOnClickListener(this::setDoh);
         mBinding.live.setOnClickListener(this::onLive);
         mBinding.display.setOnClickListener(this::onDisplay);
+        mBinding.about.setOnClickListener(this::onAbout);
         mBinding.cache.setOnClickListener(this::onCache);
         mBinding.backup.setOnClickListener(this::onBackup);
         mBinding.export.setOnClickListener(this::onExport);
@@ -219,6 +222,18 @@ public class SettingFragment extends BaseFragment implements ConfigListener, Sit
 
     private void onDanmaku(View view) {
         getRoot().change(3);
+    }
+
+    private void onAbout(View view) {
+        Task.execute(() -> {
+            try {
+                JSONObject object = new JSONObject(OkHttp.string("https://download.dovisliu.cn/firefly/about.json"));
+                String msg = object.optString("name") + "\n" + object.optString("site") + "\n\n" + object.optString("disclaimer");
+                App.post(() -> new com.google.android.material.dialog.MaterialAlertDialogBuilder(requireActivity()).setTitle(R.string.setting_about).setMessage(msg).setPositiveButton(android.R.string.ok, null).show());
+            } catch (Exception e) {
+                App.post(() -> com.firefly.tv.utils.Notify.show("关于信息获取失败"));
+            }
+        });
     }
 
     private void onDisplay(View view) {

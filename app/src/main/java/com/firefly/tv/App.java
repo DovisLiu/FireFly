@@ -92,7 +92,8 @@ public class App extends Application implements Application.ActivityLifecycleCal
     private void applyThemeMode() {
         int mode = com.firefly.tv.setting.Setting.getThemeMode();
         boolean leanback = getPackageManager().hasSystemFeature(android.content.pm.PackageManager.FEATURE_LEANBACK);
-        androidx.appcompat.app.AppCompatDelegate.setDefaultNightMode(leanback ? androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_YES : mode == com.firefly.tv.setting.Setting.MODE_LIGHT ? androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_NO : mode == com.firefly.tv.setting.Setting.MODE_SYSTEM ? androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM : androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_YES);
+        // TV 端尊重用户选择：仅"跟随系统"时默认深色（TV 无系统深色开关）；浅色/深色设置持久生效
+        androidx.appcompat.app.AppCompatDelegate.setDefaultNightMode(mode == com.firefly.tv.setting.Setting.MODE_LIGHT ? androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_NO : mode == com.firefly.tv.setting.Setting.MODE_SYSTEM ? (leanback ? androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_YES : androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM) : androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_YES);
     }
 
     @Override
@@ -105,13 +106,22 @@ public class App extends Application implements Application.ActivityLifecycleCal
         return hook != null ? hook.getPackageName() : getBaseContext().getPackageName();
     }
 
+    private final java.util.concurrent.atomic.AtomicInteger resumedCount = new java.util.concurrent.atomic.AtomicInteger();
+
+    /** 应用是否有前台界面（供保活服务判断屏保亮屏后是否需要拉回）。 */
+    public static boolean isForeground() {
+        return get().resumedCount.get() > 0;
+    }
+
     @Override
     public void onActivityResumed(@NonNull Activity activity) {
+        resumedCount.incrementAndGet();
         if (activity != activity()) this.activity = activity;
     }
 
     @Override
     public void onActivityPaused(@NonNull Activity activity) {
+        resumedCount.decrementAndGet();
         if (activity == activity()) this.activity = null;
     }
 

@@ -53,6 +53,7 @@ import com.firefly.tv.ui.base.BaseActivity;
 import com.firefly.tv.ui.custom.CustomRowPresenter;
 import com.firefly.tv.ui.custom.CustomSelector;
 import com.firefly.tv.ui.custom.CustomTitleView;
+import com.firefly.tv.ui.dialog.HistoryDialog;
 import com.firefly.tv.ui.dialog.SiteDialog;
 import com.firefly.tv.ui.presenter.FuncPresenter;
 import com.firefly.tv.ui.presenter.HeaderPresenter;
@@ -78,6 +79,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import android.os.Handler;
+import android.os.Looper;
+import android.view.KeyEvent;
+import android.view.View;
 
 public class HomeActivity extends BaseActivity implements CustomTitleView.Listener, VodPresenter.OnClickListener, FuncPresenter.OnClickListener, HistoryPresenter.OnClickListener {
 
@@ -275,6 +280,7 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
         if (LiveConfig.hasUrl()) items.add(Func.create(R.string.home_live));
         items.add(Func.create(R.string.home_search));
         items.add(Func.create(R.string.home_keep));
+        items.add(Func.create(R.string.home_history_menu));
         items.add(Func.create(R.string.home_push));
         items.add(Func.create(R.string.home_setting));
         mFuncAdapter.setItems(items, new BaseDiffCallback<Func>());
@@ -316,7 +322,12 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
     }
 
     private void setLogo() {
-        ImgUtil.logo(mBinding.logo);
+        // 品牌统一：使用静态横版 LOGO（不再加载点播源配置的 logo，避免未配置时空白）
+        mBinding.logo.setImageResource(R.drawable.logo_lockup);
+        mBinding.logo.setFocusable(true);
+        mBinding.logo.setFocusableInTouchMode(true);
+        mBinding.logo.setOnFocusChangeListener((v, hasFocus) -> v.animate().scaleX(hasFocus ? 1.12f : 1f).scaleY(hasFocus ? 1.12f : 1f).setDuration(150).start()); // 与菜单项同款缩放反馈
+        mBinding.logo.setOnClickListener(v -> HistoryDialog.create().vod().readOnly().show(this)); // 与手机版 LOGO 一致：只读历史弹窗
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -393,6 +404,7 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
         if (item.getResId() == R.string.home_vod) VodActivity.start(this, mResult);
         else if (item.getResId() == R.string.home_live) LiveActivity.start(this);
         else if (item.getResId() == R.string.home_keep) KeepActivity.start(this);
+        else if (item.getResId() == R.string.home_history_menu) HistoryActivity.start(this);
         else if (item.getResId() == R.string.home_push) PushActivity.start(this);
         else if (item.getResId() == R.string.home_search) SearchActivity.start(this);
         else if (item.getResId() == R.string.home_setting) SettingActivity.start(this);

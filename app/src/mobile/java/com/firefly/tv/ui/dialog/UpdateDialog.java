@@ -44,6 +44,10 @@ public class UpdateDialog extends BaseAlertDialog {
     public UpdateDialog show(FragmentActivity activity) {
         // 下载过程必须点取消才能停止：弹窗层与对话框层双重禁止点外部/返回键关闭
         setCancelable(false);
+        if (showActivity != null) showActivity.clear();
+        showActivity = new java.lang.ref.WeakReference<>(activity);
+        // 发现新版本界面保持长亮不锁屏（退出弹窗时在 onDismiss 清除）
+        if (!activity.isFinishing()) activity.getWindow().addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         show(activity.getSupportFragmentManager(), null);
         return this;
     }

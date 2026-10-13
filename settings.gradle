@@ -23,6 +23,5 @@ dependencyResolutionManagement {
 include ':app'
 include ':catvod'
 include ':chaquo'
-include ':firefly6stub'
 include ':quickjs'
 rootProject.name = "FireFly"

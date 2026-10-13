@@ -1,5 +1,8 @@
 package com.firefly.tv;
 
+import android.app.DownloadManager;
+import android.content.Context;
+import android.database.Cursor;
 import android.view.View;
 
 import androidx.fragment.app.FragmentActivity;
@@ -20,15 +23,28 @@ import org.json.JSONObject;
 
 import java.io.File;
 
-public class Updater implements Download.Callback, UpdateListener {
+import android.os.Handler;
+import android.os.Looper;
+
+/**
+ * 应用自更新：改用系统 DownloadManager 下载（断点续传/自动重试/锁屏照下/完整性由系统保证），
+ * 彻底解决自研下载器在锁屏/弱网下"下载不完整""100% 回退"的问题。
+ */
+public class Updater implements UpdateListener {
+
+    private static final long POLL_MS = 500;
 
     private UpdateDialog dialog;
     private String version;          // 目标版本号（来自 JSON 的 name），用于拼接 APK 下载路径
-    private String[] apkUrls;         // 候选下载地址，按优先级排列（GitHub → Gitee）
+    private String[] apkUrls;         // 候选下载地址，按优先级排列（服务器 → GitHub）
     private int apkIndex = 0;         // 当前尝试到第几个下载源
-    private Download download;
     private boolean beta;             // 测试通道：仅手动触发（连点版本行 5 次），读 beta JSON
     private boolean forced;           // 手动触发标记：正式检查允许同 code 重装与回退弹窗
+    private long downloadId = -1;     // DownloadManager 任务 id
+    private final Handler pollHandler = new Handler(Looper.getMainLooper());
+    private final Runnable pollTask = this::pollProgress;
+    private boolean legacyMode;       // 兜底通道：DownloadManager 异常时回退自研下载器
+    private Download legacyDownload;
 
     private Updater() {
     }
@@ -40,10 +56,6 @@ public class Updater implements Download.Callback, UpdateListener {
     public Updater beta() {
         this.beta = true;
         return this;
-    }
-
-    private File getFile() {
-        return Path.cache("update.apk");
     }
 
     public Updater force() {
@@ -116,48 +128,157 @@ public class Updater implements Download.Callback, UpdateListener {
         view.setEnabled(false);
         apkIndex = 0;
         apkUrls = Update.getApkUrls(version, BuildConfig.FLAVOR_mode, BuildConfig.FLAVOR_abi);
+        // 清理自研下载器时代的残留缓存
+        Path.cache("update.apk").delete();
         startDownload();
     }
 
     private void startDownload() {
-        download = Download.create(apkUrls[apkIndex], getFile());
-        download.start(this);
-    }
-
-    @Override
-    public void onCancel(View view) {
-        Setting.putUpdate(false);
-        if (download != null) download.cancel();
-        dismiss();
-    }
-
-    private void dismiss() {
+        // 部分 Android 9 电视的 DownloadProvider 数据库异常（no such column），TV 端直接走自研兜底
+        if ("leanback".equals(BuildConfig.FLAVOR_mode)) {
+            if (!legacyMode) {
+                legacyMode = true;
+            }
+            startLegacyDownload();
+            return;
+        }
         try {
-            if (dialog != null) dialog.dismiss();
-        } catch (Exception ignored) {
+            DownloadManager dm = (DownloadManager) App.get().getSystemService(Context.DOWNLOAD_SERVICE);
+            if (dm == null) throw new IllegalStateException("DownloadManager unavailable");
+            DownloadManager.Request request = new DownloadManager.Request(android.net.Uri.parse(apkUrls[apkIndex]));
+            request.setTitle(ResUtil.getString(R.string.app_name) + " " + version);
+            request.setMimeType("application/vnd.android.package-archive");
+            request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+            request.setAllowedOverMetered(true);
+            request.setAllowedOverRoaming(true);
+            File dir = App.get().getExternalFilesDir(null);
+            File target = new File(dir, "update.apk");
+            if (target.exists()) target.delete();
+            request.setDestinationInExternalFilesDir(App.get(), null, "update.apk");
+            downloadId = dm.enqueue(request);
+            App.post(pollTask);
+        } catch (Throwable e) {
+            // 个别 ROM（如部分 Android 9 电视）DownloadProvider 数据库异常，兜底通道接管
+            onDownloadFailed(e.getMessage());
         }
     }
 
-    @Override
-    public void progress(int progress) {
-        if (dialog != null) dialog.setProgress(progress);
+    private void pollProgress() {
+        if (dialog == null || downloadId < 0) return;
+        DownloadManager dm = (DownloadManager) App.get().getSystemService(Context.DOWNLOAD_SERVICE);
+        if (dm == null) return;
+        Cursor cursor = dm.query(new DownloadManager.Query().setFilterById(downloadId));
+        if (cursor == null) return;
+        try {
+            if (!cursor.moveToFirst()) return;
+            int status = cursor.getInt(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_STATUS));
+            if (status == DownloadManager.STATUS_SUCCESSFUL) {
+                File file = new File(App.get().getExternalFilesDir(null), "update.apk");
+                stopPoll();
+                if (file.isFile() && file.length() > 0) {
+                    if (dialog != null) dialog.setProgress(100);
+                    FileUtil.openFile(file);
+                    dismiss();
+                } else {
+                    onDownloadFailed("empty download");
+                }
+            } else if (status == DownloadManager.STATUS_FAILED || status == DownloadManager.STATUS_PAUSED && cursor.getInt(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_REASON)) == DownloadManager.PAUSED_WAITING_FOR_NETWORK) {
+                // 失败换源；等待网络（PAUSED）时继续轮询等待恢复
+                if (status == DownloadManager.STATUS_FAILED) {
+                    int reason = cursor.getInt(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_REASON));
+                    stopPoll();
+                    onDownloadFailed("status " + status + " reason " + reason);
+                    return;
+                }
+                pollHandler.postDelayed(pollTask, POLL_MS);
+            } else {
+                long soFar = cursor.getLong(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR));
+                long total = cursor.getLong(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_TOTAL_SIZE_BYTES));
+                if (total > 0 && dialog != null) dialog.setProgress((int) (soFar * 100 / total));
+                pollHandler.postDelayed(pollTask, POLL_MS);
+            }
+        } catch (Throwable e) {
+            // 个别 ROM 的 DownloadProvider 查询异常（跨进程抛出），兜底通道接管
+            stopPoll();
+            onDownloadFailed(e.getMessage());
+        } finally {
+            try {
+                cursor.close();
+            } catch (Throwable ignored) {
+            }
+        }
     }
 
-    @Override
-    public void error(String msg) {
+    private void stopPoll() {
+        pollHandler.removeCallbacks(pollTask);
+    }
+
+    private void onDownloadFailed(String msg) {
+        downloadId = -1;
         // 当前下载源失败，自动切换到下一个更新源重试
         if (apkIndex + 1 < apkUrls.length) {
             apkIndex++;
             startDownload();
             return;
         }
-        Notify.show(msg);
+        // 兜底：所有下载源的系统下载都失败（个别 ROM DownloadManager 异常），回退自研下载器
+        if (!legacyMode) {
+            legacyMode = true;
+            apkIndex = 0;
+            startLegacyDownload();
+            return;
+        }
+        Notify.show(msg != null ? msg : ResUtil.getString(R.string.update_latest));
         dismiss();
     }
 
+    // 自研下载器兜底：带完整性校验/自动重试/断点续传/WakeLock 全套补丁
+    private void startLegacyDownload() {
+        legacyDownload = Download.create(apkUrls[apkIndex], Path.cache("update.apk"));
+        legacyDownload.start(new Download.Callback() {
+            @Override
+            public void progress(int progress) {
+                if (dialog != null) dialog.setProgress(progress);
+            }
+
+            @Override
+            public void error(String msg) {
+                if (apkIndex + 1 < apkUrls.length) {
+                    apkIndex++;
+                    startLegacyDownload();
+                    return;
+                }
+                Notify.show(msg != null ? msg : ResUtil.getString(R.string.update_latest));
+                dismiss();
+            }
+
+            @Override
+            public void success(File file) {
+                if (dialog != null) dialog.setProgress(100);
+                FileUtil.openFile(file);
+                dismiss();
+            }
+        });
+    }
+
     @Override
-    public void success(File file) {
-        FileUtil.openFile(file);
+    public void onCancel(View view) {
+        Setting.putUpdate(false);
+        stopPoll();
+        if (downloadId >= 0) {
+            DownloadManager dm = (DownloadManager) App.get().getSystemService(Context.DOWNLOAD_SERVICE);
+            if (dm != null) dm.remove(downloadId);
+            downloadId = -1;
+        }
+        if (legacyDownload != null) legacyDownload.cancel();
         dismiss();
+    }
+
+    private void dismiss() {
+        stopPoll();
+        try {
+            if (dialog != null) dialog.dismiss();
+        } catch (Exception ignored) {
+        }
     }
 }

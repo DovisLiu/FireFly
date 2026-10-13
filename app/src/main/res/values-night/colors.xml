@@ -8,6 +8,7 @@
 
     <!-- 深色语言（爱奇艺 TV 风）：深灰蓝底 + 深灰卡 + 白底选中 -->
     <color name="bg_page">#14161A</color>
+    <color name="splash_bg">#14161A</color>
     <color name="bg_card">#1E2126</color>
     <color name="focus_card">#2C313A</color>
     <color name="text_secondary">#9BA1A8</color>
@@ -30,4 +31,6 @@
     <color name="icon_pink_bg">#3A2A31</color>
     <color name="icon_pink">#F4C0D1</color>
 
+    <color name="icon_amber">#FFD54F</color>
+    <color name="icon_amber_bg">#3A2E10</color>
 </resources>

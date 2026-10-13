@@ -63,24 +63,70 @@ public class Download {
         return this;
     }
 
+    private static final int MAX_RETRY = 5;
+    private static final long RETRY_DELAY_MS = 3000;
+    private android.os.PowerManager.WakeLock wakeLock;
+
     // 断点续传：已有部分文件时带 Range 续传（206 追加 / 200 重来），中断不再删除缓存文件
+    // 锁屏中断防护：WiFi 锁 + 完整性校验 + 自动重试（最多 5 次，续传接力）
     private void doInBackground() {
+        acquireWifiLock();
         try {
-            long existing = file.exists() ? file.length() : 0;
-            Map<String, String> headers = new HashMap<>();
-            if (existing > 0) headers.put(HttpHeaders.RANGE, "bytes=" + existing + "-");
-            try (Response res = OkHttp.newCall(url, tag, headers).execute()) {
-                boolean resume = existing > 0 && res.code() == 206;
-                long base = resume ? existing : 0;
-                if (!resume) Path.clear(file);
-                double total = base + getLength(res);
-                if (!download(res.body().byteStream(), total, base, resume)) return; // 被取消中断：不弹安装
-                if (callback != null) App.post(() -> callback.success(file));
+            Exception last = null;
+            for (int attempt = 0; attempt < MAX_RETRY; attempt++) {
+                if (attempt > 0) {
+                    try {
+                        Thread.sleep(RETRY_DELAY_MS);
+                    } catch (InterruptedException ie) {
+                        return;
+                    }
+                    if (Thread.interrupted()) return;
+                }
+                try {
+                    long existing = file.exists() ? file.length() : 0;
+                    Map<String, String> headers = new HashMap<>();
+                    if (existing > 0) headers.put(HttpHeaders.RANGE, "bytes=" + existing + "-");
+                    try (Response res = OkHttp.newCall(url, tag, headers).execute()) {
+                        boolean resume = existing > 0 && res.code() == 206;
+                        long base = resume ? existing : 0;
+                        if (!resume) Path.clear(file);
+                        double total = base + getLength(res);
+                        if (!download(res.body().byteStream(), total, base, resume)) return; // 被取消中断：不弹安装
+                        // 完整性校验：已知总长时不完整视为失败（触发重试续传）
+                        if (total > 0 && file.length() < total) throw new IOException("Incomplete download: " + file.length() + "/" + (long) total);
+                        if (callback != null) App.post(() -> callback.success(file));
+                        return;
+                    }
+                } catch (Exception e) {
+                    last = e;
+                }
             }
+            throw last != null ? last : new IOException("Download failed after retries");
         } catch (Exception e) {
             if (callback != null) App.post(() -> callback.error(e.getMessage()));
             else throw new RuntimeException(e.getMessage(), e);
+        } finally {
+            releaseWifiLock();
         }
+    }
+
+    private void acquireWifiLock() {
+        try {
+            android.os.PowerManager pm = (android.os.PowerManager) App.get().getApplicationContext().getSystemService(android.content.Context.POWER_SERVICE);
+            if (pm == null) return;
+            wakeLock = pm.newWakeLock(android.os.PowerManager.PARTIAL_WAKE_LOCK, "FireFly:Download");
+            wakeLock.setReferenceCounted(false);
+            wakeLock.acquire(15 * 60 * 1000L);
+        } catch (Throwable ignored) {
+        }
+    }
+
+    private void releaseWifiLock() {
+        try {
+            if (wakeLock != null && wakeLock.isHeld()) wakeLock.release();
+        } catch (Throwable ignored) {
+        }
+        wakeLock = null;
     }
 
     // 返回 false = 被取消中断（保留续传文件，不触发安装）

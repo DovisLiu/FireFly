@@ -102,6 +102,16 @@ public class ExoUtil {
             protected AudioSink buildAudioSink(@NonNull Context context, boolean enableFloatOutput, boolean enableAudioOutputPlaybackParams) {
                 return ExoUtil.buildAudioSink(context, enableFloatOutput, enableAudioOutputPlaybackParams, audioProcessor);
             }
+
+            @Override
+            protected void buildAudioRenderers(@NonNull Context context, int extensionRendererMode, @NonNull androidx.media3.exoplayer.mediacodec.MediaCodecSelector mediaCodecSelector, boolean enableDecoderFallback, @NonNull AudioSink audioSink, @NonNull android.os.Handler eventHandler, @NonNull androidx.media3.exoplayer.audio.AudioRendererEventListener eventListener, @NonNull java.util.ArrayList<androidx.media3.exoplayer.Renderer> out) {
+                super.buildAudioRenderers(context, extensionRendererMode, mediaCodecSelector, enableDecoderFallback, audioSink, eventHandler, eventListener, out);
+                // FFmpeg 音频软解（downmix 补丁版）：AC3/DTS 等设备硬解不支持时的兜底
+                try {
+                    out.add(new androidx.media3.decoder.ffmpeg.FfmpegAudioRenderer(eventHandler, eventListener, audioSink));
+                } catch (Throwable ignored) {
+                }
+            }
         };
         // media3 fork 无 setDolbyVisionOutputPolicy()，杜比视界输出策略降级为默认
         return factory.setEnableDecoderFallback(true).setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_ON);
