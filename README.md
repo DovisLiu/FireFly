@@ -40,73 +40,6 @@
 
 `app/src/main/` 为两个版本共用的业务逻辑，`app/src/leanback/` 与 `app/src/mobile/` 各自实现对应 UI。
 
-## 构建
-
-### 环境要求
-
-| 工具 | 版本 |
-|------|------|
-| Android Gradle Plugin | 9.3.1 |
-| Gradle | 9.6.1 |
-| JDK | 21（Android Studio 自带 JBR 21）|
-| compileSdk / targetSdk | 37 |
-| minSdk | 24 |
-
-### 变体（Flavor）
-
-构建变体由两个维度组合而成：
-
-- **abi**：`arm64_v8a`（64 位）/ `armeabi_v7a`（32 位）/ `universal`（双 ABI 合版）
-- **mode**：`leanback`（电视版）/ `mobile`（手机版）
-
-共 6 种 release 变体。**合版（`universal`）同时包含 64/32 位原生库**，安装时由系统自动选用对应 ABI，一个安装包通吃全部设备；分包则按需精简体积。
-
-### 产物命名
-
-| 变体 | 产物名（以 v1.0.0 为例） |
-|------|--------------------------|
-| 电视版合版 | `FireFly.TV.1.0.0.apk` |
-| 手机版合版 | `FireFly.Phone.1.0.0.apk` |
-| 电视版 64 位 | `FireFly.TV.arm64.1.0.0.apk` |
-| 电视版 32 位 | `FireFly.TV.arm32.1.0.0.apk` |
-| 手机版 64 位 | `FireFly.Phone.arm64.1.0.0.apk` |
-| 手机版 32 位 | `FireFly.Phone.arm32.1.0.0.apk` |
-
-### 签名
-
-正式包使用 `firefly_release.jks` 签名（别名 `firefly`），配置由根目录 `local.properties` 驱动（该文件不入库，需自行创建）：
-
-```properties
-storeFile=firefly_release.jks
-keyAlias=firefly
-keyPassword=你的密码
-storePassword=你的密码
-```
-
-请使用自己的签名密钥；切勿将 `.jks` 或密码提交到版本库。
-
-### 构建命令
-
-```bash
-# 设置 JDK（AGP 9.3.1 需要 JDK 21，请指向你本机的 JDK 21 安装路径，
-# 例如 Android Studio 自带的 JBR：C:/Program Files/Android/Android Studio/jbr）
-export JAVA_HOME="/path/to/your/jdk-21"
-
-# 构建全部 6 种 release 变体
-./gradlew :app:assembleRelease
-
-# 或单独构建某一变体，例如电视版合版（双 ABI）
-./gradlew :app:assembleLeanbackUniversalRelease
-```
-
-产物位于 `app/build/outputs/apk/<变体>/release/`。
-
-### Python 依赖（Chaquopy）
-
-爬虫所需的 Python 包（lxml、pycryptodome、requests、beautifulsoup4、pyquery、ujson 等）由 Chaquopy 按 Android ABI 下载并打包进 APK 的 assets，运行时自解压，不依赖设备联网或预装 Python。
-
-> **Windows 构建注意**：Chaquopy 在 Windows 上对 `pip_install.py` 的文件系统操作存在竞态（"Access is denied"）。本项目已在 `chaquo/build.gradle` 的 `afterEvaluate` 中注入针对性补丁，在正常构建流程中自动生效，无需额外处理。
-
 ## 配置说明
 
 应用通过 Vod / Live 配置（JSON）加载内容源，详见以下文档：
@@ -121,7 +54,3 @@ export JAVA_HOME="/path/to/your/jdk-21"
 ## 许可证
 
 本项目遵循 **GPL v3** 许可证。详见 [LICENSE.md](LICENSE.md)。
-
-## 下载
-
-安装包将在首发版本发布后提供下载渠道（本节待补充）。
