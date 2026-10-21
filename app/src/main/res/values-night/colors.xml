@@ -12,6 +12,7 @@
     <color name="bg_card">#1E2126</color>
     <color name="focus_card">#2C313A</color>
     <color name="text_secondary">#9BA1A8</color>
+    <color name="icon_primary">#FFFFFF</color>
 
     <color name="icon_purple_bg">#3A3450</color>
     <color name="icon_purple">#CECBF6</color>

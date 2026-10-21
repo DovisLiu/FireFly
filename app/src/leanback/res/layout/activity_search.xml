@@ -29,7 +29,8 @@
                 android:focusable="true"
                 android:focusableInTouchMode="true"
                 android:nextFocusDown="@id/keyboard"
-                android:src="@drawable/ic_search_mic" />
+                android:src="@drawable/ic_search_mic"
+                app:tint="?android:attr/textColorPrimary" />
 
             <com.firefly.tv.ui.custom.CustomSearchView
                 android:id="@+id/keyword"
@@ -47,11 +48,28 @@
                 android:nextFocusDown="@id/keyboard"
                 android:singleLine="true"
                 android:textColor="?android:attr/textColorPrimary"
-                android:textColorHint="@color/white"
+                android:textColorHint="?android:attr/textColorHint"
                 android:textCursorDrawable="@drawable/shape_cursor"
                 android:textSize="24sp" />
 
         </androidx.appcompat.widget.LinearLayoutCompat>
+
+        <HorizontalScrollView
+            android:id="@+id/candidateScroll"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:scrollbars="none"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:id="@+id/candidateBar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingBottom="4dp" />
+
+        </HorizontalScrollView>
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/keyboard"

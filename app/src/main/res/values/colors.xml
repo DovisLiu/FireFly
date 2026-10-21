@@ -12,6 +12,8 @@
     <color name="bg_card">#FFFFFF</color>
     <color name="focus_card">#EADCFF</color>
     <color name="text_secondary">#8A8F98</color>
+    <!-- 普通页面图标主色（跟随深浅色；播放器/海报层图标固定白不用此 token） -->
+    <color name="icon_primary">#3C434E</color>
 
     <color name="transparent">#00000000</color>
     <color name="black">#000000</color>

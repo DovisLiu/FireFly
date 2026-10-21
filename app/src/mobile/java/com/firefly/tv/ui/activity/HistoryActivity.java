@@ -18,6 +18,7 @@ import com.firefly.tv.bean.History;
 import com.firefly.tv.databinding.ActivityHistoryBinding;
 import com.firefly.tv.event.RefreshEvent;
 import com.firefly.tv.ui.adapter.HistoryAdapter;
+import com.firefly.tv.utils.ResUtil;
 import com.firefly.tv.ui.base.BaseActivity;
 import com.firefly.tv.ui.dialog.SyncDialog;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -104,6 +105,7 @@ public class HistoryActivity extends BaseActivity implements HistoryAdapter.OnCl
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_history, menu);
+        ResUtil.tintMenuIcons(menu);
         return true;
     }
 

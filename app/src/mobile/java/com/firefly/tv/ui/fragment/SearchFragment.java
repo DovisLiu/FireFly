@@ -34,6 +34,7 @@ import com.firefly.tv.ui.adapter.WordAdapter;
 import com.firefly.tv.ui.base.BaseFragment;
 import com.firefly.tv.ui.custom.CustomTextListener;
 import com.firefly.tv.ui.dialog.SiteDialog;
+import com.firefly.tv.utils.ResUtil;
 import com.firefly.tv.utils.Util;
 import com.github.catvod.net.OkHttp;
 import com.google.android.flexbox.FlexDirection;
@@ -208,6 +209,7 @@ public class SearchFragment extends BaseFragment implements MenuProvider, WordAd
     @Override
     public void onCreateMenu(@NonNull Menu menu, @NonNull MenuInflater menuInflater) {
         menuInflater.inflate(R.menu.menu_search, menu);
+        ResUtil.tintMenuIcons(menu);
     }
 
     @Override

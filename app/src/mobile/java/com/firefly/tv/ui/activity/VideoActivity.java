@@ -1167,7 +1167,7 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
     }
 
     private void syncDanmakuEnabled() {
-        player().setDanmakuEnabled(DanmakuSetting.isShow());
+        player().setDanmakuEnabled(DanmakuSetting.isShow() && DanmakuSetting.isLoad());
     }
 
     private void hideDanmaku() {
@@ -1176,7 +1176,7 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
 
     private void showControl() {
         if (service() == null || isInPictureInPictureMode()) return;
-        mBinding.control.danmaku.setVisibility(isLock() || !player().haveDanmaku() ? View.GONE : View.VISIBLE);
+        mBinding.control.danmaku.setVisibility(isLock() || !player().haveDanmaku() || !DanmakuSetting.isLoad() ? View.GONE : View.VISIBLE);
         mBinding.control.setting.setVisibility(mHistory == null || isFullscreen() ? View.GONE : View.VISIBLE);
         mBinding.control.right.rotate.setVisibility(isFullscreen() && !isLock() ? View.VISIBLE : View.GONE);
         mBinding.control.keep.setVisibility(mHistory == null || isFullscreen() ? View.GONE : View.VISIBLE);
@@ -1653,6 +1653,10 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
         setAudioOnly(false);
         setStop(false);
     }
+
+    // 注意：不可在 onResume 里调用 syncDanmakuEnabled——此时 PlaybackService 尚未完成绑定初始化
+    // （内部 PlayerManager 为 null，读取即 NPE，导致点播必崩，见 beta6 事故）；弹幕状态在
+    // showControl/切集等 service 就绪后的既有节点同步。
 
     @Override
     protected void onStop() {

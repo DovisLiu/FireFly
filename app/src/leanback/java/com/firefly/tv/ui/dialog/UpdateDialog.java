@@ -64,7 +64,8 @@ public class UpdateDialog extends BaseAlertDialog {
         // 下载更新期间保持屏幕常亮，防止锁屏中断下载
         if (getDialog() != null && getDialog().getWindow() != null)
             getDialog().getWindow().addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        binding.confirm.requestFocus(); // TV 焦点：弹窗出现后落在确认按钮上
+        // TV 焦点：弹窗窗口获得焦点前 requestFocus 会被重置，延迟到首帧绘制后执行
+        getDialog().getWindow().getDecorView().post(() -> binding.confirm.requestFocus());
     }
 
     @Override

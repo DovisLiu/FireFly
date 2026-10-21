@@ -112,6 +112,7 @@ public class Setting {
         Prefers.put("update", update);
     }
 
+
     public static boolean isAdblock() {
         return Prefers.getBoolean("adblock", true);
     }
@@ -126,6 +127,15 @@ public class Setting {
 
     public static void putZhuyin(boolean zhuyin) {
         Prefers.put("zhuyin", zhuyin);
+    }
+
+    // TV 搜索键盘：拼音选字模式（字母累积出汉字候选）与直接输入模式切换
+    public static boolean isKbPinyin() {
+        return Prefers.getBoolean("kbPinyin");
+    }
+
+    public static void putKbPinyin(boolean enabled) {
+        Prefers.put("kbPinyin", enabled);
     }
 
     // 迁移公告：最后已知阶段（拉取成功即持久化，断网兜底）

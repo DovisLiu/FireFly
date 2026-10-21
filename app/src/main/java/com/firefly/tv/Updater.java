@@ -61,12 +61,10 @@ public class Updater implements UpdateListener {
     public Updater force() {
         forced = true;
         Notify.show(R.string.update_check);
-        if (!beta) Setting.putUpdate(true);
         return this;
     }
 
     public void start(FragmentActivity activity) {
-        if (!beta && !Setting.getUpdate()) return;
         Task.execute(() -> doInBackground(activity));
     }
 
@@ -263,7 +261,7 @@ public class Updater implements UpdateListener {
 
     @Override
     public void onCancel(View view) {
-        Setting.putUpdate(false);
+        // 取消仅当次生效：本次启动不再弹，下次进入应用照常提示
         stopPoll();
         if (downloadId >= 0) {
             DownloadManager dm = (DownloadManager) App.get().getSystemService(Context.DOWNLOAD_SERVICE);

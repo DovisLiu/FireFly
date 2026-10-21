@@ -12,6 +12,7 @@ import com.firefly.tv.R;
 import com.firefly.tv.databinding.FragmentSettingPlayerBinding;
 import com.firefly.tv.impl.BufferListener;
 import com.firefly.tv.impl.UaListener;
+import com.firefly.tv.player.mpv.MpvUtil;
 import com.firefly.tv.setting.PlayerSetting;
 import com.firefly.tv.setting.Setting;
 import com.firefly.tv.ui.activity.HomeActivity;
@@ -69,8 +70,9 @@ public class SettingPlayerFragment extends BaseFragment implements UaListener, B
 
     private void setVisible() {
         boolean exo = PlayerSetting.isExo();
+        boolean vulkan = !exo && MpvUtil.isVulkanSupported();
         mBinding.mpvConf.setVisibility(exo ? View.GONE : View.VISIBLE);
-        mBinding.mpvVulkan.setVisibility(exo ? View.GONE : View.VISIBLE);
+        mBinding.mpvVulkan.setVisibility(vulkan ? View.VISIBLE : View.GONE);
         mBinding.mpvGpuNext.setVisibility(exo ? View.GONE : View.VISIBLE);
         mBinding.adblock.setVisibility(exo ? View.VISIBLE : View.GONE);
         mBinding.buffer.setVisibility(exo ? View.VISIBLE : View.GONE);

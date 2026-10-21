@@ -10,6 +10,7 @@ import android.os.Build;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.view.Display;
+import android.view.Menu;
 import android.view.MotionEvent;
 import android.view.WindowManager;
 import android.view.animation.Animation;
@@ -23,6 +24,7 @@ import androidx.annotation.StringRes;
 import androidx.core.content.ContextCompat;
 
 import com.firefly.tv.App;
+import com.firefly.tv.R;
 
 public class ResUtil {
 
@@ -116,6 +118,17 @@ public class ResUtil {
 
     public static int getColor(@ColorRes int resId) {
         return ContextCompat.getColor(App.get(), resId);
+    }
+
+    // 菜单图标跟随主题染色（深色=白、浅色=深），修复浅色模式下硬编码白色图标不可见。
+    // 注意：不可用 resolveAttribute(colorControlNormal)——M3 主题下该属性解析可能返回非颜色值，
+    // setTint(坏值) 会导致图标完全透明（beta2 首版事故）；改用 icon_primary 颜色资源（DayNight 自动切换）。
+    public static void tintMenuIcons(Menu menu) {
+        int color = getColor(R.color.icon_primary);
+        for (int i = 0; i < menu.size(); i++) {
+            Drawable icon = menu.getItem(i).getIcon();
+            if (icon != null) icon.setTint(color);
+        }
     }
 
     public static Animation getAnim(@AnimRes int resId) {

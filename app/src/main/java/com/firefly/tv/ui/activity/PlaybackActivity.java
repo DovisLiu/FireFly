@@ -29,6 +29,7 @@ import androidx.media3.ui.PlayerView;
 import androidx.media3.ui.TimeBar;
 import androidx.media3.ui.danmaku.DanmakuConfig;
 
+import com.firefly.tv.Product;
 import com.firefly.tv.R;
 import com.firefly.tv.bean.Result;
 import com.firefly.tv.playback.PlaybackIntent;
@@ -554,7 +555,8 @@ public abstract class PlaybackActivity extends BaseActivity implements MediaCont
     public void onIsPlayingChanged(boolean isPlaying) {
         if (!isOwner()) return;
         if (isPlaying) getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        else if (!isBuffering()) getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        // TV 端全程抑制系统屏保（与 BaseActivity 语义一致，暂停也不例外）；手机端暂停后允许灭屏省电
+        else if (Product.getDeviceType() != 0 && !isBuffering()) getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         onPlayingChanged(isPlaying);
     }
 

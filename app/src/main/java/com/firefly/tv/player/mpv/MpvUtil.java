@@ -1,5 +1,7 @@
 package com.firefly.tv.player.mpv;
 
+import android.content.pm.PackageManager;
+
 import androidx.media3.common.Player;
 import androidx.media3.common.util.Util;
 import androidx.media3.mpvplayer.MpvAndroidOptions;
@@ -20,10 +22,19 @@ import java.io.File;
 public final class MpvUtil {
 
     private static final String ASSET_CA_FILE = "cacert.pem";
+    private static final int VULKAN_1_2 = 0x00402000;
     private static final double DEFAULT_SUB_POS = 100.0;
     private static final double DEFAULT_SUB_SCALE = 1.0;
     private static final double MIN_SUB_POS = 0.0;
     private static final double MAX_SUB_POS = 150.0;
+
+    public static boolean isVulkanSupported() {
+        try {
+            return App.get().getPackageManager().hasSystemFeature(PackageManager.FEATURE_VULKAN_HARDWARE_VERSION, VULKAN_1_2);
+        } catch (Throwable e) {
+            return false;
+        }
+    }
 
     public static boolean isAvailable() {
         try {

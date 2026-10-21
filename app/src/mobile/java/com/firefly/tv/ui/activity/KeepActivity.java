@@ -24,6 +24,7 @@ import com.firefly.tv.ui.adapter.KeepAdapter;
 import com.firefly.tv.ui.base.BaseActivity;
 import com.firefly.tv.ui.dialog.SyncDialog;
 import com.firefly.tv.utils.Notify;
+import com.firefly.tv.utils.ResUtil;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import org.greenrobot.eventbus.Subscribe;
@@ -122,6 +123,7 @@ public class KeepActivity extends BaseActivity implements KeepAdapter.OnClickLis
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_keep, menu);
+        ResUtil.tintMenuIcons(menu);
         return true;
     }
 

@@ -26,7 +26,7 @@
             android:singleLine="true"
             android:textAppearance="@style/ToolbarTextAppearance"
             android:textColor="?android:attr/textColorPrimary"
-            android:textColorHint="@color/white"
+            android:textColorHint="?android:attr/textColorHint"
             android:textCursorDrawable="@drawable/shape_cursor" />
 
     </com.google.android.material.appbar.MaterialToolbar>

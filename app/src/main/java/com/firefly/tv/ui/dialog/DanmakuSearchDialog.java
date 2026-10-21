@@ -127,6 +127,8 @@ public final class DanmakuSearchDialog extends BaseBottomSheetDialog implements 
     }
 
     private void search() {
+        // 弹幕加载总开关关闭时，云搜不得绕过设置加载数据（入口显隐之外的数据层兜底）
+        if (!DanmakuSetting.isLoad()) return;
         showProgress();
         adapter.clear();
         Util.hideKeyboard(binding.keyword);
