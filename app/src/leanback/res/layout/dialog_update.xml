@@ -12,7 +12,7 @@
         android:layout_height="wrap_content"
         android:letterSpacing="0.02"
         android:textColor="?android:attr/textColorPrimary"
-        android:textSize="18sp"
+        android:textSize="16sp"
         tools:text="@string/update_version" />
 
     <View
@@ -35,7 +35,7 @@
             android:letterSpacing="0.02"
             android:lineSpacingExtra="8dp"
             android:textColor="?android:attr/textColorPrimary"
-            android:textSize="16sp"
+            android:textSize="14sp"
             tools:text="1. 新增功能说明示例\n2. 修复问题示例\n3. 优化体验示例" />
 
     </androidx.core.widget.NestedScrollView>

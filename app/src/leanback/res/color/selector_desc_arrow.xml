@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- β21 / T-326：简介行尾小箭头的显隐色表——常态**全透明**（占位稳定、视觉无物），
+     聚焦＝100% 白（与提亮文字同色）⇒ "聚焦才出现的行尾小箭头"。
+     箭头本体 ic_detail_desc_more 固有尺寸不随状态变，位置恒在文本块右缘（drawableEnd）。 -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:color="@color/detail_desc_focus_text" android:state_focused="true" />
+    <item android:color="@color/detail_desc_arrow_hidden" />
+</selector>

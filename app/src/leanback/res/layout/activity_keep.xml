@@ -1,17 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.firefly.tv.ui.custom.ProgressLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/progressLayout"
+<!-- 收藏页（TV 2.0 浮层导航：内容顶行按上键呼出，当前页无对应项不高亮） -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recycler"
+    <com.firefly.tv.ui.custom.ProgressLayout
+        android:id="@+id/progressLayout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:clipChildren="false"
-        android:clipToPadding="false"
-        android:overScrollMode="never"
-        android:padding="24dp" />
+        android:layout_height="match_parent">
 
-</com.firefly.tv.ui.custom.ProgressLayout>
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recycler"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipChildren="false"
+            android:clipToPadding="false"
+            android:overScrollMode="never"
+            android:paddingStart="24dp"
+            android:paddingTop="@dimen/content_top_inset"
+            android:paddingEnd="24dp"
+            android:paddingBottom="24dp" />
 
+    </com.firefly.tv.ui.custom.ProgressLayout>
+
+    <include
+        android:id="@+id/navBar"
+        layout="@layout/view_nav_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top" />
+
+</FrameLayout>

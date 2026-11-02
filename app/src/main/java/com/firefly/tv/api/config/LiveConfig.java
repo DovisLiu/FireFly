@@ -1,6 +1,7 @@
 package com.firefly.tv.api.config;
 
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.firefly.tv.api.Decoder;
 import com.firefly.tv.api.LiveApi;
@@ -194,11 +195,20 @@ public class LiveConfig extends BaseConfig {
     }
 
     public void setKeep(Channel channel) {
+        // T-153（C beta5/beta6 崩溃点 LiveConfig.java:197，retrace 还原）：
+        // channel 未建立到 Group 的反向引用时 channel.getGroup() 为 null，直接调 isHidden() 会 NPE。
+        // 此处空值守卫返回（不破坏正常 keep 保存）；日志 tag=FireFlyLive 供 logcat 验证路径执行。
+        if (channel == null || channel.getGroup() == null) {
+            Log.d("FireFlyLive", "setKeep guarded: channel=" + (channel == null ? "null" : channel.getName()) + " group=null");
+            return;
+        }
+        Log.d("FireFlyLive", "setKeep channel=" + channel.getName() + " group=" + channel.getGroup().getName());
         if (home != null && !channel.getGroup().isHidden()) home.keep(channel).save();
     }
 
     public void applyKeepsToGroups(List<Group> items) {
-        Set<String> key = Keep.getLive().stream().map(Keep::getKey).collect(Collectors.toSet());
+        // T-186：直播收藏同样走安全解包（单条坏数据只跳过，不阻断直播页装配）
+        Set<String> key = Keep.loadLiveSafe().stream().map(Keep::getKey).collect(Collectors.toSet());
         items.stream().filter(group -> !group.isKeep())
                 .flatMap(group -> group.getChannel().stream())
                 .filter(channel -> key.contains(channel.getName()))
@@ -207,7 +217,7 @@ public class LiveConfig extends BaseConfig {
 
     public int[] findKeepPosition(List<Group> items) {
         String[] splits = getHome().getKeep().split(AppDatabase.SYMBOL);
-        if (splits.length < 3) return new int[]{1, 0};
+        if (splits.length < 3) return new int[]{0, 0};
         for (int i = 0; i < items.size(); i++) {
             Group group = items.get(i);
             if (group.getName().equals(splits[0])) {
@@ -218,7 +228,7 @@ public class LiveConfig extends BaseConfig {
                 }
             }
         }
-        return new int[]{1, 0};
+        return new int[]{0, 0};
     }
 
     public int[] findByChannelNumber(String number, List<Group> items) {

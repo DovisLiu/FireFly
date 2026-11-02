@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- T-173（C beta14：外观模式对话框 ListView 焦点 DOWN 直接跳"取消"、列表内选不了浅色）：
+     TV 弹窗项布局——可聚焦 + 与设置行一致的 selector_item 背景（聚焦/选中可见） -->
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/selector_item"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
+    android:gravity="center_vertical"
+    android:minHeight="56dp"
+    android:paddingStart="24dp"
+    android:paddingEnd="24dp"
+    android:textColor="?android:attr/textColorPrimary"
+    android:textSize="14sp" />

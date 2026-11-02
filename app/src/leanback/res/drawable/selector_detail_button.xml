@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- β20 / T-316：播放胶囊／收藏／换源三钮共用的两态 selector（全圆胶囊族）。
+     聚焦档与 selector_detail_pill.xml 的聚焦档**逐值同构**（同一发光环＋同一焦点底＝09 §四"一套 token"），
+     常态档＝**模拟玻璃**（09 §三：白 12% 底 ＋ 1px 高光描边内白 45% ＋ 上亮下暗渐变，不做真模糊）：
+       layer-list 底层＝detail_glass_fill 实底＋detail_glass_stroke 描边；
+       上层＝detail_glass_top→detail_glass_bottom 的半透明白纵向渐变（shape 的 solid 与 gradient 互斥，
+       故用两层叠出"12% 底上再叠上亮下暗"）。
+     三钮同高同态由布局 @dimen/detail_btn_pill_height／detail_btn_circle 与本 selector 共同保证。 -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true">
+        <layer-list>
+            <item>
+                <shape android:shape="rectangle">
+                    <solid android:color="@android:color/transparent" />
+                    <corners android:radius="@dimen/pill_radius" />
+                    <stroke
+                        android:width="@dimen/detail_focus_glow"
+                        android:color="@color/detail_glow" />
+                </shape>
+            </item>
+            <item
+                android:bottom="@dimen/detail_focus_glow"
+                android:left="@dimen/detail_focus_glow"
+                android:right="@dimen/detail_focus_glow"
+                android:top="@dimen/detail_focus_glow">
+                <shape android:shape="rectangle">
+                    <solid android:color="@color/detail_focus_bg" />
+                    <corners android:radius="@dimen/pill_radius" />
+                </shape>
+            </item>
+        </layer-list>
+    </item>
+    <item>
+        <layer-list>
+            <item>
+                <shape android:shape="rectangle">
+                    <solid android:color="@color/detail_glass_fill" />
+                    <corners android:radius="@dimen/pill_radius" />
+                    <stroke
+                        android:width="@dimen/detail_glass_stroke"
+                        android:color="@color/detail_glass_stroke" />
+                </shape>
+            </item>
+            <item>
+                <shape android:shape="rectangle">
+                    <gradient
+                        android:angle="270"
+                        android:endColor="@color/detail_glass_bottom"
+                        android:startColor="@color/detail_glass_top"
+                        android:type="linear" />
+                    <corners android:radius="@dimen/pill_radius" />
+                </shape>
+            </item>
+        </layer-list>
+    </item>
+</selector>

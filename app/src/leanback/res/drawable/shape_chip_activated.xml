@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Round 38 / R5①：胶囊类选中态 = 1.5dp 描边 + 比焦点更弱的底（A 口径「选中=1.5dp 描边+更弱底，
+     或改对勾/加粗」；Q-4 同步取消 #FF4CAF50 选中绿，选中一律由描边/底承担）。
+     原文件与常规态**完全相同**（没有任何选中表达）→ 现补齐。 -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
 
@@ -9,5 +12,11 @@
         android:left="12dp"
         android:right="12dp"
         android:top="8dp" />
+
+    <solid android:color="@color/state_select_bg" />
+
+    <stroke
+        android:width="@dimen/state_stroke_select"
+        android:color="@color/state_select_stroke" />
 
 </shape>

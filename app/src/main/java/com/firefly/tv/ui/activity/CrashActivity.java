@@ -11,7 +11,10 @@ import androidx.viewbinding.ViewBinding;
 
 import com.firefly.tv.App;
 import com.firefly.tv.R;
+import com.firefly.tv.api.config.VodConfig;
+import com.firefly.tv.bean.ResetLog;
 import com.firefly.tv.db.AppDatabase;
+import com.firefly.tv.db.dao.ConfigDao;
 import com.firefly.tv.databinding.ActivityCrashBinding;
 import com.firefly.tv.ui.base.BaseActivity;
 import com.firefly.tv.utils.ExitInfo;
@@ -86,12 +89,20 @@ public class CrashActivity extends BaseActivity {
 
     private void resetConfig() {
         Task.execute(() -> {
-            AppDatabase.get().getConfigDao().deleteType(0);
-            AppDatabase.get().getConfigDao().deleteType(1);
-            AppDatabase.get().getConfigDao().deleteType(2);
-            Prefers.put("config_0", "");
-            Prefers.put("config_1", "");
-            Prefers.put("config_2", "");
+            // β56 / TV-03：清源范围收窄——只删「当前点播源那一条」；直播源零改动；去掉无写入点的 type=2。
+            // 口径（刘先生逐条拍定）：只清不换（不回落、不切上一条）；不升 DB 版本、不新增 DAO 方法；
+            // url 为空则什么都不删、连 Prefers 也不动，只打 skip 留痕。
+            ConfigDao dao = AppDatabase.get().getConfigDao();
+            String url = VodConfig.get().getConfig().getUrl();
+            if (TextUtils.isEmpty(url)) {
+                ResetLog.skipNoUrl(dao.findByType(0).size(), dao.findByType(1).size());
+            } else {
+                int before = dao.findByType(0).size();
+                dao.delete(url, 0);
+                int remainVod = dao.findByType(0).size();
+                ResetLog.one(url, before - remainVod, remainVod, dao.findByType(1).size());
+                Prefers.put("config_0", "");
+            }
             Prefers.put("crash", false);
             App.post(() -> {
                 Notify.show(R.string.crash_reset_done);

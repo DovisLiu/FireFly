@@ -1,16 +1,68 @@
 <resources>
 
-    <!-- 流萤品牌色板（花瓣紫系）—— 浅色模式取值，深色模式由 values-night 覆盖 -->
-    <color name="brand_primary">#7B5EA7</color>
+    <!-- Round 38 / R5②（刘先生原话「尽量使用黑白灰类的颜色，去掉之前的紫色系」；A 裁定 P3「去紫不豁免，
+         含进度条 played_color/scrubber_color、手机底栏、Material 波纹——它们都引本组 token，改值即全站生效」）：
+         品牌花瓣紫系整体退场，强调色改「深灰」，容器改「浅灰」，配字改「深字」，与 R6 顶栏深灰 #4E5359 同色阶。
+         对比核验（WCAG 相对亮度）：brand_primary #4E5359(L=0.085) ↔ 白字 7.76、↔ bg_card #FFFFFF 7.76；
+         brand_primary_container #DDE3E9(L=0.772) ↔ brand_on_primary_container #2F343A(L=0.032) ＝ 8.06。
+         深色镜像见 values-night/colors.xml 同名 token。 -->
+    <color name="brand_primary">#4E5359</color>
     <color name="brand_on_primary">#FFFFFF</color>
-    <color name="brand_primary_container">#EADCFF</color>
-    <color name="brand_on_primary_container">#301D4B</color>
+    <color name="brand_primary_container">#DDE3E9</color>
+    <color name="brand_on_primary_container">#2F343A</color>
 
-    <!-- 清新浅色语言（VirPulse 风）：极浅冷调页面底 + 白色浮卡 -->
-    <color name="bg_page">#E8EEF2</color>
-    <color name="splash_bg">#E8EEF2</color>
+    <!-- Round 38 / R5①：全站焦点/选中态统一语言的色值单点（A 裁定 P2「分层采纳」的两套底环境）。
+         表达（两类共用，写死在 drawable 结构里）：
+           焦点 = 2dp 描边 + 轻微提亮底；选中 = 1.5dp 描边 + 更弱底；常规 = 无描边中性底。
+         颜色（按宿主底色分两套 token，同一类控件跨页面同一种表达）：
+           · state_*（主题底：首页/设置/搜索/分类/弹窗/播放页下半屏，随日夜切换）
+             焦点底复用 @color/focus_card（比页面底亮一档＝字面"提亮"，日夜都成立），故这里**不再**另立焦点底 token；
+             state_select_bg 取**不透明**中性灰（原 5% 半透明在黑海报上完全看不见，详情页线路/选集与播放页共用
+             同一批 drawable，必须两种宿主都可见）：比 focus_card 沉一档＝"更弱底"。
+           · on_dark_*（恒深底：详情页海报+遮罩层、直播黑底面板、播放器画面上的浮层——底色日夜都是暗的，
+             日夜同值；若用浅色档深描边，浅色主题下深描边压在黑底上不可见）：焦点/选中描边与提亮底四个。
+         描边宽度单点见 leanback/res/values/dimens.xml 的 state_stroke_focus / state_stroke_select。
+         ⚠ 已知边界（不属 R1–R6，报 A 备查）：直播面板/详情页线路等文字走 @color/text（主题自适应），
+         浅色主题下压在深底上偏暗，是 beta20 之前就存在的文字色问题；本轮只统一"状态表达"，不动文字色 token，
+         避免与 A「822 行那条不要动」的约束冲突。 -->
+    <color name="state_focus_stroke">#FF2F343A</color>
+    <color name="state_select_stroke">#802F343A</color>
+    <color name="state_select_bg">#FFCBD3DA</color>
+    <color name="on_dark_focus_stroke">#FFFFFFFF</color>
+    <color name="on_dark_focus_bg">#1AFFFFFF</color>
+    <color name="on_dark_select_stroke">#80FFFFFF</color>
+    <color name="on_dark_select_bg">#0DFFFFFF</color>
+
+    <!-- Round 38 / R6②（「浅色模式下所有底色类选择避免纯白/纯黑大反差：浅灰底+深字」）：
+         详情页/播放页主行动按钮原是硬编码纯白底(#F2FFFFFF/#FFFFFFFF) + 硬编码深字(#FF16181D)（layout 里 5 处），
+         现收进 token：浅灰底 #DADCE0 + 深字 #16181D（对比 11.4，不刺眼且可读），布局内不再出现硬编码色值。
+         **两主题刻意同值、不做 night 镜像**：这两个 token 只出现在"恒深底"宿主（详情页海报+遮罩、播放器画面）
+         的反色实心块上，日夜都必须是一块浅灰胶囊+深字，跟着主题翻就会在深色模式变成深底+深字不可读。 -->
+    <color name="play_btn_bg">#FFDADCE0</color>
+    <color name="play_btn_text">#FF16181D</color>
+
+    <!-- 清新浅色语言（VirPulse 风）：极浅冷调页面底 + 白色浮卡
+         Round 38 / R4（刘先生真机实测「浅色页面底色加深一档，明度下降 3%–5%，卡片仍明显亮于页面底」）：
+         #E8EEF2（相对亮度 L=0.929）→ #DBE4EB（L=0.888，正好 −4%，落在要求区间中值）。
+         与白色卡片 bg_card(#FFFFFF) 的对比由 1.170 → **1.288**（层次增强，非刺眼档：仍 >1.2 且远小于文字对比）。
+         splash_bg 同步同值：二者按本文件成对声明（启动页底=页面底），不同步会在「启动 → 首页」出现一档可见色差；
+         深色模式镜像值（values-night:10-11）按 R4「不要求」原样不动。
+         bg_card 保持纯白（P5②：纯白卡片是浅色模式层次的主要来源，「避免纯白」只约束选中/焦点/反色块与按钮底）。 -->
+    <color name="bg_page">#DBE4EB</color>
+    <color name="splash_bg">#DBE4EB</color>
     <color name="bg_card">#FFFFFF</color>
-    <color name="focus_card">#EADCFF</color>
+    <!-- β19 / T-315（刘先生：「点片源后弹出的弹窗，底色、文字大小与本次 UI 不同，还是之前偏紫色底和大号文字」）：
+         全站弹窗底色此前**从来没有被赋值**（Theme.Base 只覆盖了 colorSurface / colorSurfaceContainer，
+         而 Material 的 AlertDialog 取 ?attr/colorSurfaceContainerHigh、BottomSheet 取 ?attr/colorSurfaceContainerLow），
+         于是回落 Material 1.14 的 M3 基线紫板：浅 **#ECE6F0**、深 **#2B2930**（真机实测已坐实，见交付 §T-315）。
+         下面这组是"中性化"的弹窗档位：浅侧与设置页卡片底同值（#FFFFFF），深侧见 values-night。 -->
+    <color name="popup_surface">#FFFFFF</color>
+    <color name="popup_on_surface">#1D1E22</color>
+    <color name="popup_on_surface_variant">#4A4E55</color>
+    <!-- Round 38 / R5①：设置行/卡片「聚焦提亮底」。原值 #EADCFF 是紫色容器（同 brand_primary_container），
+         随去紫改中性浅灰；取 #E6E9ED —— 比页面底 bg_page(#DBE4EB) 亮、比卡片底 bg_card(#FFFFFF) 略沉，
+         在白卡上是"轻微提亮/着色"而非大反差块，配合 2dp 描边构成焦点态（R5① 判据「聚焦与常规差异可辨」）。 -->
+    <color name="focus_card">#E6E9ED</color>
     <color name="text_secondary">#8A8F98</color>
     <!-- 普通页面图标主色（跟随深浅色；播放器/海报层图标固定白不用此 token） -->
     <color name="icon_primary">#3C434E</color>
@@ -41,8 +93,11 @@
     <color name="white_80">#CCFFFFFF</color>
     <color name="white_90">#E6FFFFFF</color>
 
-    <color name="icon_purple_bg">#EEEDFE</color>
-    <color name="icon_purple">#534AB7</color>
+    <!-- Round 38 / R5②（A 裁定 P3「全量执行，不设豁免」）：紫色系分类图标位转中性灰。
+         该组是设置页分类图标配色（非选中/焦点态），但按「全工程不再出现紫色系色值（grep 为证）」一并收口；
+         token 名保留 icon_purple*（改名要动 mobile 布局/drawable 若干处，属命名债，已登记 01 在途项，本轮不动名）。 -->
+    <color name="icon_purple_bg">#E4E7EA</color>
+    <color name="icon_purple">#3C434E</color>
 
     <color name="icon_teal_bg">#E1F5EE</color>
     <color name="icon_teal">#0F6E56</color>
@@ -61,4 +116,67 @@
 
     <color name="icon_amber">#B87700</color>
     <color name="icon_amber_bg">#FFF3D6</color>
+    <color name="text_score">#E5533D</color>
+
+    <!-- TV 2.0 顶部胶囊导航：整体容器底 + 当前页/聚焦高亮胶囊 + 高亮反色文字 -->
+    <color name="nav_bar_bg">#F0FFFFFF</color>
+    <color name="nav_scrim_start">#F0FFFFFF</color>
+    <color name="nav_scrim_end">#00FFFFFF</color>
+    <!-- Round 38 / R6①（刘先生真机实测「浅色顶栏选中高亮接近黑色，观感过深」）：
+         原 #FF2A2F36 相对亮度 L=0.188（≈近黑），改为 #FF4E5359（L=0.327，深灰），
+         与白字 nav_pill_active_text(#FFFFFF) 的对比 12.6 → **7.76**（仍远高于正文 4.5 门槛，可读性不降）。
+         P5②/Q-1：导航胶囊保留「实心反色块」表达，只换色阶、不加描边。 -->
+    <color name="nav_pill_active_bg">#FF4E5359</color>
+    <!-- Round 38 / R5①（死资源清理）：原 nav_pill_selected_bg 已随 T-162（拍板 50⑤「去掉当前页常亮灰底框」）
+         从 selector_nav_pill.xml 摘掉、无任何引用方，连同同批 0 引用的 selector_nav_pill_active.xml /
+         shape_nav_pill_active.xml / leanback/res/color/selector_stroke.xml 一并删除，避免"看着像 token、
+         其实改了没效果"的坑（02 手册 坑 #桩残留）。 -->
+    <color name="nav_pill_active_text">#FFFFFFFF</color>
+
+    <!-- T-146（拍板 46/49）：详情页底部"播放源"行——当前源对勾角标底色 + 源卡文字色 -->
+    <!-- 浅色模式：详情页背景是海报大图（恒深），故源卡文字仍取近白；角标用萤光绿与品牌一致 -->
+    <color name="detail_source_current">#FFC8F73A</color>
+    <color name="detail_source_text">#F2FFFFFF</color>
+    <color name="detail_source_sub">#CCFFFFFF</color>
+    <!-- 对勾笔画色：落在恒深绿圆底上，两主题同值（成对声明，避免在 drawable 里硬编码） -->
+    <color name="detail_source_badge_mark">#FF16181D</color>
+
+    <!-- T-146（Round 36 ⑥）：详情页刊名/辅文字色。详情页恒为"海报大图 + 深色渐变遮罩"（shape_detail_gradient），
+         浅色模式同样是深底，故两主题取等值；改为 token 后布局内**不再有硬编码白字**（基线 2 行 → 0 行），
+         后续"全站深浅色走查"若需分档只改这里，不用回布局。 -->
+    <color name="detail_title">#FFFFFFFF</color>
+    <color name="detail_sub">#CCFFFFFF</color>
+
+    <!-- β20 / T-319＋T-323（交接包/09 §四，刘先生 2026-10-30 定稿）：点播详情页**一套**焦点/状态 token，
+         六类可聚焦控件共用（播放胶囊、收藏、换源、线路 chip、选集卡、源列表卡）。
+         本文件＝**浅色档**；深色档在 values-night/colors.xml 成对镜像，两侧缺一不可。
+         三态语义：常态（detail_item_*）／当前（detail_current_*，正在用的线路或集）／聚焦（detail_focus_*）。
+         取值直接抄 09 §四 表格；当前态三值 09 只给"强调色或填充"的语义、未给数值，以下为 B 推导档，
+         已在 INDEX 登记待刘先生真机复核（推导原则：与常态差一档亮度＋加一圈描边，与聚焦态的反差保持一眼可辨）。
+         对比度（WCAG 相对亮度实算，脚本见 INDEX）：浅色聚焦 #1B2026/#FFF＝16.4、浅色常态 #F2F3F5/#3A3F45＝9.6、
+         浅色当前 #E3E7EC/#111111＝15.2，均 ≥4.5。 -->
+    <color name="detail_item_bg">#FFF2F3F5</color>
+    <color name="detail_item_stroke">#FFD8DCE1</color>
+    <color name="detail_item_text">#FF3A3F45</color>
+    <color name="detail_focus_bg">#FF1B2026</color>
+    <color name="detail_focus_text">#FFFFFFFF</color>
+    <color name="detail_current_bg">#FFE3E7EC</color>
+    <color name="detail_current_stroke">#FF6B7480</color>
+    <color name="detail_current_text">#FF111111</color>
+    <!-- 聚焦附加＝1.5px 外发光（09 §九.2）。shape 画不出真模糊、API 28 也无 RenderEffect（T-316 判据已认模拟），
+         落地形态＝selector 聚焦档里一圈 @dimen/detail_focus_glow 宽的发光色环（色与聚焦底同族，观感即"焦点色外溢"）。
+         浅色档聚焦底是深色 ⇒ 发光环同取深色。 -->
+    <color name="detail_glow">#661B2026</color>
+    <!-- 模拟玻璃底（09 §三：白 12% ＋ 1px 高光描边内白 45% ＋ 上亮下暗渐变，**不做真模糊**）。
+         玻璃是"压在海报上的半透明白"，与主题无关 ⇒ 单份声明、不做 night 镜像（与 detail_title 同例）。 -->
+    <color name="detail_glass_fill">#1FFFFFFF</color>
+    <color name="detail_glass_stroke">#73FFFFFF</color>
+    <color name="detail_glass_top">#24FFFFFF</color>
+    <color name="detail_glass_bottom">#0AFFFFFF</color>
+    <!-- 玻璃底上的常态文字/图标色＝近白（与 detail_source_text 同族：恒深海报上的浅字，两主题同值、成对声明）。 -->
+    <color name="detail_glass_text">#F2FFFFFF</color>
+    <!-- β21 / T-326 简介"去按钮化"：聚焦提示＝文字提亮到 100% 白（无底色/无边框/无发光），
+         行尾小箭头同色；常态仍是全页统一的 detail_sub（80% 白）。详情页恒深底 ⇒ 两主题同值、成对声明。 -->
+    <color name="detail_desc_focus_text">#FFFFFFFF</color>
+    <color name="detail_desc_arrow_hidden">#00FFFFFF</color>
 </resources>

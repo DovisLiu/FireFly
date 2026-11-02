@@ -68,9 +68,15 @@ public class ChannelAdapter extends RecyclerView.Adapter<ChannelAdapter.ViewHold
         holder.binding.name.setText(item.getShow());
         holder.binding.number.setText(item.getNumber());
         holder.binding.getRoot().setSelected(item.isSelected());
-        holder.binding.getRoot().setRightListener(() -> mListener.showEpg(item));
+        // T-175（C beta17：面板网格内 RIGHT 焦点不移动——根因=卡片 CustomLeftRightLayout 的 RightListener
+        // 拦截 RIGHT 打开 EPG 并 return true → 焦点不动）：去掉 RightListener，RIGHT 交还焦点系统在网格内移动；
+        // EPG 查看入口由其他方式保留（onItemClick 分支未动）
         holder.binding.getRoot().setOnClickListener(v -> mListener.onItemClick(item));
-        holder.binding.getRoot().setOnLongClickListener(v -> mListener.onLongClick(item));
+        // β51 屏蔽版（A 指令 4b）：**「长按频道卡＝收藏」的绑定摘除**——beta76 里直播收藏唯一的写入口就是这一行
+        // （→ `LiveActivity.onLongClick:863` → `addKeep:877` 往 Keep 表写 type=1 行）。TV-02 整体退回 2.1，
+        // 屏蔽版必须"不显示也不写入"，所以这一行必须摘；`onLongClick`/`addKeep`/`delKeep` 三个本体一字未动，
+        // 它们是本屏蔽的回滚点（恢复这一行即回到 beta76 的长按收藏），代价＝这三个方法在本包内不可达。
+        // 长按现在的行为＝与点击同效（无长按监听 ⇒ 事件不再被消费）；如 A 认为长按该有别的落点，请单独给令。
     }
 
     @Override

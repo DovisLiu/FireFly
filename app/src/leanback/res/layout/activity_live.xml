@@ -44,46 +44,120 @@
 
     </FrameLayout>
 
+    <!-- 换台面板（效果图 09_live_channels）：全屏暗化 + 频道名大字 + 分组胶囊横行 + 频道卡网格；
+         epg 节目单保留为右侧竖列（既有交互不变） -->
     <androidx.appcompat.widget.LinearLayoutCompat
         android:id="@+id/recycler"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@drawable/shape_live_list"
+        android:background="@drawable/shape_live_panel"
         android:orientation="horizontal"
         android:visibility="gone"
         tools:visibility="visible">
 
-        <com.firefly.tv.ui.custom.CustomLiveListView
-            android:id="@+id/group"
+        <androidx.appcompat.widget.LinearLayoutCompat
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:clipChildren="false"
-            android:clipToPadding="false"
-            android:padding="12dp"
-            tools:itemCount="5"
-            tools:listitem="@layout/adapter_group" />
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:paddingStart="24dp"
+            android:paddingTop="52dp"
+            android:paddingEnd="16dp"
+            android:paddingBottom="24dp">
 
-        <com.firefly.tv.ui.custom.CustomLiveListView
-            android:id="@+id/channel"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:clipChildren="false"
-            android:translationX="-12dp"
-            android:clipToPadding="false"
-            android:padding="12dp"
-            tools:itemCount="5"
-            tools:listitem="@layout/adapter_channel" />
+            <!-- T-204（β2 修正，A 定口径）：本行 paddingTop 109dp → **52dp**（104px），
+                 与点播分类行、直播选台页分组行**墨迹顶齐平＝104**，与导航胶囊墨迹底 76 的空档＝28px
+                 （`content_top_inset` 已同步收到 52dp）。
+                 下面这段是 T-191-b（原 Round 41）的**历史记录，其判据已被 T-204 新口径取代**——
+                 当时要把直播分组行的「中心」对齐到点播**二级筛选条**（中心 274），故由 54dp 重标为 109dp：
+                   · 54dp 时 C 实测本行 [48,108][1888,220] ⇒ 顶 108（＝paddingTop×2，说明行顶完全由本 padding 决定）、中心 164；
+                   · 目标中心 274、行盒实测高 112 ⇒ 目标顶 274−56=218px=109dp ⇒ 于是当年加到 109dp；
+                   · 这条口径的副作用就是 C 在 beta31 实测到的「直播页分组行顶 218、比点播 104 低 142px」——
+                     刘先生要的是「第一个菜单贴近导航」，不是「对齐点播二级」，故本轮改回 52dp。
+                 T-165 约束仍成立：分组行必须**固定高**（56dp），否则 channel(0dp+weight) 分到 0 高、频道网格不渲染；
+                 本次只动 paddingTop，固定高与 6dp 上下内边距未动 ⇒ 网格自适应剩余高度，不会把网格顶出屏。
+                 注意：本文件是**直播播放页**（导航「直播」进入），与选台页 activity_live_select.xml 是两个文件，
+                 后者已在 β1 达标、本轮不动。 -->
+            <com.firefly.tv.ui.custom.CustomLiveGridView
+                android:id="@+id/group"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:clipChildren="false"
+                android:clipToPadding="false"
+                android:paddingTop="6dp"
+                android:paddingBottom="6dp"
+                tools:itemCount="6"
+                tools:listitem="@layout/adapter_group" />
+
+            <!-- T-191-b：频道名大字随分组行整体上移，让位给二级菜单——原 marginTop 56dp/marginBottom 16dp
+                 正是把分组行顶到 252.8px 的那 203px；字号 22sp、颜色、加粗均未改。
+             · T-204（β2）：marginTop 8dp → 2dp（收紧分组行与导航之间的大间距）。
+             · T-217（β3）：2dp 时 C 实测「group 行盒底 → 大字顶 = 4px」，且该 4px **全部来自这一个 margin**
+               （分组行下边无额外 padding，大字的行盒顶即其 margin 边界，density=2 ⇒ 2dp=4px，实测与推算一致）。
+             · T-217 微调（β4，A 2026-10-28 裁定：刘先生"有点挤但可接受，再放大一点、不要太多"）：
+               **2dp → 4dp = 8px**，取 A 给的 8–10px 区间下沿、最小改动；若目视仍挤，4dp→5dp(=10px) 是单行回调，
+               已单独成块（r4-08）便于定点回退。分组行高 56dp、行内 6dp 内边距、容器 paddingTop 52dp（导航避让）
+               与选台页一律未动；本行下方网格是 height=0dp 自适应 ⇒ 卡片可视行数不变、无裁切风险。 -->
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/channelName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="2dp"
+                android:singleLine="true"
+                android:ellipsize="end"
+                android:textColor="@color/white"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                tools:text="CCTV 5 體育「Relay」" />
+
+            <!-- T-154/155（拍板 50）：换台面板频道区改真 2D 网格（VerticalGridView + numberOfColumns=5）
+                 T-168：曾加 focusOutEnd/focusOutFront=false 防水平逃逸；T-175 定位根因=卡片 match_parent
+                 占满整行（每行仅 1 个 item）→ 已改卡片固定 200dp（每行 5 列），水平移动恢复正常；
+                 focusOut 属性同步移除——否则顶行 UP 也无法交回分组行（C beta16 实测：网格内左右不动、边缘 UP 不回分组行） -->
+            <androidx.leanback.widget.VerticalGridView
+                android:id="@+id/channel"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_marginTop="2dp"
+                android:layout_weight="1"
+                android:clipChildren="false"
+                android:clipToPadding="false"
+                android:paddingTop="2dp"
+                android:paddingBottom="6dp"
+                app:numberOfColumns="5"
+                tools:itemCount="12"
+                tools:listitem="@layout/adapter_channel" />
+
+        </androidx.appcompat.widget.LinearLayoutCompat>
 
         <com.firefly.tv.ui.custom.CustomLiveListView
             android:id="@+id/epgData"
-            android:layout_width="0dp"
+            android:layout_width="280dp"
             android:layout_height="match_parent"
             android:clipChildren="false"
             android:clipToPadding="false"
             android:padding="12dp"
-            tools:itemCount="5"
+            android:visibility="gone"
+            tools:itemCount="8"
             tools:listitem="@layout/adapter_epg_data" />
 
     </androidx.appcompat.widget.LinearLayoutCompat>
+
+    <!-- T-191-a（Round 40，刘先生原话「点直播菜单进入直播页后，菜单就消失了，且无法通过上翻呼出菜单」）：
+         本页面此前**根本没有** navBar（拍板 41 补充曾定「沉浸页不保留 LOGO/时间」，实现时把整条顶栏一起去掉了），
+         所以菜单不是"被收起"而是"不存在"。本轮把通用顶栏补回来并置于最上层（FrameLayout 末位=最后绘制）：
+         · 菜单层（首页/点播/直播…胶囊）常驻，不随面板/控制栏显隐——T-156 起 NavOverlay.conceal() 是空实现；
+         · LOGO 与时间在本页保持 INVISIBLE（拍板 41 补充仍有效，且能挡住"UP 落到 LOGO"那条老路径）；
+         · 代码侧 NavDelegate.bind(..., R.id.nav_live) 负责当前页高亮与统一路由。
+         直播播放态的 UP/DOWN/LEFT/RIGHT 仍是换台键（拍板 53，2026-10-26 定稿），未被本条占用，
+         详见 LiveActivity.dispatchKeyEvent 里"面板态分组行 UP → 呼出菜单"那一段。 -->
+    <include
+        android:id="@+id/navBar"
+        layout="@layout/view_nav_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top" />
+
 </FrameLayout>
 

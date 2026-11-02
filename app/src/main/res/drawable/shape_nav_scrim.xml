@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- TV 2.0 导航浮层底衬：自上而下渐变（浅色主题），保证浮层内容可读 -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <gradient
+        android:angle="270"
+        android:startColor="@color/nav_scrim_start"
+        android:endColor="@color/nav_scrim_end" />
+</shape>

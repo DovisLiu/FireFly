@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- β39 / beta70 批 1（A 派单第 2 项）：手机侧圆角 token，四档一套。
+         本文件此前不存在（mobile 源集 0 个 dimens，23 处圆角全是字面量），故本轮只建 token、不替换那 23 处。
+         档位归属见 Test/evidence/mobile-ui-prep/radius-mapping-b70.md。 -->
+    <dimen name="radius_sheet">16dp</dimen>
+    <dimen name="radius_card">12dp</dimen>
+    <dimen name="radius_control">10dp</dimen>
+    <dimen name="radius_tag">8dp</dimen>
+
+</resources>

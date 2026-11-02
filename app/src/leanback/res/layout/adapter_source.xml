@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 详情页"播放源"源卡（T-146 / 拍板 49 方案甲 + D-2 裁决）：
+     内容按 spec v1.3-19 = **文字卡（源名 + 集数/备注），无海报**；当前源用左上"对勾角标"标识（selected 态可见）。
+     **Round 39 / T-183 + T-185 收档（2026-10-27）**：卡 213×120dp → **110×64dp**（426×240px → 220×128px），
+     对齐效果图 04_detail.png 底部源卡实测 ≈220×130px @1920（-1.5%）；这是 T-185「卡行完整落在 1080 内」的必要条件
+     之一——68dp/136px 时首屏卡行底边 =1083px 越屏（见 activity_detail.xml ⑥ 的像素预算）。
+     卡内文字同档缩小：源名 20sp→**13sp**、备注 16sp→**11sp**、
+     角标 28dp→**16dp**（否则 128px 高的卡里 40px 字直接把备注挤出卡外）。
+     注意：本卡**禁止**绑 setRightListener（T-175 教训——CustomLeftRightLayout 拦 RIGHT 会让焦点不动）。 -->
+<!-- β33 / 详情页 v2 第二条（刘先生「源卡片的大小不对，看起来像是高度不够内容没显示全」「源卡片放两行」）：
+     卡高 `@dimen/detail_source_card_height` 走 **leanback 覆盖档 44dp**（main 仍 31dp 未动 ⇒ 本批不触 main、手机包不需重出）；
+     真机 `b63-detail-switch.xml` 实测现卡 62px 时 remark 行被压到 `[120,920][254,925]`＝**只剩 5px**（11sp 需约 30px），
+     两行内容完整需 8+33+4+30+12＝**87px ⇒ 88px＝44dp**。
+     卡宽 110dp→**120dp**：实测最长源名 `👽玩偶哥哥┃4K弹幕`＝188px，110dp 时内容宽只有 188px（正压线、无余量），
+     120dp ⇒ 内容宽 208px、余 20px。 -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/source_card"
+    android:layout_width="120dp"
+    android:layout_height="@dimen/detail_source_card_height"
+    android:layout_marginEnd="8dp"
+    android:background="@drawable/selector_detail_card"
+    android:focusable="true"
+    android:focusableInTouchMode="true">
+
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:orientation="vertical"
+        android:paddingStart="8dp"
+        android:paddingTop="4dp"
+        android:paddingEnd="8dp"
+        android:paddingBottom="6dp">
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:singleLine="true"
+            android:textColor="@color/selector_detail_item_text"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            tools:text="电影天堂" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/remark"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:ellipsize="end"
+            android:singleLine="true"
+            android:textColor="@color/selector_detail_item_text"
+            android:textSize="11sp"
+            tools:text="更新至 12 集" />
+    </androidx.appcompat.widget.LinearLayoutCompat>
+
+    <!-- 当前源角标：12dp 圆 + 对勾，仅 selected（=当前源）时可见；卡高收到 62px 后角标同比 16dp→12dp，
+         留 6dp 边距使角标不压住卡内文字首字 -->
+    <ImageView
+        android:id="@+id/badge"
+        android:layout_width="12dp"
+        android:layout_height="12dp"
+        android:layout_gravity="top|start"
+        android:layout_marginStart="6dp"
+        android:layout_marginTop="6dp"
+        android:background="@drawable/shape_detail_source_badge"
+        android:contentDescription="@string/detail_source"
+        android:padding="3dp"
+        android:src="@drawable/ic_detail_source_current"
+        android:visibility="gone"
+        tools:visibility="visible" />
+
+</FrameLayout>

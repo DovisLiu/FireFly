@@ -12,17 +12,14 @@
         android:gravity="center_vertical"
         android:orientation="horizontal">
 
-        <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/config"
-            style="@style/Control"
-            android:layout_marginEnd="8dp"
-            android:nextFocusLeft="@id/change"
-            android:text="@string/play_config" />
-
+        <!-- β43 / A2（菜单改名与移位）：原第 1 项「配置」＝实际选直播源，改名为「换源」并移到本排最后
+             （见文件末尾）；原第 14 项「换源」（实际是切线路、与第 4 项「线路」重叠）已删除，
+             故这里原先指向 @id/change 的环绕 nextFocusLeft 改挂到新的末项（home 反向指 config）。 -->
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/home"
             style="@style/Control"
             android:layout_marginEnd="8dp"
+            android:nextFocusLeft="@id/config"
             tools:text="首页" />
 
         <com.google.android.material.textview.MaterialTextView
@@ -101,10 +98,13 @@
             android:layout_marginEnd="8dp"
             android:text="@string/play_across" />
 
+        <!-- 末项＝「换源」（id 仍是 config，点击回调一字未动：LiveActivity#onConfig 起直播源选择窗）。
+             原名「配置」与实际功能不符（A2 改名）；`play_config` 这个 key 在 main，别处（手机同排）还在用，
+             故只换本项引用，不动资源本身。原末项「换源」（id=change，实际是切线路、与第 4 项「线路」重复）删除。 -->
         <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/change"
+            android:id="@+id/config"
             style="@style/Control"
-            android:nextFocusRight="@id/config"
+            android:nextFocusRight="@id/home"
             android:text="@string/play_change" />
 
     </androidx.appcompat.widget.LinearLayoutCompat>

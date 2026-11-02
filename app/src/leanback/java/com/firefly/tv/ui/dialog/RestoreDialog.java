@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.text.TextUtils;
+import android.util.Log;
+import android.view.KeyEvent;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -96,5 +98,23 @@ public class RestoreDialog extends BaseAlertDialog implements RestoreAdapter.OnC
         super.onStart();
         // 列表为空不再自动关闭：保留导入入口
         setWidth(0.4f);
+        // β4 / T-218 要求 3＋4：恢复列表对话框的**越界 UP/DOWN 吃掉并留痕**
+        // （C 原先只能看到 `WindowManager: Unhandled key`，无法取证）。
+        // 为什么写在 RestoreDialog 而不是基类：基类 `BaseAlertDialog` 在 `app/src/main/**`
+        // （共享手机 flavor），按纪律③碰 main 就要先报并出手机包 ⇒ 只进这一个 leanback 对话框；
+        // 二维码 `ConfigDialog` 按 A 指令完全不动。
+        // 覆盖面如实：`Dialog.OnKeyListener` 只在**视图层拒收该键**时才会被调用 ⇒ 命中的正是"越界键"，
+        // 对话框内正常移动（列表项之间、项↔导入按钮）被 RecyclerView/按钮消费，行为与日志都不受影响。
+        if (getDialog() != null) {
+            getDialog().setOnKeyListener((dialog, keyCode, event) -> {
+                boolean edgeKey = keyCode == KeyEvent.KEYCODE_DPAD_UP || keyCode == KeyEvent.KEYCODE_DPAD_DOWN;
+                if (!edgeKey) return false;
+                if (event.getAction() == KeyEvent.ACTION_DOWN && event.getRepeatCount() == 0) {
+                    Log.d("FireFlyFocus", "focusMove from=restoreDialog to=none row=-1 vis=true mode=dialog edge eaten key="
+                            + (keyCode == KeyEvent.KEYCODE_DPAD_UP ? "up" : "down"));
+                }
+                return true;
+            });
+        }
     }
 }

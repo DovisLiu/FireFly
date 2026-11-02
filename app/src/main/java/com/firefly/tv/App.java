@@ -85,6 +85,8 @@ public class App extends Application implements Application.ActivityLifecycleCal
         Notify.createChannel();
         registerActivityLifecycleCallbacks(this);
         com.firefly.tv.utils.Task.execute(com.firefly.tv.utils.Report::ping);
+        // β61 / TV-04：坏域名表冷启动预热（同一条例外保护的后台路）。渲染路径只读内存，靠这次读盘恢复上次的判定。
+        com.firefly.tv.utils.Task.execute(com.firefly.tv.utils.ImgUtil::warmBadHosts);
     }
 
     // 外观模式：0 跟随系统 / 1 浅色 / 2 深色（AppCompatDelegate 全局生效）

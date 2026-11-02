@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- T-187-b/d（Round 40）：详情页主行动胶囊的**前景**（文字 + drawableStart 图标）随焦点态翻转。
+         焦点态＝实心浅灰 play_btn_bg(#DADCE0) ⇒ 前景用深字 play_btn_text(#16181D)（R6② 原口径，对比 11.4）；
+         非焦点态＝中性暗底 black_40（与同屏圆形按钮 shape_detail_circle 的常规态同一个语言）⇒ 前景必须转白，
+         白档复用既有的恒深底主文字 token detail_source_text(#F2FFFFFF)，**不新增硬编码色值**。
+         为什么必须翻前景：原写法两态前景都是深字，非焦点底一旦转暗就成了"深字压暗底"不可读；
+         前景不翻，就只能让两态底都保持浅色 ⇒ 那正是 C 报的"播放键一直高亮"的根因。
+         drawableTint 走同一个 selector：TextView 会把自身 drawable state 下发给 compound drawable，
+         图标与文字因此同步翻转（若个别机型不同步，表现为图标维持深档，已记入"待真机确认"）。 -->
+    <item android:color="@color/play_btn_text" android:state_focused="true" />
+    <item android:color="@color/detail_source_text" />
+</selector>

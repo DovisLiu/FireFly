@@ -10,6 +10,7 @@ import com.firefly.tv.R;
 import com.firefly.tv.bean.Cache;
 import com.firefly.tv.bean.Class;
 import com.firefly.tv.databinding.AdapterTypeBinding;
+import com.firefly.tv.utils.FilterUtil;
 import com.firefly.tv.utils.ResUtil;
 
 import java.util.ArrayList;
@@ -61,7 +62,9 @@ public class TypeAdapter extends RecyclerView.Adapter<TypeAdapter.ViewHolder> {
     }
 
     private int getIcon(Class item) {
-        return Cache.get(item).isEmpty() ? 0 : item.getFilter() ? R.drawable.ic_vod_filter_off : R.drawable.ic_vod_filter_on;
+        // T-190-b（Round 40）：口径与 TypeFragment.getFilter() 对齐。排序族整行已不显示，
+        // 若某分类的 filters 只有排序族，原逻辑仍会亮「有筛选」角标而屏上没有任何菜单行。
+        return Cache.get(item).stream().anyMatch(it -> it != null && !FilterUtil.isSortFamily(it)) ? (item.getFilter() ? R.drawable.ic_vod_filter_off : R.drawable.ic_vod_filter_on) : 0;
     }
 
     public interface OnClickListener {

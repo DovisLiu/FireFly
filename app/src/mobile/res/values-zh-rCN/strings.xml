@@ -23,7 +23,14 @@
 
     <!-- Detail -->
     <string name="detail_flag">线路</string>
+    <string name="detail_source">换源</string>
+    <string name="detail_source_title">播放源</string>
+    <string name="play_change_none">暂无其他源</string>
     <string name="detail_episode">选集</string>
+    <string name="detail_play">播放</string>
+    <string name="detail_keep">收藏</string>
+    <string name="detail_line">线路</string>
+    <string name="detail_error">详情加载失败</string>
     <string name="detail_quality">画质</string>
     <string name="detail_content">简介</string>
     <string name="detail_search">快搜“<xliff:g name="name">%s</xliff:g>”</string>

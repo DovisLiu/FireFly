@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Round 38 / R5①：弹窗按钮/圆形按钮的常规态 = 无描边中性底（原 1dp @color/white_30 描边删除，
+     见已删除的 shape_button_normal.xml 说明）；聚焦/按压 = 2dp 描边 + 提亮底，与全站同表达。
+     默认态复用 shape_chip_round_normal（圆角/padding 与被删文件逐字相同），"圆胶囊常规态"全站只剩一处定义。 -->
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:drawable="@drawable/shape_chip_round_focused" android:state_focused="true" />
     <item android:drawable="@drawable/shape_chip_round_focused" android:state_pressed="true" />
-    <item android:drawable="@drawable/shape_button_normal" />
+    <item android:drawable="@drawable/shape_chip_round_normal" />
 </selector>

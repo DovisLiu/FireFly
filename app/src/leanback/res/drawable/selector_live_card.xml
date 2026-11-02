@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 频道卡/分组胶囊（直播页 activity_live 根底 @color/black＝恒深底，日夜同值）。
+     Round 38 / R5① + Q-4（刘先生裁定「取消 #FF4CAF50 选中绿，选中表达由描边/对勾承担」）：
+     · 焦点 = 2dp 描边 + 轻微提亮底（on_dark_focus_*）
+     · 选中（当前台）= 1.5dp 描边 + 比焦点更弱的底（on_dark_select_*），绿色整条撤掉
+     · 常规 = 无描边中性底（保留原 #1F2126 深灰：它是恒深底控件的"卡底"，不随主题翻，故不成对 token）
+     描边宽度全部走 @dimen/state_stroke_*，不再写死 2dp。 -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/on_dark_focus_bg" />
+            <corners android:radius="12dp" />
+            <stroke android:width="@dimen/state_stroke_focus" android:color="@color/on_dark_focus_stroke" />
+        </shape>
+    </item>
+    <item android:state_selected="true">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/on_dark_select_bg" />
+            <corners android:radius="12dp" />
+            <stroke android:width="@dimen/state_stroke_select" android:color="@color/on_dark_select_stroke" />
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="#1F2126" />
+            <corners android:radius="12dp" />
+        </shape>
+    </item>
+</selector>

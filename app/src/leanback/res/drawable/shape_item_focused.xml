@@ -1,11 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Round 38 / R5①：列表行/设置行/弹窗选项（selector_item，20+ 处）焦点态 = 提亮底 + 2dp 描边。
+     提亮底仍用 @color/focus_card（比卡片底更亮，日夜成立），只把描边从"1.5dp 品牌色"换成全站单点：
+     宽度 @dimen/state_stroke_focus、颜色 @color/state_focus_stroke（去紫后品牌色已不是描边色语义）。
+     本 drawable 同时被详情页线路行（恒深底海报层）与播放页线路/清晰度行（主题底面板）使用，
+     所以取值必须用**不透明**主题 token，不能换成半透明白——浅色主题下详情页文字是主题自适应深字，
+     压在半透明白上不可读（这层约束见 values/colors.xml 的 R5① 注释）。 -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
     <solid android:color="@color/focus_card" />
-    <corners android:radius="14dp" />
+    <corners android:radius="@dimen/pill_radius" /> <!-- β19 / T-312：14dp→胶囊，引用与首页导航同一 dimen -->
     <stroke
-        android:width="1.5dp"
-        android:color="@color/brand_primary" />
+        android:width="@dimen/state_stroke_focus"
+        android:color="@color/state_focus_stroke" />
     <padding
         android:bottom="12dp"
         android:left="16dp"

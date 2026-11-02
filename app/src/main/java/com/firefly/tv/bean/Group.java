@@ -146,7 +146,12 @@ public class Group {
 
     public Channel find(Channel channel) {
         Channel exist = getChannel().stream().filter(item -> item.equals(channel)).findFirst().orElse(null);
-        if (exist != null) return exist;
+        // T-153 根因修复：渠道反向引用——保证 channel.getGroup() 非空（崩溃点 LiveConfig.setKeep:197）
+        if (exist != null) {
+            exist.setGroup(this);
+            return exist;
+        }
+        channel.setGroup(this);
         getChannel().add(channel);
         return channel;
     }

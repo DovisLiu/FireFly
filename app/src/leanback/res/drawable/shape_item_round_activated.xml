@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Round 38 / R5①：chip 选中态 = 1.5dp 描边 + 更弱底（与 shape_item_activated 同表达）。
+     原写法只把黑半透明底从 black_20 加深到 black_40、无描边，浅色主题下与焦点态无法区分。 -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
 
-    <solid android:color="@color/black_40" />
+    <solid android:color="@color/state_select_bg" />
 
     <corners android:radius="28dp" />
 
@@ -11,5 +13,9 @@
         android:left="14dp"
         android:right="14dp"
         android:top="8dp" />
+
+    <stroke
+        android:width="@dimen/state_stroke_select"
+        android:color="@color/state_select_stroke" />
 
 </shape>

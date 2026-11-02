@@ -18,7 +18,11 @@ import java.util.List;
 
 public class KeyboardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
-    private final List<Integer> icons = Arrays.asList(R.drawable.ic_keyboard_remote, R.drawable.ic_keyboard_left, R.drawable.ic_keyboard_right, R.drawable.ic_keyboard_back, R.drawable.ic_keyboard_search, R.drawable.ic_keyboard, R.drawable.ic_setting_home);
+    // T-215（β1，刘先生定为 bug）：原先 `ic_keyboard_remote`（投屏二维码）排在本列表**首位**，
+    // 而搜索页进键盘区的首项焦点取的是 getChild(0) ⇒ 「首页点搜索 → 下键 → OK」必然打开投屏弹窗，
+    // 搜索入口被它抢占。现移到**末位**：入口能力与 onRemote 回调一律保留（CustomKeyboard:80 不动），
+    // 只是不再占首项/首焦点。首项改为 ic_keyboard_left（光标左移，无害）。
+    private final List<Integer> icons = Arrays.asList(R.drawable.ic_keyboard_left, R.drawable.ic_keyboard_right, R.drawable.ic_keyboard_back, R.drawable.ic_keyboard_search, R.drawable.ic_keyboard, R.drawable.ic_setting_home, R.drawable.ic_keyboard_remote);
     private final List<String> enList = Arrays.asList("A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9");
     private final OnClickListener listener;
     private final List<Object> mItems;

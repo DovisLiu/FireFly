@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 详情页圆形图标按钮（收藏 / 刷新）：宿主同样是"海报+永暗遮罩"层＝恒深底。
+     Round 38 / R5①：焦点 = 2dp 描边 + **提亮底**（原黑 60% 底比常规态更沉，与"提亮"语义相反，
+     现换 on_dark_focus_bg）；常规 = 无描边中性底（black_40 保留）。描边宽度走 @dimen/state_stroke_focus。 -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true">
+        <shape android:shape="oval">
+            <solid android:color="@color/on_dark_focus_bg" />
+            <stroke android:width="@dimen/state_stroke_focus" android:color="@color/on_dark_focus_stroke" />
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="oval">
+            <solid android:color="@color/black_40" />
+        </shape>
+    </item>
+</selector>

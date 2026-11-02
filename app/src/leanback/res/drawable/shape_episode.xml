@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 选集 chip。**同一个 drawable 被两个宿主用**：详情页（海报+遮罩，恒深底）与播放页下半屏
+     （?attr/colorSurface 主题底面板），而 adapter_episode 的文字色是主题自适应
+     （?android:attr/textColorPrimary，A 未批准新建布局/改文字，见"822 行那条不要动"约束）
+     → 状态底必须用**不透明主题 token**（focus_card / state_select_bg），两宿主两主题都读得通；
+     若用半透明白，浅色主题的详情页就会出现"浅字压浅底"。这属于 R5 报出的架构冲突的落地取舍。
+     Round 38 / R5①：焦点 2dp+提亮底、选中 1.5dp+更弱底、常规无描边中性底（原 black_40 深底在浅色
+     主题里配深字不可读，换 @color/bg_card 与列表行同族）；#FFFFFF 硬编码描边、
+     ?attr/colorPrimary 实心紫底（去紫后是深灰底+白字，但选中/焦点两块实心色与全站语言冲突）全部撤掉。 -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/focus_card" />
+            <corners android:radius="8dp" />
+            <stroke android:width="@dimen/state_stroke_focus" android:color="@color/state_focus_stroke" />
+        </shape>
+    </item>
+    <item android:state_selected="true">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/state_select_bg" />
+            <corners android:radius="8dp" />
+            <stroke android:width="@dimen/state_stroke_select" android:color="@color/state_select_stroke" />
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@color/bg_card" />
+            <corners android:radius="8dp" />
+        </shape>
+    </item>
+</selector>

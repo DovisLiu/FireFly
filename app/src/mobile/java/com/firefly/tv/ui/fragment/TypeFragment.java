@@ -21,6 +21,7 @@ import com.firefly.tv.bean.Value;
 import com.firefly.tv.bean.Vod;
 import com.firefly.tv.databinding.FragmentTypeBinding;
 import com.firefly.tv.model.SiteViewModel;
+import com.firefly.tv.ui.activity.DetailActivity;
 import com.firefly.tv.ui.activity.SearchActivity;
 import com.firefly.tv.ui.activity.VideoActivity;
 import com.firefly.tv.ui.adapter.VodAdapter;
@@ -194,9 +195,12 @@ public class TypeFragment extends BaseFragment implements CustomScroller.Callbac
             mViewModel.action(getKey(), item.getAction());
         } else if (item.isFolder()) {
             getParent().openFolder(item.getId(), mExtends);
+        } else if (getSite().isIndex()) {
+            // 聚合站无详情数据：保持按片名搜索（既有行为）
+            SearchActivity.start(requireActivity(), item.getName());
         } else {
-            if (getSite().isIndex()) SearchActivity.start(requireActivity(), item.getName());
-            else VideoActivity.start(requireActivity(), getKey(), item.getId(), item.getName(), item.getPic(), isFolder() ? item.getName() : null);
+            // 点播页点海报=详情页换源态（§3.9，与 TV §3.3 入口判定一致）
+            DetailActivity.source(requireActivity(), getKey(), item.getId(), item.getName(), item.getPic());
         }
     }
 

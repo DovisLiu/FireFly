@@ -7,6 +7,17 @@ rootProject.file('local.properties').withInputStream {
     localProps.load(it)
 }
 
+// β40 / 2026-11-01 刘先生指示：TV 与手机的版本号**各自独立演进**，主版本号也分开。
+// 单一真源＝下面这四个值：`defaultConfig` 只留基座 `1.3.0`，两端完整号由 productFlavors 各自覆盖，
+// 包文件名与 APK 内版本串都由同一处派生（见本文件末尾 androidComponents 块）⇒ 不留第二个版本号来源。
+// 历史包不改名：已发出的 `FireFly.TV.1.3.0-beta69.apk` 保持原名，新命名从下一个 TV 包起生效。
+ext {
+    tvVersionName = '2.0.0'
+    tvVersionCode = 200
+    phoneVersionName = '1.3.0-phone-beta01'
+    phoneVersionCode = 120
+}
+
 android {
     namespace = 'com.firefly.tv'
 
@@ -17,7 +28,7 @@ android {
         minSdk libs.versions.minSdk.get().toInteger()
         targetSdk libs.versions.targetSdk.get().toInteger()
         versionCode 120
-        versionName "1.2.0"
+        versionName "1.3.0"
         javaCompileOptions {
             annotationProcessorOptions {
                 arguments = ["room.schemaLocation": "$projectDir/schemas".toString(), "eventBusIndex": "com.firefly.tv.event.EventIndex"]
@@ -30,9 +41,15 @@ android {
     productFlavors {
         leanback {
             dimension "mode"
+            // β40：TV 独立线（本轮不构建 TV，配置算出备用值＝与已发 beta69 同代）
+            versionName project.tvVersionName
+            versionCode project.tvVersionCode
         }
         mobile {
             dimension "mode"
+            // β40：手机独立线起点
+            versionName project.phoneVersionName
+            versionCode project.phoneVersionCode
         }
         arm64_v8a {
             dimension "abi"
@@ -111,8 +128,18 @@ androidComponents {
         if (mode == 'leanback' && abi != 'universal') {
             abiPart = (abi == 'arm64_v8a') ? '.arm64' : '.arm32'
         }
-        def ver = project.android.defaultConfig.versionName
+        def ver = (mode == 'leanback') ? project.tvVersionName : project.phoneVersionName
+        def code = (mode == 'leanback') ? project.tvVersionCode : project.phoneVersionCode
         variant.outputs.each { output ->
+            // 双保险且幂等：flavor DSL 已把两端各自版本合进 variant，这里再把**每个输出**钉成同一个值，
+            // 这样即使未来 AGP 不再支持 flavor 级版本，APK 内的 versionName/Code 仍由本文件单点决定。
+            output.versionName.set(ver)
+            output.versionCode.set(code)
+            // 验证"一分二"的出口：配置期逐变体打印（任何 gradle 调用都会打，无需构建）。
+            logger.lifecycle("FireFlyVersion variant=" + variant.name
+                    + " versionName=" + ver + " versionCode=" + code
+                    + " resolvedName=" + output.versionName.get()
+                    + " apk=FireFly.${modeName}${abiPart}.${ver}.apk")
             output.outputFileName.set("FireFly.${modeName}${abiPart}.${ver}.apk")
         }
     }

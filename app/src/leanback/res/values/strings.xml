@@ -3,13 +3,17 @@
     <!-- Home -->
     <string name="home_vod">Vod</string>
     <string name="home_live">Live</string>
+    <string name="live_empty">No live channels available. Please check your live source in Settings.</string>
+    <string name="live_group">Group</string>
+    <string name="home_vod_empty">Please configure a VOD source in Settings first</string>
     <string name="home_search">Search</string>
     <string name="home_keep">Keep</string>
+    <string name="home_keep_other_repo">This favorite belongs to another library. Switch library to view it.</string>
     <string name="home_push">Push</string>
     <string name="home_setting">Setting</string>
-    <string name="home_history">History</string>
+    <string name="home_history">Continue Watch</string>
     <string name="home_history_menu">History</string>
-    <string name="home_recommend">Recommend</string>
+    <string name="home_recommend">Site Recommend</string>
 
     <!-- Collect -->
     <string name="collect_result">Search results for <xliff:g name="name">%s</xliff:g></string>
@@ -19,4 +23,34 @@
     <string name="push_info">Scan QR Code or enter the URL in browser\n<xliff:g name="name">%s</xliff:g></string>
 
     <string name="setting_about">About</string>
+    <string name="nav_home">Home</string>
+    <string name="nav_vod">Vod</string>
+    <string name="nav_live">Live</string>
+    <string name="nav_source">Source</string>
+    <string name="nav_setting">Setting</string>
+    <string name="nav_search">Search</string>
+    <string name="detail_play">Play</string>
+    <string name="detail_keep">Favorite</string>
+    <string name="detail_source">Switch source</string>
+    <string name="detail_source_title">Sources</string>
+    <!-- Round 38 / R2④：play_end_remain（"End %1$s · -%2$s"）随控制栏双时间行一并删除，全站无引用 -->
+    <string name="detail_line">Line</string>
+    <string name="detail_episode">Episodes</string>
+    <string name="detail_error">Failed to load detail</string>
+    <!-- T-146（拍板 49 方案甲）：底部"播放源"行三态文案（占位/无结果/仅当前源） -->
+    <string name="detail_source_loading">Searching sources…</string>
+    <string name="detail_source_none">No other sources found</string>
+    <string name="detail_source_only">Current source only</string>
+    <!-- β20 / T-321：简介可聚焦块的无障碍朗读文案＝"点击查看全文"入口的语音形态（可见文字行不加，理由见布局注释） -->
+    <string name="detail_desc_more">View full summary</string>
+    <!-- β20 / T-318：人员行前缀（导演／演员皆空时整行 GONE，见 DetailActivity#bind） -->
+    <string name="detail_director">"Director: "</string>
+    <string name="detail_actor">"Cast: "</string>
+
+    <!-- T-191-c（Round 40）：直播菜单「反转/跨类/换源」点击即生效后的 Toast 反馈文案 -->
+    <string name="live_invert_on">Channel surfing direction inverted</string>
+    <string name="live_invert_off">Channel surfing direction restored</string>
+    <string name="live_across_on">Cross-group channel surfing enabled</string>
+    <string name="live_across_off">Cross-group channel surfing disabled</string>
+    <string name="live_line_only">This channel has only one line</string>
 </resources>

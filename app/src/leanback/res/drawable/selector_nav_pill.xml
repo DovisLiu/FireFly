@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 导航项：聚焦=纯白/纯深实心（最醒目，高亮随焦点移动）；
+     T-162（拍板 50⑤，刘先生 beta7 反馈六.3）：去掉"当前页"常亮灰底框——仅保留聚焦态实心高亮，
+     selected 态不再绘制底色（文字色仍由 selector_nav_text 控制） -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/nav_pill_active_bg" />
+            <!-- β19 / T-312：圆角改引用全站唯一 dimen（值不变＝999dp，仅为让导航与设置页共用同一出处） -->
+            <corners android:radius="@dimen/pill_radius" />
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@android:color/transparent" />
+            <corners android:radius="@dimen/pill_radius" />
+        </shape>
+    </item>
+</selector>

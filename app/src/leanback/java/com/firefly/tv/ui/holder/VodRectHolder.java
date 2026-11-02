@@ -30,9 +30,9 @@ public class VodRectHolder extends BaseVodHolder {
     public void initView(Vod item) {
         binding.name.setText(item.getName());
         binding.year.setText(item.getYear());
-        binding.site.setText(item.getSiteName());
         binding.remark.setText(item.getRemarks());
-        binding.site.setVisibility(item.getSiteVisible());
+        // TV 2.0：源名角标隐藏（beta1 规格只保留 右上评分/左上年份）
+        binding.site.setVisibility(android.view.View.GONE);
         binding.year.setVisibility(item.getYearVisible());
         binding.name.setVisibility(item.getNameVisible());
         binding.remark.setVisibility(item.getRemarkVisible());

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 详情页播放按钮 / 播放页换源入口胶囊（P6「TV+mobile 同改」，与 leanback 同名文件同步）：
+     Round 38 / R6②：原硬编码纯白底 #FFFFFFFF / #F2FFFFFF → 一律走 @color/play_btn_bg（浅灰 #DADCE0），
+     配套文字/图标走 @color/play_btn_text（深字 #16181D，见 activity_detail.xml / activity_video.xml），
+     浅色与深色模式下都不再出现"纯白大反差块"；两主题同值、不做 night 镜像（恒深底反色块语义，
+     理由见 main/res/values/colors.xml 的 play_btn_* 注释）。
+     Round 38 / R5①：焦点描边宽度走全站单点 @dimen/state_stroke_focus（原写死 2dp，且描边色硬编码 #99FFFFFF）；
+     手机端触摸为主，focus 态仅在蓝牙键盘/遥控器场景出现，保留与 TV 一致的表达。 -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/play_btn_bg" />
+            <corners android:radius="24dp" />
+            <stroke android:width="@dimen/state_stroke_focus" android:color="@color/on_dark_focus_stroke" />
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@color/play_btn_bg" />
+            <corners android:radius="24dp" />
+        </shape>
+    </item>
+</selector>

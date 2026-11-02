@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- TV 2.0 导航/内容间距公共尺寸（spec v1.10 拍板 41/42，v1.11 拍板 50③ 调整）：
+     - content_top_inset：内容区顶部避让量（=导航行高，菜单展开不遮内容顶部）。
+     - nav_bar_min_height：导航常驻层/菜单层统一高度（LOGO/时间与胶囊导航垂直居中）。
+     - T-159（拍板 50③，刘先生 beta7 反馈五.2）：菜单整体上移——两值由 88dp 调整为 64dp
+       （菜单行高变小 → 菜单行与 LOGO/时间整体上移，内容顶部避让同步等量上移，不遮挡内容）。
+     - 本文件只放 **TV 导航/内容间距** 尺寸；全站焦点/选中态描边宽度（双端共用）在
+       main/res/values/dimens.xml（Round 38 / R5① 起），后续视觉微调按语义去对应文件。 -->
+<resources>
+    <!-- T-204（口径 (a)，刘先生拍板取保守档）：64dp→52dp 两值**同步**改。
+         导航容器由 128px 收到 104px，导航胶囊墨迹底实测 76px ⇒ 容器下半截空白由 52px 降到 28px，
+         再叠加已做的两处行内 paddingTop 归零，点播分类行/直播分组行的墨迹顶与导航墨迹底空档＝28px（改前 68/64px）。
+         不取 44dp（容器仅剩 88px 而胶囊墨迹占 66px，T-188-a「三件套中心差 ≤8px」风险高）。
+         两值必须等量同改：只改 nav_bar_min_height 会让内容压住导航，只改 content_top_inset 会留新空白。 -->
+    <dimen name="content_top_inset">52dp</dimen>
+    <dimen name="nav_bar_min_height">52dp</dimen>
+    <!-- Round 38 / R1（刘先生真机实测「LOGO 与时间整体上移贴边，目标可见上边距 4–8dp」）：
+         常驻层 navStatic 由垂直居中（(64-32)/2=16dp 上边距）改为顶对齐 + 本 paddingTop。
+         取 6dp（要求区间中值）；改动只影响 LOGO/时间两层视觉的常驻层，不改行高与内容避让。 -->
+    <dimen name="nav_static_padding_top">6dp</dimen>
+    <!-- β13 / T-226（A 裁定方案 A）：设置页文字以**顶部导航胶囊 14sp** 为基准（导航那个 14sp 在
+         view_top_nav.xml:55/73/91/109/127 是就地硬编码，仓库里没有可引用的 dimen ⇒ 本档只给设置页用，
+         **不动导航、不动 @style/Control（播放浮层 14sp、约 40 处引用）、不动页标题「设置」24sp**。
+         换算口径＝本机 density 2.0（52dp=104px；C 的 β11 dump 源行 [104,938][1816,1066] 印证）：
+         左列 16sp→14sp（32px→28px）、右列标题/值 18sp→14sp（36px→28px，墨迹约 31.5px→24.5px）。 -->
+    <dimen name="setting_text">14sp</dimen>
+
+    <!-- β19 / T-312（刘先生：菜单文字改小后底框没同步收，且要按首页导航菜单的圆角方式处理）：
+         全站"胶囊圆角"的唯一出处。取值 999dp＝首页导航胶囊 `selector_nav_pill.xml` 原本就地硬编码的那个值
+         （Android 会把圆角半径自动夹到短边一半 ⇒ 实际渲染＝半高圆头，即胶囊）。
+         本 dimen 由 **导航胶囊**（selector_nav_pill 两处）与**设置页行底框**（shape_item_normal/focused/activated 三态）
+         共同引用 ⇒ 满足「同一套 drawable/dimen、不另写一份」。
+         注意：线路 chip／选集卡用的是另一族 `shape_item_round_*`（28dp），本单**不改它们**，
+         已验收的 chip 形状不受影响；selector_item 的真实引用面只有设置页五档子页＋设置主页＋弹窗单选项。 -->
+    <dimen name="pill_radius">999dp</dimen>
+
+    <!-- β21 / T-331（刘先生「弹窗只需要圆角即可，不要整个做成左右弧形边」）：
+         全站 MaterialAlertDialog **容器**四角圆角＝16dp（leanback 独有；mobile 引不到本文件，
+         其弹窗走 M3 默认 28dp 圆角、未被 pill 污染，登记为另批）。
+         与 pill_radius 严格分开：容器用本值，弹窗内**条目**仍走设置页那套 shape_item_*/pill_radius。 -->
+    <dimen name="dialog_corner_radius">16dp</dimen>
+
+    <!-- β32 / T-334（刘先生 2026-10-31：详情页播放/收藏/换源＋线路＋选集「都放大一号，行间距隔开一点」）：
+         详情页尺寸的**电视端覆盖档**。main/res/values/dimens.xml 的原值**一行未动**（实测 mobile 对这批
+         detail_* 的引用＝0 处），本 flavor 同名覆盖 ⇒ 本包只改电视、不触 main、不需双端同号。
+         换算口径＝本机 density 2.0（1dp=2px，字号 fontScale=1）。取 A 建议带的上沿（+8px 才是整 dp）：
+           胶囊高/圆钮 28dp(56px)→32dp(64px)；按钮图标 12dp(24px)→14dp(28px)；胶囊文字 15→16sp；
+           线路 chip 15dp(30px)→17dp(34px)、文字 12→13sp；选集卡 19dp(38px)→22dp(44px)、文字 11→12sp。
+         圆钮 padding 维持 8dp ⇒ 内槽 32−2×8=16dp=32px ≥ 图标 28px，图标不裁。
+         ⚠ 漂移风险（登记为技术债）：同一 token 现在有两处定义（main＝手机默认、leanback＝电视档），
+         下轮若要把详情页尺寸彻底收进 leanback 单一出处，需先证 mobile 仍为 0 引用再迁，不能顺手删 main。 -->
+    <!-- β33 / 详情页 v2（刘先生 2026-10-31 拍板，四排间距 30px＋按钮 40dp＋源卡两行）：
+         上档 β32 的三处尺寸**再抬一档**（胶囊高/圆钮 32dp→40dp＝64px→80px，图标 14dp→16dp＝28px→32px），
+         圆钮 padding 仍 8dp ⇒ 内槽 40−2×8=24dp=48px ≥ 图标 32px，图标不裁。
+         `detail_text_pill` **保持 16sp 未跟涨**（钮已 80px 高，16sp＝32px 字在 48px 内槽里上下各余 8px；
+         再涨到 17sp 会压到「选项比标题小一号」的 T-317 判据边界，故本轮不动，留待真机观感再定）。
+         同批新增 `detail_source_card_height` 覆盖档＝44dp（main＝31dp 时源卡 remark 行被裁到只剩 5px，
+         真机 dump `b63-detail-switch.xml` 实测 `[120,920][254,925]`；内容完整需 8+33+4+30+12=87px）。 -->
+    <dimen name="detail_btn_pill_height">40dp</dimen>
+    <dimen name="detail_btn_circle">40dp</dimen>
+    <dimen name="detail_btn_icon">16dp</dimen>
+    <dimen name="detail_text_pill">16sp</dimen>
+    <dimen name="detail_source_card_height">44dp</dimen>
+    <dimen name="detail_chip_height">17dp</dimen>
+    <dimen name="detail_text_chip">13sp</dimen>
+    <dimen name="detail_episode_height">22dp</dimen>
+    <dimen name="detail_text_episode">12sp</dimen>
+    <!-- T-317 判据「选项比标题小一号」在放大后必须继续成立：chip 13sp／选集 12sp ⇒ 标题取 14sp。
+         原 13sp 在 activity_detail.xml:322/:356 是就地硬编码（main 无可引用的 dimen），故新建本 token。 -->
+    <dimen name="detail_text_row_title">14sp</dimen>
+
+</resources>

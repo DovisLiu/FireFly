@@ -78,8 +78,16 @@ public class ControlDialog extends BaseBottomSheetDialog implements ParseAdapter
         binding.decode.setText(parent.control.action.decode.getText());
         binding.ending.setText(parent.control.action.ending.getText());
         binding.opening.setText(parent.control.action.opening.getText());
-        binding.repeat.setSelected(parent.control.action.repeat.isSelected());
-        binding.timer.setSelected(Timer.get().isRunning());
+        // Round 38 / R5（P6 mobile 同批改）：弹窗里两个**开关类**项（循环播放 / 定时停止）与主控制栏同口径
+        // ——开关类的选中表达＝加粗（A 裁定 P2「加粗 + 1.5dp 描边、不加底」，mobile 无状态背景故只有加粗）。
+        // setSelected 与加粗必须成对：只设 selected 时 mobile 侧没有任何可见差异（背景是 borderless ripple）。
+        // 加粗走 ResUtil.setSwitchBold（TextView 无 setFakeBoldText，理由见该方法注释）。
+        boolean repeatOn = parent.control.action.repeat.isSelected();
+        binding.repeat.setSelected(repeatOn);
+        ResUtil.setSwitchBold(binding.repeat, repeatOn);
+        boolean timerOn = Timer.get().isRunning();
+        binding.timer.setSelected(timerOn);
+        ResUtil.setSwitchBold(binding.timer, timerOn);
         SpeedSetting.setup(binding.speed);
         setMediaOptionVisible();
         setTrackVisible();
@@ -139,9 +147,16 @@ public class ControlDialog extends BaseBottomSheetDialog implements ParseAdapter
         view.setSelected(true);
     }
 
-    private void active(View view, TextView target) {
+    /**
+     * Round 38 / R5：开关类选中态在弹窗与主控制栏之间同步。参数由 View 收窄为 TextView
+     * （唯一调用点 108 行传的就是 MaterialTextView，收窄无风险），
+     * 目的是加粗必须与 selected 一起镜像——见 initView 里同注释块的口径；
+     * 加粗走 ResUtil.setSwitchBold（beta23 首次构建踩坑：TextView 上没有 setFakeBoldText 方法）。
+     */
+    private void active(TextView view, TextView target) {
         target.performClick();
         view.setSelected(target.isSelected());
+        ResUtil.setSwitchBold(view, target.isSelected());
     }
 
     private void click(TextView view, TextView target) {

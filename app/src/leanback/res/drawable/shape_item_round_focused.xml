@@ -1,8 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Round 38 / R5①：筛选/搜索历史/热门词/分类 chip 焦点态 = 提亮底 + 2dp 描边（全站同表达）。
+     原写法"黑色半透明底 + 白描边"是给深色模式设计的，浅色主题下两个问题同时出现：
+     ①白描边压在浅页面底(#DBE4EB)上几乎看不见；②黑半透明底 + 主题自适应深字 = 深字压深底不可读。
+     改 @color/focus_card（日夜都比所在底更亮/更亮一档）+ @color/state_focus_stroke 后两主题都可读，
+     常规态仍保留原 @color/black_20 中性底（R5 只统一状态，不动常规底）。 -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
 
-    <solid android:color="@color/black_40" />
+    <solid android:color="@color/focus_card" />
 
     <corners android:radius="28dp" />
 
@@ -13,7 +18,7 @@
         android:top="8dp" />
 
     <stroke
-        android:width="1.5dp"
-        android:color="@color/white" />
+        android:width="@dimen/state_stroke_focus"
+        android:color="@color/state_focus_stroke" />
 
 </shape>

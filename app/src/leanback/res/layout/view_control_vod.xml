@@ -1,7 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- 播放页控制条（效果图 06/07）：seek + 按钮行（浮层态）
+     T-157 方案 C（拍板 51，刘先生 beta7 反馈三：按下键浮层操作不顺）：
+     去掉信息卡（海报/源信息）——浮层只保留进度条 + 播放功能按钮行，下键焦点落进度条
+     （1.2.0 控制层参照：view_control_vod.xml = seek + action 按钮行，无信息卡）
+     Round 38 / R2④（刘先生真机实测「进度条与按钮行之间还有一行'结束 23:38 · -2:22:07'」）：
+     该双时间行（@id/endRemain）**整行删除**——view 与其 VideoActivity 侧刷新逻辑（updateEndRemain）
+     及字符串 play_end_remain（values / values-zh-rCN）一并移除，不留空 TextView、不留占位高度。
+     高度说明：activity_video.xml:37-43 的 include 用 layout_height="wrap_content" **覆写**了本根节点的
+     160dp（坑 #21 的显式高度保险仍保留在 action 行 56dp 上），故本行删除后浮层自动等高收窄，
+     不会出现"少一行但留一块空白"。 -->
 <androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="160dp"
     android:layout_gravity="bottom"
     android:background="@drawable/shape_controller"
     android:orientation="vertical"
@@ -10,11 +21,32 @@
     android:paddingEnd="24dp"
     android:paddingBottom="16dp">
 
+    <!-- T-167（C beta10/beta13：控制层有尺寸但焦点/渲染异常）：
+         PlayerSeekView 默认不可聚焦 → requestFocus(seek) 失败（C 日志 focus≠seek）；显式 focusable，
+         并给显式高度（无固有高度时 wrap_content 测量为 0）。
+         T-189-a（Round 40，刘先生「进度条和下方的设置菜单间隔有点大」）：显式高度 48dp → 28dp、marginBottom 6dp → 2dp。
+         根因不在 margin，而在库内 DefaultTimeBar 的触摸区高度：media3-ui 1.11.0-alpha01
+         `exo_styled_progress_touch_target_height = 48dp`，其 onMeasure 在 AT_MOST 下取 min(触摸高, 给定高)，
+         而墨线始终画在 bounds 的 height/2 ⇒ 原 48dp(96px) 盒子里，**墨线下方有 48px 纯空**，再加 12px margin
+         ⇒ 视觉上进度条到胶囊行 ≈60px，比本层顶部内边距(24dp=48px)还大，就是"间隔大"的来由。
+         改后：盒子 56px ⇒ 墨线在 28px、下方留白 28px + margin 4px ⇒ 到胶囊行顶 ≈32px（收紧 28px≈14dp）；
+         时间文字（默认 14sp，行高≈40px）仍在 56px 内不裁；触摸区被压缩只影响拖拽手感，TV 用左右键 seek，无影响。
+         分段量化（A 补充裁定 §四：自查"空白到底在哪一段"，锚点＝C 的 beta24 dumpsys 相对 control 的 bounds
+           control 0,822–1920,1080 / seek 48,48–1872,144 / action 48,156–1872,226）：
+             ① control 顶边→seek 顶 = paddingTop 48px（这段是浮层内边距，非刘先生所指间隔，未动）；
+             ② seek 盒内：墨线在 96px 盒的中心 ⇒ 墨线→盒底 48px（**空白主体**，本轮改盒高后降到 28px）；
+             ③ 盒底→action 顶 = marginBottom 12px（本轮 2dp=4px）；
+             ④ action 行高 70px（chip 实测，include 用 wrap_content 覆写本根 160dp）；
+             ⑤ action 底→control 底 = paddingBottom 32px。
+           ⇒ 刘先生看到的「进度条到菜单间隔大」= ②+③：改前 48+12=60px → 改后 28+4=32px（−28px≈−14dp）；
+             行间距本身只有 12px、不是主因，所以本轮收的是 seek 显式高度而不是继续压 margin。
+           浮层总高随之 250px→210px（底边贴 1080 不变，顶边 822→862）。 -->
     <androidx.media3.ui.PlayerSeekView
         android:id="@+id/seek"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="12dp" />
+        android:layout_height="28dp"
+        android:focusable="true"
+        android:layout_marginBottom="2dp" />
 
     <include
         android:id="@+id/action"

@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.view.KeyEvent;
@@ -16,14 +17,20 @@ import androidx.viewbinding.ViewBinding;
 
 import com.firefly.tv.App;
 import com.firefly.tv.R;
+import com.firefly.tv.api.config.VodConfig;
+import com.firefly.tv.bean.Site;
 import com.firefly.tv.bean.Word;
 import com.firefly.tv.databinding.ActivitySearchBinding;
 import com.firefly.tv.impl.Callback;
+import com.firefly.tv.impl.SiteListener;
 import com.firefly.tv.setting.Setting;
 import com.firefly.tv.ui.adapter.RecordAdapter;
 import com.firefly.tv.ui.adapter.WordAdapter;
 import com.firefly.tv.ui.base.BaseActivity;
+import com.firefly.tv.ui.custom.NavDelegate;
+import com.firefly.tv.ui.custom.NavOverlay;
 import com.firefly.tv.ui.custom.CustomKeyboard;
+import com.firefly.tv.utils.Clock;
 import com.firefly.tv.ui.custom.CustomTextListener;
 import com.firefly.tv.ui.dialog.SiteDialog;
 import com.firefly.tv.utils.KeyUtil;
@@ -40,11 +47,15 @@ import java.util.Map;
 import okhttp3.Call;
 import okhttp3.Response;
 
-public class SearchActivity extends BaseActivity implements WordAdapter.OnClickListener, RecordAdapter.OnClickListener, CustomKeyboard.Callback {
+// T-210（扩围批准）：本页 MENU 呼出的片源弹窗调 SiteDialog，但原先未 implements SiteListener ⇒ 回调恒 null、
+// 选完只 dismiss（与首页同一根因）。补接口＋补 setSite＋补落库留痕，三处入口口径一致。
+public class SearchActivity extends BaseActivity implements SiteListener, WordAdapter.OnClickListener, RecordAdapter.OnClickListener, CustomKeyboard.Callback {
 
     private ActivitySearchBinding mBinding;
     private RecordAdapter mRecordAdapter;
     private WordAdapter mWordAdapter;
+    private Clock mClock;
+    private NavOverlay mOverlay;
 
     public static void start(Activity activity) {
         activity.startActivity(new Intent(activity, SearchActivity.class));
@@ -72,6 +83,9 @@ public class SearchActivity extends BaseActivity implements WordAdapter.OnClickL
 
     @Override
     protected void initView(Bundle savedInstanceState) {
+        mClock = Clock.create(mBinding.navBar.clock);
+        mOverlay = NavDelegate.bind(this, mBinding.navBar.logo, mBinding.navBar.topNav, R.id.nav_search);
+        mBinding.navBar.getRoot().post(() -> mOverlay.show());
         CustomKeyboard.init(this, mBinding);
         setRecyclerView();
         checkKeyword();
@@ -179,6 +193,13 @@ public class SearchActivity extends BaseActivity implements WordAdapter.OnClickL
         SiteDialog.create().search().show(this);
     }
 
+    /** T-210（扩围）：片源回调落库，与首页/点播页同一条留痕串，C 只靠 logcat 判「回调进来了」。 */
+    @Override
+    public void setSite(Site item) {
+        Log.d("FireFlyHome", "site set by=Search keyLen=" + (item == null ? 0 : item.getKey().length()));
+        VodConfig.get().setHome(item);
+    }
+
     @Override
     public void onRemote() {
         PushActivity.start(this, 1);
@@ -186,8 +207,20 @@ public class SearchActivity extends BaseActivity implements WordAdapter.OnClickL
 
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
+        // β4 / T-208：探针记账必须在 findFocus 之前（那一行会真的移动焦点，
+        // 记的就是"移动前"的落点，ACTION_UP 才能判出这把 UP 有没有向上走）。
+        mOverlay.onKeyDown(event, getCurrentFocus());
         if (KeyUtil.isMenuKey(event)) showDialog();
+        // β18 / 规范 R3 第一批（A 派单：照首页 HomeActivity:751 的做法铺三页）：**UP 的落点在这把键的
+        // ACTION_DOWN 阶段一次定死**——首排顶边直接抢本页导航项，不再交给系统几何搜索 ⇒ 一次键只有一个落点
+        // （日志 `mode=up -> nav single`）；非首排（上方还有页内目标）不改派 ⇒ 页内上移一行的旧语义不变；
+        // 四条触发条件、长按 repeat 护栏、顶边守卫与「抢不到焦点就不吃键」全部在 NavOverlay.revealOnDown() 一条口收口。
+        if (mOverlay.revealOnDown(event, getCurrentFocus())) return true;
         if (KeyUtil.isActionDown(event) && findFocus(event)) return true;
+        // 顶到边（输入框按 UP、上方无可聚焦节点）或被系统抢到顶栏别处 ⇒ 落本页导航项 nav_search
+        int verdict = mOverlay.probeUp(event, getCurrentFocus());
+        if (verdict == NavOverlay.UP_EAT) return true;
+        if (verdict == NavOverlay.UP_REVEAL) return mOverlay.revealToPage();
         return super.dispatchKeyEvent(event);
     }
 
@@ -252,6 +285,8 @@ public class SearchActivity extends BaseActivity implements WordAdapter.OnClickL
     }
 
     private boolean handleKeywordKey(KeyEvent event) {
+        // β4 / T-208：原 `if (isUpKey && canReveal()) return mOverlay.reveal()` 这条旧轨**删除**，
+        // 输入框的 UP 顶边判定与其余页面同走共享探针（见 dispatchKeyEvent）。
         if (!KeyUtil.isRightKey(event)) return false;
         if (mBinding.keyword.getSelectionEnd() < mBinding.keyword.getText().length()) return false;
         boolean hasRecord = mBinding.recordLayout.getVisibility() == View.VISIBLE;
@@ -260,8 +295,12 @@ public class SearchActivity extends BaseActivity implements WordAdapter.OnClickL
 
     private boolean handleKeyboardKey(KeyEvent event, View item) {
         if (KeyUtil.isUpKey(event) && isFirstRow(mBinding.keyboard, item)) {
-            mBinding.keyword.requestFocus();
-            return true;
+            // β18 / 规范 C1：键盘首行 UP 回输入框——**抢不到焦点就不吃键**（旧写法 requestFocus 后无条件 return true，
+            // 抢焦失败时这把键被吞，表现＝按了没反应；现在放行默认路由，让系统去决定落点）
+            boolean moved = mBinding.keyword.requestFocus();
+            Log.d("FireFlyFocus", "focusMove from=" + viewName(item) + " to=keyword vis=" + moved
+                    + " page=search mode=up -> keyword (keyboard first row)");
+            return moved;
         }
         if (KeyUtil.isLeftKey(event) && isFirstInRow(mBinding.keyboard, item)) return true;
         return KeyUtil.isDownKey(event) && isLastRow(mBinding.keyboard, item);
@@ -275,8 +314,10 @@ public class SearchActivity extends BaseActivity implements WordAdapter.OnClickL
                 View child = findNearestInLastRow(mBinding.recordRecycler, item.getLeft());
                 if (child != null) {
                     mBinding.scroll.smoothScrollTo(0, 0);
-                    child.requestFocus();
-                    return true;
+                    // β18 / 规范 C1（第三处）：词库首行 UP 落历史记录——抢焦失败必须放行，不得无条件吃键
+                    boolean moved = child.requestFocus();
+                    Log.d("FireFlyFocus", "focusMove from=word to=record vis=" + moved + " page=search mode=up -> record (first row)");
+                    return moved;
                 }
             }
             return true;
@@ -294,21 +335,40 @@ public class SearchActivity extends BaseActivity implements WordAdapter.OnClickL
     private boolean focusFirst(RecyclerView rv) {
         View child = rv.getChildAt(0);
         if (child == null) return false;
-        child.requestFocus();
-        return true;
+        // β18 / 规范 C1：如实回传抢焦结果（旧写法只要 child 存在就 return true，抢焦失败照样吃键）
+        return child.requestFocus();
     }
 
-    @Override
-    protected void onPause() {
-        super.onPause();
-        mBinding.mic.setFocusable(false);
+    /** β18：只用于日志的视图名（与 CollectActivity.viewName 同一写法，不参与任何判定）。 */
+    private String viewName(View v) {
+        if (v == null || v.getId() == View.NO_ID) return "none";
+        try {
+            return getResources().getResourceEntryName(v.getId());
+        } catch (Throwable t) {
+            return "noid";
+        }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        mClock.start();
         mBinding.mic.setFocusable(true);
         mBinding.keyword.requestFocus();
+    }
+
+    // β44 / B1（A 定稿四点之一）：本页从导航「搜索」进入＝一级页 ⇒ BACK 统一回首页，
+    // 不再用基类 finish 沿任务栈掉回"上一个实例"（那可能是点播或直播）。
+    @Override
+    protected void onBackInvoked() {
+        backToHome();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        mClock.stop();
+        mBinding.mic.setFocusable(false);
     }
 
     @Override

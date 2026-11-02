@@ -18,6 +18,19 @@ public class Setting {
         return ResUtil.getString(value ? R.string.setting_on : R.string.setting_off);
     }
 
+    /**
+     * β19 / T-313（刘先生：「在点播里，增加一个预览的开关，控制在点播详情页是否进行静音预览播放
+     * （现直播的设置里有此开关）」）——**照抄直播侧** `LiveSetting.isPreview()/putPreview()`（LiveSetting.java:40-46）：
+     * 同一个键位风格、默认 true＝开（与现行为一致，判据②）、落 Prefers ⇒ 重启天然持久（判据⑤）。
+     */
+    public static boolean isVodPreview() {
+        return Prefers.getBoolean("vod_preview", true);
+    }
+
+    public static void putVodPreview(boolean preview) {
+        Prefers.put("vod_preview", preview);
+    }
+
     public static String getDoh() {
         return Prefers.getString("doh");
     }

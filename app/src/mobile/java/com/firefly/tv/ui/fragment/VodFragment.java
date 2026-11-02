@@ -1,5 +1,6 @@
 package com.firefly.tv.ui.fragment;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -158,6 +159,9 @@ public class VodFragment extends BaseFragment implements ConfigListener, SiteLis
     }
 
     private void onLogo(View view) {
+        // T-211 扩围（全站 LOGO 一致）：手机端本来就是「点播历史（仓库）列表」，行为不改，
+        // 只补与 TV 同格式的留痕，便于 C 双端同一口径逐页判定。
+        Log.d("FireFlyHome", "logo click host=VodFragment action=history");
         HistoryDialog.create().vod().readOnly().show(this);
     }
 

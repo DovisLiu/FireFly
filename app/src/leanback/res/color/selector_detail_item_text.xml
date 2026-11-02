@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- β20 / T-319：详情页六类可聚焦控件共用的文字色三态表（与 selector_detail_pill/button/card 同套 token）。
+     聚焦＝detail_focus_text、当前＝detail_current_text、常态＝**基础色 detail_item_text**（values 与
+     values-night 成对镜像的那枚普通 color）。
+     ⚠ 文件名**不得**叫 detail_item_text.xml：res/color/<name>.xml 在资源解析里优先于 values 的同名
+     <color>，同名会让本表默认项的 @color/detail_item_text 解析回本表自身（lint ResourceCycle），
+     且布局里五处 textColor 会整体指到状态表而非基础色（beta49 首版出包即栽在这里，A 复现）。
+     故状态表取名 selector_detail_item_text，与 drawable 侧 selector_detail_* 同族。 -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:color="@color/detail_focus_text" android:state_focused="true" />
+    <item android:color="@color/detail_current_text" android:state_selected="true" />
+    <item android:color="@color/detail_item_text" />
+</selector>

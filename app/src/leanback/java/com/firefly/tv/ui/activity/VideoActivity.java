@@ -1,5 +1,7 @@
 package com.firefly.tv.ui.activity;
 
+import com.firefly.tv.ui.activity.DetailActivity;
+
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
@@ -28,6 +30,8 @@ import androidx.media3.ui.PlayerView;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewbinding.ViewBinding;
 
+import android.util.Log;
+
 import com.bumptech.glide.request.transition.Transition;
 import com.firefly.tv.App;
 import com.firefly.tv.Constant;
@@ -36,6 +40,7 @@ import com.firefly.tv.api.DanmakuApi;
 import com.firefly.tv.api.SiteApi;
 import com.firefly.tv.api.config.VodConfig;
 import com.firefly.tv.bean.Danmaku;
+import com.firefly.tv.bean.DetailLog;
 import com.firefly.tv.bean.Episode;
 import com.firefly.tv.bean.Flag;
 import com.firefly.tv.bean.History;
@@ -125,44 +130,52 @@ public class VideoActivity extends PlaybackActivity implements VodPlaybackHost, 
     private History mHistory;
     private boolean fullscreen;
     private boolean useParse;
+    private boolean mPauseBar; // 暂停态（规格 §3.4：OK=暂停条，下键=浮层，不暂停）
+    private Vod mInfoVod; // 浮层信息卡数据源（detail 结果）
+
+    // β8 / T-201（刘先生拍板选项 B）：BACK＝回"来的地方"，**不再补开详情页**。
+    // 做法：每个入口启动时写一个 `source` 标记，只用于 BACK 留痕（`back src=… action=finish|home`），
+    // 行为一律是 `finish` 自然后退（不 startActivity 重开，避免叠栈）；真无来源（`isTaskRoot()`）才回首页。
+    // 原先的 4/5/6/8 参公开重载在 β4「入口直达详情页」之后已无调用者 ⇒ 随本批一并删除，路由面只剩这五条真实入口。
 
     public static void push(FragmentActivity activity, String text) {
         Uri uri = UrlUtil.uri(text);
+        // 推送文本两支分开记：本地文件＝file，其余＝push（不再与嗅探 sniff 混记）。
         if (FileChooser.isValid(activity, uri)) file(activity, FileChooser.getPathFromUri(uri));
-        else start(activity, Sniffer.getUrl(text));
+        else {
+            String url = Sniffer.getUrl(text);
+            start(activity, SiteApi.PUSH, url, url, null, null, false, false, "push");
+        }
     }
 
     public static void file(FragmentActivity activity, String path) {
         if (TextUtils.isEmpty(path)) return;
         String name = new File(path).getName();
-        start(activity, SiteApi.PUSH, "file://" + path, name);
+        start(activity, SiteApi.PUSH, "file://" + path, name, null, null, false, false, "file");
     }
 
     public static void cast(Activity activity, History history) {
-        start(activity, history.getSiteKey(), history.getVodId(), history.getVodName(), history.getVodPic(), null, false, true);
+        start(activity, history.getSiteKey(), history.getVodId(), history.getVodName(), history.getVodPic(), null, false, true, "cast");
     }
 
-    public static void collect(Activity activity, String key, String id, String name, String pic) {
-        start(activity, key, id, name, pic, null, true, false);
-    }
-
+    /**
+     * 两参重载的两个真实调用点都属"嗅探/推送"类：`PushActivity:58`（TV 剪贴板）与 `extractor/Push:19`（push://）⇒ 记 sniff。
+     * （`main` 源集里的 extractor 各 flavor 都编译，故这个签名保持原样不动。）
+     */
     public static void start(Activity activity, String url) {
-        start(activity, SiteApi.PUSH, url, url);
+        start(activity, SiteApi.PUSH, url, url, null, null, false, false, "sniff");
     }
 
-    public static void start(Activity activity, String key, String id, String name) {
-        start(activity, key, id, name, null);
+    /**
+     * Round 38 / R2③ 建、β8 / T-201 改：详情页专用入口。
+     * `fromDetail` 布尔位保留，但用途只剩 β4 的「详情点播放即全屏」判定（initView 里 `isFromDetail()`）；
+     * BACK 不再读它，也不再补开详情页——栈下本来就压着那张详情页，`finish` 天然回去。
+     */
+    public static void startFromDetail(Activity activity, String key, String id, String name, String pic, String mark) {
+        start(activity, key, id, name, pic, mark, false, false, "detail");
     }
 
-    public static void start(Activity activity, String key, String id, String name, String pic) {
-        start(activity, key, id, name, pic, null);
-    }
-
-    public static void start(Activity activity, String key, String id, String name, String pic, String mark) {
-        start(activity, key, id, name, pic, mark, false, false);
-    }
-
-    public static void start(Activity activity, String key, String id, String name, String pic, String mark, boolean collect, boolean cast) {
+    private static void start(Activity activity, String key, String id, String name, String pic, String mark, boolean collect, boolean cast, String source) {
         Intent intent = new Intent(activity, VideoActivity.class);
         intent.putExtra("collect", collect);
         intent.putExtra("cast", cast);
@@ -171,12 +184,35 @@ public class VideoActivity extends PlaybackActivity implements VodPlaybackHost, 
         intent.putExtra("pic", pic);
         intent.putExtra("key", key);
         intent.putExtra("id", id);
+        intent.putExtra("fromDetail", "detail".equals(source));
+        // β8 / T-201：来源标记只用于日志，不参与任何路由判定。
+        intent.putExtra("source", Objects.toString(source, "none"));
         activity.startActivity(intent);
     }
 
     private boolean isCast() {
         return getIntent().getBooleanExtra("cast", false);
     }
+
+    /** Round 38 / R2③：本页是否由详情页启动（现只服务 β4 的"详情点播放即全屏"，不再服务 BACK）。 */
+    private boolean isFromDetail() {
+        return getIntent().getBooleanExtra("fromDetail", false);
+    }
+
+    /**
+     * β8 / T-201：来源标记，取值域 {@code home|vod|search|keep|history|detail|cast|push|sniff|file|none}。
+     * 实测现状（`grep -rn "VideoActivity\." app/src`）：真实入口只有 detail / cast / push / sniff / file 这五种——
+     * 首页、点播、搜索(合集)、收藏、历史五类**没有直进播放的路径**，一律「来源页 → 详情页 → 播放页」，
+     * 所以 BACK 第一层天然回详情页、第二层才回来源页；这五个取值当前不会出现在日志里，
+     * **出现 `src=none` 才说明某个调用点漏了标记**（缺陷指示，不是正常态）。
+     */
+    private String getSource() {
+        return Objects.toString(getIntent().getStringExtra("source"), "none");
+    }
+
+    // β8 / T-201：`backToDetail()`（Round 38 / R2③ 的"BACK 补开详情页"）**整块删除**——
+    // 语义已废弃：补开的详情页会叠在真实返回栈上（投屏/本地文件 BACK 冒出一个详情页就是它的症状），
+    // 且它违背"BACK 回来的地方"这条拍板口径。现在的 BACK 只剩 `finish` 自然后退（见 onBackInvoked）。
 
     private String getName() {
         return Objects.toString(getIntent().getStringExtra("name"), "");
@@ -281,13 +317,47 @@ public class VideoActivity extends PlaybackActivity implements VodPlaybackHost, 
         setRecyclerView();
         setVideoView();
         setViewModel();
+        setSeekDownFocus();
         checkCast();
+        // β4 / T-201（A 案）：「详情页点播放 → 直达播放页且全屏，不再停小窗」。
+        // 判据是既有的 `fromDetail` 标记（startFromDetail，:184-187），走的是投屏同一条成熟路径
+        // （checkCast 里 `isCast() && !isFullscreen() → enterFullscreen()`，:813-816）——
+        // 此处 mFrameParams 已存（:323）、video 已可聚焦，不新增任何状态机。
+        // 四类"仍直达播放"的入口（push/cast 续播/嗅探/本地文件）**不动**，它们不带 fromDetail 标记。
+        if (isFromDetail() && !isFullscreen()) {
+            Log.d("FireFlyPlay", "entry fullscreen fromDetail=true -> enterFullscreen");
+            enterFullscreen();
+        }
         checkId();
+    }
+
+    /**
+     * T-189-b（Round 40）：焦点在进度条按 DOWN 必须落按钮行**首位 next（下一集）**，不能交给系统焦点搜索——
+     * 按钮行十几项同处一行，搜索按"离进度条水平中心最近"取，实测会落在中间某项（刘先生所见）。
+     * 首位由 A 裁定按刘先生原话定为「下一集」，Round 38 R2 的 prev 首位口径作废，
+     * 行内 RIGHT/LEFT 的端点环绕同步改走 next ↔ ending（见 view_control_vod_action.xml 注释）。
+     * 进度条一侧有两个可能的焦点持有者：PlayerSeekView 本体（T-167 显式 focusable，showControl 直接
+     * requestFocus 它）与库内 `exo_progress`（DefaultTimeBar 自带 focusable，胶囊的 nextFocusUp 就指它），
+     * 故两处都写 nextFocusDown。
+     */
+    private void setSeekDownFocus() {
+        int first = mBinding.control.action.next.getId();
+        mBinding.control.seek.setNextFocusDownId(first);
+        View timeBar = mBinding.control.seek.findViewById(androidx.media3.ui.R.id.exo_progress);
+        if (timeBar != null) timeBar.setNextFocusDownId(first);
+        Log.d("FireFlyPlay", "seek down focus=next bound=" + (timeBar != null));
     }
 
     @Override
     @SuppressLint("ClickableViewAccessibility")
     protected void initEvent() {
+        // T-194-b2（Round 43，C beta27 实测 ctrlFocus 全量 logcat 0 次）：上一版把日志挂在 dispatchKeyEvent 末尾，
+        // 但"呼出"那一次按键走 mKeyDown 的提前 return，根本走不到末尾那行；控制层又 3 秒自动收起
+        // ⇒ C 很难在"可见期间"补按一次 ⇒ 一条都没打出来。**不是被 R8 剔除**（包内 dex 有该串），是挂载点选错了。
+        // 现挂到全局焦点变化上：焦点进入/移动到控制层内部就打印，与按键走哪条分支无关。
+        mBinding.control.getRoot().getViewTreeObserver().addOnGlobalFocusChangeListener((oldFocus, newFocus) -> {
+            if (newFocus != null && isInsideControl(newFocus)) logCtrlFocus(mLastKey);
+        });
         mBinding.keep.setOnClickListener(view -> onKeep());
         mBinding.video.setOnClickListener(view -> onVideo());
         mBinding.change.setOnClickListener(view -> onChange());
@@ -312,6 +382,8 @@ public class VideoActivity extends PlaybackActivity implements VodPlaybackHost, 
         mBinding.control.action.repeat.setOnClickListener(view -> onRepeat());
         mBinding.control.action.danmaku.setOnClickListener(view -> onDanmaku());
         mBinding.control.action.edition.setOnClickListener(view -> onEdition());
+        // Round 38 / R2②（刘先生裁定）：控制栏"详情/换源"两个按钮已从按钮行整块删除，
+        // 对应监听一并移除——详情与换源入口改由 BACK 回落详情页承载（见 onBackInvoked + backToDetail）。
         mBinding.control.action.chapter.setOnClickListener(view -> onChapter());
         mBinding.control.action.opening.setOnClickListener(view -> onOpening());
         mBinding.control.action.speed.setOnLongClickListener(view -> onSpeedLong());
@@ -360,7 +432,9 @@ public class VideoActivity extends PlaybackActivity implements VodPlaybackHost, 
     }
 
     private void setVideoView() {
-        setSeekNextFocusDown(R.id.next);
+        // Round 38 / R2①（口径补充第 1 条）：按钮行首位由「下集 next」改为「上集 prev」
+        // → 进度条下键目标必须同步改到新行首位，否则"下键落第 2 项、首位被跳过"。
+        setSeekNextFocusDown(R.id.prev);
         setActionFocusBoundary(mBinding.control.action.getRoot());
         PlayerEngineDialog.setText(mBinding.control.action.player);
         mBinding.control.action.danmaku.setVisibility(DanmakuSetting.isLoad() ? View.VISIBLE : View.GONE);
@@ -383,6 +457,10 @@ public class VideoActivity extends PlaybackActivity implements VodPlaybackHost, 
     }
 
     private void onDetailObserved(VodDetailResult result) {
+        if (result != null && result.result() != null && result.result().getVod() != null) {
+            mInfoVod = result.result().getVod();
+            // T-157 方案 C：信息卡已从浮层移除（不再调 setInfoCard）
+        }
         mVod.onDetailResult(result);
     }
 
@@ -894,12 +972,27 @@ public class VideoActivity extends PlaybackActivity implements VodPlaybackHost, 
 
     private void onRepeat() {
         player().setRepeatOne(!player().isRepeatOne());
-        mBinding.control.action.repeat.setSelected(player().isRepeatOne());
+        setRepeatVisual(player().isRepeatOne());
+    }
+
+    /**
+     * Round 38 / R5（A 裁定 P2「开关类选中 = 加粗 + 1.5dp 描边、不加底」）：
+     * 「循环播放」是控制栏唯一的持续 on/off 开关，其选中态由两件事同时表达——
+     * 描边走 view_control_vod_action.xml 上换成的 selector_chip_switch（1.5dp、不加底），
+     * 加粗只能在这里做：Android 的字体粗细不是状态列表可表达的属性（res/color 只管颜色），
+     * 所以 setSelected 与加粗必须成对出现，**任何一个调用点漏改都会让开关"半更新"**
+     * ——这也是把它们收进一个方法的原因（原先两处 setSelected 各写一遍）。
+     * 加粗统一走 ResUtil.setSwitchBold（真实粗体字面；TextView 无 setFakeBoldText，
+     * 直接写会编译不通过——beta23 首次构建即为此错，实现与理由见该方法注释）。
+     */
+    private void setRepeatVisual(boolean on) {
+        mBinding.control.action.repeat.setSelected(on);
+        ResUtil.setSwitchBold(mBinding.control.action.repeat, on);
     }
 
     @Override
     public void onRepeatModeChanged(int repeatMode) {
-        mBinding.control.action.repeat.setSelected(player().isRepeatOne());
+        setRepeatVisual(player().isRepeatOne());
     }
 
     private void checkNext() {
@@ -1079,10 +1172,79 @@ public class VideoActivity extends PlaybackActivity implements VodPlaybackHost, 
         mBinding.widget.center.setVisibility(View.GONE);
     }
 
+    // T-157 方案 C（拍板 51）：浮层信息卡（海报/片名/类型/元信息/简介）已移除——仅保留进度条+播放功能按钮行，
+    // 下键呼出焦点落进度条（对齐 1.2.0 控制层交互）；原 setInfoCard() 实现随 view_control_vod.xml 的 info 一并删除
+
     private void showControl(View view) {
+        showControl(view, true);
+    }
+
+    /** actionVisible=false 时仅显示进度条区（暂停态）；浮层态=进度条+播放功能按钮行
+     *  T-157 方案 C（拍板 51）：已去掉信息卡（海报/源信息），下键呼出焦点落进度条 */
+    /**
+     * β61／丙：把「落焦点的目标」从外层容器换成真正处理按键的内层 timebar。
+     * 单独成方法＋返回新引用，是为了让调用侧能写成 final（参数一旦被重赋，捕获它的 lambda 就编译不过）。
+     * 非 PlayerSeekView 的调用点（按钮行、opening/ending、getFocus2 回退）原样返回 ⇒ 行为零变化。
+     */
+    private static View focusTargetOf(View view) {
+        if (view instanceof PlayerSeekView) {
+            Object bar = ((PlayerSeekView) view).getTimeBar();
+            if (bar instanceof View) return (View) bar;
+        }
+        return view;
+    }
+
+    private void showControl(View view, boolean actionVisible) {
+        Log.d("FireFlyPlay", "showControl actionVisible=" + actionVisible + " view=" + (view == null ? "null" : view.getId()) + " full=" + isFullscreen());
+        mPauseBar = !actionVisible;
+
+        // β61 / 丙（A 拍：公共路径统一，理由是只修 :1627 会把同一个 bug 留在其它入口）。
+        // 事实：@+id/seek 是外层 androidx.media3.ui.PlayerSeekView——它 extends FrameLayout 且【没有 onKeyDown／dispatchKeyEvent】
+        // （media3-ui 1.11.0-alpha01 javap 实测），真正处理左右拖动的是内层 DefaultTimeBar（它有 public boolean onKeyDown）。
+        // 外层又被布局设为 focusable，FrameLayout 默认 FOCUS_BEFORE_DESCENDANTS ⇒ requestFocus 成功但焦点停在**不处理按键的容器**上：
+        // 既没有进度条焦点态、左右键也走系统焦点搜索 ⇒ 刘先生看到的“焦点没落到进度条”。这里统一把目标下取成内层 timebar。
+        // ⚠ 这里绝不能写成 `view = …`：:1208 那条 App.post(lambda) 捕获了 view，重赋参数会破掉 effectively final
+        //    （闸门 r2 的编译错就是它，我交的影响面清单漏核了「参数被 lambda 捕获」这一类，靠闸门抓到）。
+        final View focusTarget = focusTargetOf(view);
+        mBinding.control.action.getRoot().setVisibility(actionVisible ? View.VISIBLE : View.GONE);
+        // Round 38 / R2④：此处原为 updateEndRemain()（双时间行刷新），该行已整行删除
         mBinding.control.getRoot().setVisibility(View.VISIBLE);
-        view.requestFocus();
+        // T-167（C beta13：尺寸已修 ctrlH=291/ctrlW=1920，但 dump 无 control/seek、focus≠seek）：
+        // ①z-order：把控制层提到 video 子视图最上层（防被 widget/progress 遮挡——uiautomator 只 dump visibleToUser）
+        mBinding.control.getRoot().bringToFront();
+        // β39 / beta69 问题2（A 派单）：原先这一句是同帧直调，视图刚显形还没就绪时 requestFocus()
+        // 返回 false 且**没人读返回值** ⇒ 静默失败，焦点留在 video 上（刘先生所见"呼出控制层焦点不在进度条"）。
+        // 直接尝试保留为第一跳（就绪时零延迟），失败才照 LiveActivity#showControl 同法延一帧重试。
+        boolean attempt = focusTarget.requestFocus();
+        logControlFocus("attempt", focusTarget, attempt);
+        if (!attempt) App.post(() -> logControlFocus("after-post", focusTarget, focusTarget.requestFocus()), 25);
         setR1Callback();
+        // T-167 诊断日志（post 下一帧读真实状态）：补 alpha/locationOnScreen/seek focusable/hasFocus
+        View ctrl = mBinding.control.getRoot();
+        View seek = mBinding.control.seek;
+        ctrl.post(() -> {
+            int[] loc = new int[2];
+            ctrl.getLocationOnScreen(loc);
+            Log.d("FireFlyPlay", "showControl post: ctrlVis=" + ctrl.getVisibility()
+                    + " ctrlH=" + ctrl.getHeight() + " ctrlW=" + ctrl.getWidth()
+                    + " ctrlMeasured=" + ctrl.getMeasuredWidth() + "x" + ctrl.getMeasuredHeight()
+                    + " ctrlLp=" + (ctrl.getLayoutParams() == null ? "null" : ctrl.getLayoutParams().width + "x" + ctrl.getLayoutParams().height + "@" + ctrl.getLayoutParams().getClass().getSimpleName())
+                    + " ctrlAttached=" + ctrl.isAttachedToWindow() + " ctrlToken=" + (ctrl.getWindowToken() != null)
+                    + " ctrlAlpha=" + ctrl.getAlpha() + " ctrlLoc=" + loc[0] + "," + loc[1]
+                    + " ctrlParent=" + (ctrl.getParent() == null ? "null" : ctrl.getParent().getClass().getSimpleName())
+                    + " seekVis=" + seek.getVisibility() + " seekH=" + seek.getHeight() + " seekMeasured=" + seek.getMeasuredHeight()
+                    + " seekFocusable=" + seek.isFocusable() + " seekHasFocus=" + seek.hasFocus()
+                    + " seekLp=" + (seek.getLayoutParams() == null ? "null" : seek.getLayoutParams().height)
+                    + " focus=" + (getCurrentFocus() == null ? "null" : getCurrentFocus().getId()));
+        });
+    }
+
+    /** 落焦结果留痕（A 要求 C 真机可抓）：`showControl focus attempt|after-post` 两跳各出一条，带 seekHasFocus 与实际焦点控件 id。 */
+    private void logControlFocus(String stage, View view, boolean result) {
+        Log.d("FireFlyPlay", "showControl focus " + stage + " result=" + result
+                + " view=" + (view == null ? "null" : view.getId())
+                + " seekHasFocus=" + mBinding.control.seek.hasFocus()
+                + " focus=" + (getCurrentFocus() == null ? "null" : getCurrentFocus().getId()));
     }
 
     private void hideControl() {
@@ -1097,6 +1259,7 @@ public class VideoActivity extends PlaybackActivity implements VodPlaybackHost, 
 
     private void setTraffic() {
         Traffic.setSpeed(mBinding.progress.traffic);
+        // Round 38 / R2④：控制栏双时间行已删除，此处原为该行的每秒刷新入口
         App.post(mR3, 1000);
     }
 
@@ -1116,7 +1279,20 @@ public class VideoActivity extends PlaybackActivity implements VodPlaybackHost, 
     }
 
     private void setArtwork(String url) {
-        mHistory.setVodPic(url);
+        // T-150（拍板 48）：图片与播放地址解耦。原实现在这里把播放解析返回的 artwork（网盘类源常为
+        // "网盘 LOGO"）直接写进 History.vodPic 并随后被 createKeep/updateKeep 落库 →
+        // 历史/收藏/首页"继续观看"（三处入口都传 item.getVodPic()）永久显示 LOGO 而非海报。
+        // 修复：artwork **仅用于播放器封面显示**；只有锁定图确实为空（无列表图）时才允许它补位落库。
+        if (TextUtils.isEmpty(url)) {
+            DetailLog.picSkip("empty", url);
+        } else if (mHistory == null) {
+            DetailLog.picSkip("nolock", url);
+        } else if (!TextUtils.isEmpty(mHistory.getVodPic())) {
+            DetailLog.picSkip("same", url);
+        } else {
+            mHistory.setVodPic(url);
+            DetailLog.picSet(url);
+        }
         setArtwork();
     }
 
@@ -1156,9 +1332,13 @@ public class VideoActivity extends PlaybackActivity implements VodPlaybackHost, 
         Keep keep = new Keep();
         keep.setKey(getHistoryKey());
         keep.setCid(VodConfig.getCid());
-        keep.setVodPic(mHistory.getVodPic());
+        // T-150（拍板 48）：收藏图优先用进入播放页时带入的**列表锁定图**（intent "pic"），
+        // 不再取 mHistory.getVodPic()——后者可能被播放解析的 artwork 污染（本文件 setArtwork(String) 已修）。
+        keep.setVodPic(TextUtils.isEmpty(getPic()) ? mHistory.getVodPic() : getPic());
         keep.setVodName(mHistory.getVodName());
         keep.setSiteName(getSite().getName());
+        // β18 / T-213：播放页新建收藏——更新进度取 mHistory（History 本来就有这一列，同源同语义）
+        keep.setVodRemarks(mHistory.getVodRemarks() == null ? "" : mHistory.getVodRemarks());
         keep.setCreateTime(System.currentTimeMillis());
         keep.save();
     }
@@ -1167,7 +1347,10 @@ public class VideoActivity extends PlaybackActivity implements VodPlaybackHost, 
         Keep keep = Keep.find(getHistoryKey());
         if (keep != null) {
             keep.setVodName(mHistory.getVodName());
-            keep.setVodPic(mHistory.getVodPic());
+            // T-150（拍板 48）：同 createKeep，收藏刷新也只用列表锁定图，避免 artwork(LOGO) 落库
+            keep.setVodPic(TextUtils.isEmpty(getPic()) ? mHistory.getVodPic() : getPic());
+            // β18 / T-213：收藏刷新也带上更新进度（与 createKeep 同一路来源，避免同一收藏两态角标不一致）
+            keep.setVodRemarks(mHistory.getVodRemarks() == null ? "" : mHistory.getVodRemarks());
             keep.save();
         }
     }
@@ -1347,18 +1530,74 @@ public class VideoActivity extends PlaybackActivity implements VodPlaybackHost, 
     }
 
     private View getFocus2() {
+        // T-189-b（Round 40，A 裁定按刘先生原话）：兜底焦点随行首位走 —— 由 prev 改回 **next（下一集）**，
+        // 与 setSeekDownFocus「进度条下键落行首位」同一口径；opening/ending 是上下键标记项，不作为兜底目标（原逻辑保留）。
         return mFocus2 == null || mFocus2.getVisibility() != View.VISIBLE || mFocus2 == mBinding.control.action.opening || mFocus2 == mBinding.control.action.ending ? mBinding.control.action.next : mFocus2;
     }
 
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
-        if (isFullscreen() && KeyUtil.isMenuKey(event)) onToggle();
+        // T-164 排查日志（tag FireFlyPlay）：验证按键是否到达、当前是否全屏、控制层可见性、service 就绪
+        Log.d("FireFlyPlay", "dispatch k=" + event.getKeyCode() + " a=" + event.getAction() + " full=" + isFullscreen() + " ctrl=" + isVisible(mBinding.control.getRoot()) + " svc=" + (service() != null));
+        mLastKey = event.getKeyCode();   // T-194-b2：给全局焦点监听器标注"是哪把键导致的移动"
+        // T-202（β1，刘先生拍板「完全回到 1.1 语义」）：撤销原 Round 41/42 把「预览态 DOWN」与「播放态 DOWN」
+        // 归一的那两个分支（原写法：MENU 非全屏 → enterForControl()；非全屏 DOWN 一律 → enterForControl()）。
+        // 回到 619e991 的分发原则——**只有 `isFullscreen()` 才允许劫持按键**，非全屏（小窗）的一切方向键
+        // 交回 `super.dispatchKeyEvent`，由 activity_video.xml 的静态连线逐级下行（`:22` video→flag 线路行；
+        // 该 11 条连线自 1.1 版逐字未改，见 round1-alpha-B.md §B4）。
+        // 小窗呼出只留显式路径：OK/点小窗进全屏（shouldEnterFullscreen / 点击监听），MENU 在非全屏下
+        // **只做 enterFullscreen()，不进控制层**——A 裁定「不新增 DOWN 分支」。
+        if (KeyUtil.isMenuKey(event)) {
+            if (isFullscreen()) onToggle();
+            else enterFullscreen();
+            return true;
+        }
         if (isVisible(mBinding.control.getRoot())) setR1Callback();
         if (isVisible(mBinding.control.getRoot())) mFocus2 = getCurrentFocus();
         if (isFullscreen() && isGone(mBinding.control.getRoot()) && mKeyDown.hasEvent(event) && service() != null) return mKeyDown.onKeyDown(event);
         if (KeyUtil.isMediaFastForward(event)) return onSeekForward();
         if (KeyUtil.isMediaRewind(event)) return onSeekBack();
-        return super.dispatchKeyEvent(event);
+        boolean handled = super.dispatchKeyEvent(event);
+        // T-194-b（Round 42，A 要求补的可验日志）：控制层不在 accessibility 树、全屏 Surface 截图全黑、
+        // 3 秒自动收起 ⇒ C 无法 dump 焦点（T-189-b 取不到证据）。这里在每次按键的下一帧打焦点资源名，
+        // 让 C 用 logcat 逐次验"进度条 → 下一集 → 上一集 → … → 末项再 RIGHT 回首项"的环绕顺序。
+        if (isVisible(mBinding.control.getRoot())) logCtrlFocus(event.getKeyCode());
+        return handled;
+    }
+
+    private String lastCtrlFocus = "";
+
+    /** 上一把按键的键码，供全局焦点监听器把日志归到具体操作上（T-194-b2）。 */
+    private int mLastKey;
+
+    /** T-194-b2：焦点是否落在控制层（进度条 + 按钮行）内部——用它把"信息区行的焦点变化"过滤掉。 */
+    private boolean isInsideControl(View v) {
+        View p = v;
+        View root = mBinding.control.getRoot();
+        while (p != null) {
+            if (p == root) return true;
+            p = p.getParent() instanceof View ? (View) p.getParent() : null;
+        }
+        return false;
+    }
+
+    /** T-194-b：打控制行焦点。只在焦点真的变了时打，避免连按方向键刷屏；资源名取不到时打 id 十进制。 */
+    private void logCtrlFocus(int keyCode) {
+        mBinding.control.getRoot().post(() -> {
+            View f = getCurrentFocus();
+            String name = "null";
+            if (f != null && f.getId() != View.NO_ID) {
+                try {
+                    name = getResources().getResourceEntryName(f.getId());
+                } catch (Exception e) {
+                    name = "id/" + f.getId();
+                }
+            }
+            if (name.equals(lastCtrlFocus)) return;
+            lastCtrlFocus = name;
+            Log.d("FireFlyPlay", "ctrlFocus=" + name + " k=" + keyCode
+                    + " full=" + isFullscreen() + " ctrl=" + isVisible(mBinding.control.getRoot()));
+        });
     }
 
     @Override
@@ -1403,15 +1642,26 @@ public class VideoActivity extends PlaybackActivity implements VodPlaybackHost, 
 
     @Override
     public void onKeyDown() {
-        showControl(getFocus2());
+        Log.d("FireFlyPlay", "onKeyDown -> showControl(seek,true)");
+        // T-157（拍板 51 路线 A，刘先生 beta7 反馈三：播放页按下键浮层操作不顺、焦点不在进度条）：
+        // 参照 1.1.0 浮层交互——下键呼出后焦点落【进度条】（左右键 seek、下键进功能按钮行、
+        // 功能行上键回进度条）；三态框架与其余浮层功能保留不动（原实现落 getFocus2()=next 按钮）。
+        showControl(mBinding.control.seek, true);
     }
 
     @Override
     public void onKeyCenter() {
-        if (player().isPlaying()) onPaused();
-        else if (player().isEmpty()) onRefresh();
-        else onPlay();
-        hideControl();
+        if (player().isPlaying()) {
+            // 沉浸态 OK → 暂停态：暂停 + 暂停条（仅进度条，规格拍板 12）
+            onPaused();
+            showControl(mBinding.control.seek, false);
+        } else if (player().isEmpty()) {
+            onRefresh();
+        } else {
+            // 暂停态 OK → 恢复播放回沉浸态
+            onPlay();
+            hideControl();
+        }
     }
 
     @Override
@@ -1445,15 +1695,48 @@ public class VideoActivity extends PlaybackActivity implements VodPlaybackHost, 
 
     @Override
     protected void onBackInvoked() {
+        // β10 / A2 ①（入口无条件留痕，零行为）：A2 的病根正是"这一被 BACK 被哪个层吃掉了"看不清，
+        // 而三层里只有 `widget.center` 从没进过任何日志。这里一次把三层状态打全，
+        // 使 C 拿一条 `back enter` 就能对出"该收层"还是"该返回"。
+        // `full=` 用 1/0（与前缀串区分开，避免和 :1502 的 `dispatch k=… full=true` 混淆）。
+        // 挂载点可靠性：`dispatchKeyEvent`:1502 本来每把键都无条件打 `dispatch k=…`，BACK(=4) 也在内，
+        // 但 `dispatch` 行不含 center；本行是唯一含 center 的 BACK 入口证据。
+        // 本页没有第二处吃 BACK 的地方：`BaseActivity.setBackCallback()`（leanback :77-84）挂的是
+        // `addCallback(this, OnBackPressedCallback(true))`（onCreate 内、无条件启用），命中即直调本方法；
+        // `CustomKeyDownVod.hasEvent()` 不含 BACK ⇒ :1518 那条全屏劫持分支不会截住 BACK。
+        Log.d("FireFlyPlay", "back enter ctrl=" + (isVisible(mBinding.control.getRoot()) ? "visible" : "hidden")
+                + " center=" + (isVisible(mBinding.widget.center) ? "visible" : "hidden")
+                + " full=" + (isFullscreen() ? 1 : 0) + " src=" + getSource());
         if (isVisible(mBinding.control.getRoot())) {
+            // β9 / A1：两条"收层"支路各补一条留痕（零行为），C 因此能一眼分出「这一被是收层」还是「这一被该回详情」
+            Log.d("FireFlyPlay", "back ctrl=visible action=hideControl");
             hideControl();
-        } else if (isVisible(mBinding.widget.center)) {
-            hideCenter();
-        } else if (isFullscreen()) {
-            exitFullscreen();
         } else {
+            // β10 / A2（P1，根因是**我们自己**、不是媒体库也不是 CustomKeyDownVod）：
+            // 原来这里有一条 `else if (isVisible(mBinding.widget.center)) { … hideCenter(); }`——
+            //   · `widget.center` 是播放状态中心提示（快进/快退/暂停图标），由 showInfo():1165 与 onSeeking():1566 置 VISIBLE；
+            //   · 它被 hideCenter()→hideInfo()（:1172）收掉，代价是**第二下 BACK 花在收它上面**、第三下才返回
+            //     ⇒ 与 C 的实测序列完全一致：BACK1=收控制层、BACK2=收中心提示（β9 我加的日志是 `back center=visible action=hideCenter`，
+            //     C 说"BACK2 无日志"应是只 grep 了 `back ctrl=`/`back src=` 两种串），BACK3=finish。
+            // 修法：中心提示**不再算拦截层**（用户按 BACK 的意图是离开，不是收起一个本来就会自动消失的图标）；
+            //       改为在返回路径里离开前顺手收起（下面 hideCenter()），切页动画里也不会留悬空图标。
+            // 判据（A 的字面串）：控制层已收起时那一下必为 `back ctrl=hidden action=finish`。
+            // β9 / A1（P1）：全屏且控制层收起时不再"退出全屏"吃第一下（原 `else if (isFullscreen()) exitFullscreen();` 已删）。
+            //   被删的 exitFullscreen()/mFrameParams/mFocus1/getFocus1 现无调用者，仍**不连带删**（清理与 T-190/T-202 纠缠），
+            //   登记见 round1-beta9-patch/INDEX.md 与本轮 INDEX。
             mViewModel.stopSearch();
-            if (isTaskRoot()) startActivity(new Intent(this, HomeActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP));
+            // β8 / T-201（刘先生拍板选项 B）：BACK 一律「回来的地方」＝`finish` 自然后退，**不补开任何页面**；
+            // 只有本页是任务根（投屏续播 / 推送 / 嗅探 / 本地文件这类无来源入口）才 startActivity 回首页——
+            // 这条是既有行为（原 :1680），不是本批新增；除此之外一律不重开页面，避免"叠栈/跳过一页"。
+            boolean root = isTaskRoot();
+            // 两行日志各有用途，合成一条会让两个 grep 互相打断：
+            //   第一行满足 β10/A2 的字面判据 `back ctrl=hidden action=finish`；
+            //   第二行是 β8/β9 起 C 已在用的分组键 `back src=…`。
+            // β10：这里原先重复带的 `center=` 已移除——入口 `back enter` 行已经打过，两层信息不必在同一序列里出现两次。
+            Log.d("FireFlyPlay", "back ctrl=hidden action=" + (root ? "home" : "finish") + " src=" + getSource());
+            Log.d("FireFlyPlay", "back src=" + getSource() + " action=" + (root ? "home" : "finish"));
+            hideCenter();   // 顺手收起中心提示（不消费按键，纯清理）
+            if (root) startActivity(new Intent(this, HomeActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP));
             super.onBackInvoked();
         }
     }

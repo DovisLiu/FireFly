@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Round 38 / R5：开关类控件（播放页"循环播放"这类持续 on/off 的按钮）的焦点/选中 selector。
+     与 selector_chip 的唯一差别是 state_selected 分支换成**不加底**的 shape_chip_activated_switch
+     （A 裁定 P2：开关类 = 加粗 + 1.5dp 描边、不加底；单选类 = 1.5dp 描边 + 弱底），
+     焦点态完全复用 selector_chip 的 shape_chip_focused（全站焦点只有一种表达，不得分叉）。
+     文字加粗由 VideoActivity 在 setSelected 的同处 setFakeBoldText 落（typeface 无法用 XML 状态列表表达）。 -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@drawable/shape_chip_focused" android:state_focused="true" />
+    <item android:drawable="@drawable/shape_chip_activated_switch" android:state_selected="true" />
+    <item android:drawable="@drawable/shape_chip_normal" />
+</selector>

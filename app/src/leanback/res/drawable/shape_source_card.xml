@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 详情页"播放源"源卡（T-146 / 拍板 46-49）：宿主是"海报+永暗遮罩"层＝恒深底，
+     卡内文字走固定浅色 token（@color/detail_source_text），所以底色只能用 on_dark_* 半透明白，
+     不能换成浅色档的深描边/浅底（浅色主题下会与固定浅字撞车）。
+     Round 38 / R5① + Q-4 + Q-2：
+       焦点 = 2dp 描边 + 提亮底（on_dark_focus_*，宽度走 @dimen/state_stroke_focus）；
+       选中 = **只用对勾角标**（表达归类见下方 selected 注释，不叠描边不叠底）；
+       #FF4CAF50 绿描边整条撤掉；常规 = 无描边中性底（black_40 保持）。 -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/on_dark_focus_bg" />
+            <corners android:radius="10dp" />
+            <stroke android:width="@dimen/state_stroke_focus" android:color="@color/on_dark_focus_stroke" />
+        </shape>
+    </item>
+    <!-- 选中（当前源）**不画任何状态**：A 裁定 P2 / Q-2「详情页源卡对勾角标保留、不叠加选中底色」，
+         且新判据要求「同一类控件在 反色块 / 2dp 描边+提亮底 / 对勾+加粗 三种表达里只属于一种」——
+         本源卡的选中表达归到「对勾」（adapter_source.xml 的 @+id/badge，DetailActivity.java:785 按 current 控制显隐，
+         T-146 拍板 49 已上线），原来的 #FF4CAF50 绿描边按 Q-4 取消。 -->
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@color/black_40" />
+            <corners android:radius="10dp" />
+        </shape>
+    </item>
+</selector>

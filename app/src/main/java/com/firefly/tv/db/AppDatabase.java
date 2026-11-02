@@ -35,7 +35,7 @@ import java.util.List;
 @Database(entities = {Keep.class, Site.class, Live.class, Track.class, Config.class, Device.class, History.class}, version = AppDatabase.VERSION)
 public abstract class AppDatabase extends RoomDatabase {
 
-    public static final int VERSION = 35;
+    public static final int VERSION = 36;
     public static final String NAME = "tv";
     public static final String SYMBOL = "@@@";
 
@@ -96,7 +96,11 @@ public abstract class AppDatabase extends RoomDatabase {
                 .addMigrations(Migrations.MIGRATION_32_33)
                 .addMigrations(Migrations.MIGRATION_33_34)
                 .addMigrations(Migrations.MIGRATION_34_35)
-                .fallbackToDestructiveMigration(true)
+                .addMigrations(Migrations.MIGRATION_35_36)
+                // β18 / T-213 硬要求（A 派单）：**关掉 destructive**。开着它时任何迁移缺口（含本单 35→36）
+                // 都会被 Room 解释成"删表重建"⇒ 用户收藏/历史/进度**静默清零**，这正是当年 T-213 被暂缓的原因。
+                // 关掉后缺迁移会直接抛 IllegalStateException 进崩溃页——宁可崩，不悄悄清库。
+                // 30→35 五条既有链保持注册（不重号、不删）。
                 .allowMainThreadQueries().build();
     }
 

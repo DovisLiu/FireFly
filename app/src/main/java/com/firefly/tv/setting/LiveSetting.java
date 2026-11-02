@@ -36,6 +36,15 @@ public class LiveSetting {
         Prefers.put("invert", invert);
     }
 
+    /** 直播选台/换台面板预览开关（spec §3.5：低配设备可关） */
+    public static boolean isPreview() {
+        return Prefers.getBoolean("live_preview", true);
+    }
+
+    public static void putPreview(boolean preview) {
+        Prefers.put("live_preview", preview);
+    }
+
     public static int getScale() {
         return Math.clamp(Prefers.getInt("scale_live", PlayerSetting.getScale()), PlayerSetting.MIN_SCALE, PlayerSetting.MAX_SCALE);
     }

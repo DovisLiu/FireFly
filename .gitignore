@@ -12,3 +12,6 @@ fireflykey.txt
 .gradle-tmp/
 backgrounds_gen/
 LOGO_backup.png
+# 安装包不入库（交付物只走 Test/ 目录）
+*.apk
+*.aab

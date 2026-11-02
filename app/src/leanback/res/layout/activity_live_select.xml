@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- TV 2.0 直播选台页（spec §3.5 拍板 9/13 + v1.10 拍板 44，刘先生 05_live-reference 效果图确认 2026-10-26）：
+     列表页形态：顶部一级导航（直播高亮，navStatic/navMenu 结构，T-135）+
+     「分组」标签 + 分组胶囊行 + 4 列频道大卡网格；
+     焦点落卡即高亮，OK 进直播播放页；解析失败/无频道显示空态（不可黑屏、不可自动播放）。 -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <com.firefly.tv.ui.custom.ProgressLayout
+        android:id="@+id/progressLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:id="@+id/content"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:paddingStart="24dp"
+            android:paddingTop="@dimen/content_top_inset"
+            android:paddingEnd="24dp"
+            android:paddingBottom="24dp">
+
+            <!-- 分组行：左侧「分组」小字 + 右侧胶囊行（效果图 05_live-reference）
+                 T-204（口径更正，刘先生原话：要靠近导航的是**第一个菜单＝分组行**，不是下面的筛选条）：
+                 ①撤销 β1 误加的 `marginTop=12dp`（方向相反——它把分组行往下推了 24px）；
+                 ②`group` paddingTop 6dp→0dp：C 实测分组胶囊墨迹顶原为 140（128+12），归零后＝128，
+                    与导航容器底齐平，视觉空档从 64px 收到 52px（52 是硬底，见回报：导航胶囊墨迹底只到 76，
+                    其下半截 128−76=52px 属导航条自身留白，不动导航就压不下去）；
+                 ③行盒 56dp→38dp（112→76px），与点播分类行（去 padding 后 74px）统一到同量级；
+                    配套 adapter_group 上下 padding 8dp→2dp，否则 44dp 胶囊被 38dp 行裁。
+                 下方 channel 的 marginTop 12dp 为原值，**未动**。 -->
+            <androidx.appcompat.widget.LinearLayoutCompat
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="16dp"
+                    android:text="@string/live_group"
+                    android:textColor="?android:attr/textColorSecondary"
+                    android:textSize="16sp" />
+
+                <com.firefly.tv.ui.custom.CustomLiveGridView
+                    android:id="@+id/group"
+                    android:layout_width="0dp"
+                    android:layout_height="38dp"
+                    android:layout_weight="1"
+                    android:clipChildren="false"
+                    android:clipToPadding="false"
+                    android:paddingTop="0dp"
+                    android:paddingBottom="0dp"
+                    tools:itemCount="6"
+                    tools:listitem="@layout/adapter_group" />
+
+            </androidx.appcompat.widget.LinearLayoutCompat>
+
+            <!-- 频道大卡网格（4 列 2D 焦点，效果图 4x3 观感；Leanback VerticalGridView 原生管理滚动/焦点） -->
+            <androidx.leanback.widget.VerticalGridView
+                android:id="@+id/channel"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_marginTop="4dp"
+                android:layout_weight="1"
+                android:clipChildren="false"
+                android:clipToPadding="false"
+                android:paddingTop="4dp"
+                android:paddingBottom="8dp"
+                app:numberOfColumns="4" />
+
+        </androidx.appcompat.widget.LinearLayoutCompat>
+
+    </com.firefly.tv.ui.custom.ProgressLayout>
+
+    <!-- 空态（拍板 9：解析失败/无频道必须给提示，不黑屏、不自动播放） -->
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:id="@+id/empty"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/emptyText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="@string/live_empty"
+            android:textColor="?android:attr/textColorSecondary"
+            android:textSize="20sp" />
+
+    </androidx.appcompat.widget.LinearLayoutCompat>
+
+    <include
+        android:id="@+id/navBar"
+        layout="@layout/view_nav_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top" />
+
+</FrameLayout>

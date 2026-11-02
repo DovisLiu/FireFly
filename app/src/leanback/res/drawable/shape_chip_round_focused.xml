@@ -1,4 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Round 38 / R5①：圆胶囊（弹窗选项/章节/字幕轨/站点/直播列表等 11 处）焦点态 = 2dp 描边 + 提亮底。
+     此前用 @color/selector_stroke（= ?attr/colorOutline，Material 默认灰紫色板）+ 1.5dp，
+     在浅色弹窗（surface=bg_card 白）上几乎看不出来；现与全站同色族、同宽度单点 @dimen/state_stroke_focus。
+     selector_stroke 随本次改造失去最后一个引用方，已一并删除。 -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
 
@@ -10,8 +14,10 @@
         android:right="14dp"
         android:top="8dp" />
 
+    <solid android:color="@color/focus_card" />
+
     <stroke
-        android:width="1.5dp"
-        android:color="@color/selector_stroke" />
+        android:width="@dimen/state_stroke_focus"
+        android:color="@color/state_focus_stroke" />
 
 </shape>

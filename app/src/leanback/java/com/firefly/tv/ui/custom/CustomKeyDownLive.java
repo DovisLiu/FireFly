@@ -1,6 +1,7 @@
 package com.firefly.tv.ui.custom;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -45,15 +46,18 @@ public class CustomKeyDownLive extends GestureDetector.SimpleOnGestureListener {
     }
 
     public void onKeyDown(KeyEvent event) {
-        if (listener.dispatch(true)) check(event);
+        // T-168/T-171 诊断日志：记录自定义按键层是否放行到 check（pass=false 时方向键交给面板）
+        boolean pass = listener.dispatch(true);
+        Log.d("FireFlyLive", "customKey k=" + event.getKeyCode() + " a=" + event.getAction() + " pass=" + pass);
+        if (pass) check(event);
     }
 
     private void check(KeyEvent event) {
-        if (KeyUtil.isActionDown(event) && KeyUtil.isLeftKey(event)) {
-            listener.onSeeking(subTime());
-        } else if (KeyUtil.isActionDown(event) && KeyUtil.isRightKey(event)) {
-            listener.onSeeking(addTime());
-        } else if (KeyUtil.isActionDown(event) && KeyUtil.isUpKey(event)) {
+        // β43 / A3（刘先生拍板"直播页左右键统一换线路、不要快进快退"）：原先这两条
+        // `DOWN + LEFT/RIGHT → listener.onSeeking(±time)`（快进/快退预览）已删除——按下不再产生任何快进语义，
+        // 抬手由下面两条 onKeyLeft/onKeyRight 统一去切线路。接口方法 onSeeking 保留（Cast/Video 各自实现），
+        // LiveActivity 那一版已改成空实现，双保险。
+        if (KeyUtil.isActionDown(event) && KeyUtil.isUpKey(event)) {
             listener.onKeyUp();
         } else if (KeyUtil.isActionDown(event) && KeyUtil.isDownKey(event)) {
             listener.onKeyDown();

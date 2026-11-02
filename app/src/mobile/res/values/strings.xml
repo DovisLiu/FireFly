@@ -23,7 +23,14 @@
 
     <!-- Detail -->
     <string name="detail_flag">Flag</string>
+    <string name="detail_source">Switch source</string>
+    <string name="detail_source_title">Sources</string>
+    <string name="play_change_none">No other source</string>
     <string name="detail_episode">Episode</string>
+    <string name="detail_play">Play</string>
+    <string name="detail_keep">Keep</string>
+    <string name="detail_line">Line</string>
+    <string name="detail_error">Detail load failed</string>
     <string name="detail_quality">Quality</string>
     <string name="detail_content">Summary</string>
     <string name="detail_search">Searching <xliff:g name="name">%s</xliff:g></string>

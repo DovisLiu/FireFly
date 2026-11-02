@@ -23,6 +23,7 @@ import com.firefly.tv.impl.Callback;
 import com.firefly.tv.ui.adapter.KeepAdapter;
 import com.firefly.tv.ui.base.BaseActivity;
 import com.firefly.tv.ui.dialog.SyncDialog;
+import com.firefly.tv.ui.activity.DetailActivity;
 import com.firefly.tv.utils.Notify;
 import com.firefly.tv.utils.ResUtil;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -65,7 +66,9 @@ public class KeepActivity extends BaseActivity implements KeepAdapter.OnClickLis
     }
 
     private void getKeep() {
-        mAdapter.setItems(Keep.getVod(), () -> mBinding.progressLayout.showContent(true, mAdapter.getItemCount()));
+        // T-212：手机收藏页与 TV 首页收藏行同口径（当前仓库 + 当前首页源可见）。
+        // 备份/同步导出仍走 Keep.getVod() 全量，两边不得混用。
+        mAdapter.setItems(Keep.getVodCurrent(), () -> mBinding.progressLayout.showContent(true, mAdapter.getItemCount()));
     }
 
     private void onSync() {
@@ -104,7 +107,7 @@ public class KeepActivity extends BaseActivity implements KeepAdapter.OnClickLis
         Config config = Config.find(item.getCid());
         if (config == null) SearchActivity.start(this, item.getVodName());
         else if (item.getCid() != VodConfig.getCid()) loadConfig(config, item);
-        else VideoActivity.start(this, item.getSiteKey(), item.getVodId(), item.getVodName(), item.getVodPic());
+        else DetailActivity.confirm(this, item.getSiteKey(), item.getVodId(), item.getVodName(), item.getVodPic());
     }
 
     @Override

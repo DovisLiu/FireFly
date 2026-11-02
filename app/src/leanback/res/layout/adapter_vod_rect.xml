@@ -15,14 +15,41 @@
         android:background="@color/black_20"
         app:shapeAppearanceOverlay="@style/Vod.Grid" />
 
+    <!-- T-303（A 派单：与 adapter_vod.xml:18-31 同构的删除态遮罩）：收藏卡此前没有该节点，
+         历史卡的删除态视觉无从复用 ⇒ 这里补齐同一个 @id/delete（black_50 遮罩＋ic_vod_delete 图标、
+         覆盖到片名下沿、默认 gone、由 KeepPresenter.onBindViewHolder 切可见性）。
+         属性逐条对齐历史卡，只有 shapeAppearanceOverlay 沿用本卡的外角样式（Vod.Grid.Large 同历史卡）。 -->
+    <com.google.android.material.imageview.ShapeableImageView
+        android:id="@+id/delete"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/image"
+        android:layout_alignTop="@+id/image"
+        android:layout_alignEnd="@+id/image"
+        android:layout_alignBottom="@+id/name"
+        android:background="@color/black_50"
+        android:scaleType="center"
+        android:src="@drawable/ic_vod_delete"
+        android:visibility="gone"
+        app:shapeAppearanceOverlay="@style/Vod.Grid.Large"
+        tools:visibility="visible" />
+
+    <!-- Round 38 / R3：左上角标（年份位）与同卡右上 site/remark 角标（10sp + @color/text_remark + shape_vod_remark）
+         统一为同一文字规格与形状语言：10sp + @color/text_remark + shape_vod_remark_left（右上形状的水平镜像）。
+         原为 14sp + ?android:attr/textColorPrimary + shape_vod_year（蓝底、4dp 内边距、8dp 圆角）——
+         字号、文字色、内边距、圆角四项全不同，即刘先生所见"不一致"。
+         显式对齐 image 左上（原先靠 RelativeLayout 默认，视觉位置不变）。
+         注：TV 2.0 下本卡右上 remark 已按现规格存在，VodRectHolder 仅隐藏 site，不动本条可见性逻辑。 -->
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/year"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="@drawable/shape_vod_year"
+        android:layout_alignStart="@+id/image"
+        android:layout_alignTop="@+id/image"
+        android:background="@drawable/shape_vod_remark_left"
         android:singleLine="true"
-        android:textColor="?android:attr/textColorPrimary"
-        android:textSize="14sp"
+        android:textColor="@color/text_remark"
+        android:textSize="10sp"
         android:visibility="gone"
         tools:text="2022"
         tools:visibility="visible" />

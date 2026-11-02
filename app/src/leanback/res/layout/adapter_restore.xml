@@ -17,7 +17,7 @@
         android:gravity="center"
         android:singleLine="true"
         android:textColor="?android:attr/textColorPrimary"
-        android:textSize="18sp"
+        android:textSize="14sp"
         tools:text="tv-2024-12-26.bk.gz" />
 
     <androidx.appcompat.widget.AppCompatImageView

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 详情页播放按钮（效果图 04）：主行动"反色实心块"。
+     Round 38 / R6②（「浅色模式下所有底色类选择避免纯白/纯黑大反差：浅灰底+深字」）：
+     原两态分别硬编码 #FFFFFFFF / #F2FFFFFF 纯白底 → 全部换成 @color/play_btn_bg（浅灰 #DADCE0），
+     配套文字 @color/play_btn_text（深字 #16181D，见 activity_detail.xml），两主题同值不做 night 镜像
+     （恒深底上的反色块，跟着主题翻就会变成深底+深字不可读）。
+     Round 38 / R5①：焦点态保留"实心反色块不加粗变化"，只补全站统一的 2dp 描边
+     （@dimen/state_stroke_focus + @color/on_dark_focus_stroke，原为写死的 #99FFFFFF 2dp）。
+     Q-1 的"胶囊不加描边"豁免只给了顶栏导航胶囊，主行动按钮需要与同屏卡片行区分，故保留描边——
+     这条判断已写进 R5 对照表交 C 真机判读。 -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/play_btn_bg" />
+            <corners android:radius="24dp" />
+            <stroke android:width="@dimen/state_stroke_focus" android:color="@color/on_dark_focus_stroke" />
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <!-- T-187-d（Round 40）：非焦点档由 play_btn_bg 改为 black_40。
+                 原两档 solid 同为 @color/play_btn_bg，差别只有焦点那一圈 2dp 描边 ⇒ 1080p 上看不出"亮/不亮"，
+                 刘先生与 C 报的「播放键常亮」根因就在这行。改后非焦点＝与同屏圆钮常规态一致的中性暗底，
+                 焦点＝实心反色块 + 描边（R5①「2dp 描边 + 提亮底」口径不变、R6②「浅灰底+深字」仍只在焦点态成立）。
+                 前景（文字/图标）随状态翻转见 res/color/play_btn_fg.xml。 -->
+            <solid android:color="@color/black_40" />
+            <corners android:radius="24dp" />
+        </shape>
+    </item>
+</selector>

@@ -73,11 +73,18 @@ public class HistoryPresenter extends Presenter {
         ViewHolder holder = (ViewHolder) viewHolder;
         setClickListener(holder.view, item);
         holder.binding.name.setText(item.getVodName());
-        holder.binding.site.setText(item.getSiteName());
-        holder.binding.remark.setText(item.getVodRemarks());
-        holder.binding.site.setVisibility(item.getSiteVisible());
+        // TV 2.0：左上集数角标（复用 year 位），右上来源/备注隐藏（规格：片名边不加来源标签）
+        holder.binding.year.setText(item.getVodRemarks());
+        holder.binding.year.setVisibility(item.getVodRemarks().isEmpty() ? View.GONE : View.VISIBLE);
+        holder.binding.site.setVisibility(View.GONE);
+        holder.binding.remark.setVisibility(View.GONE);
         holder.binding.delete.setVisibility(!delete ? View.GONE : View.VISIBLE);
-        holder.binding.remark.setVisibility(delete || same ? View.GONE : View.VISIBLE);
+        // 继续观看进度条：海报与片名之间（position/duration）
+        long position = item.getPosition();
+        long duration = item.getDuration();
+        boolean showProgress = position >= 0 && duration > 0;
+        holder.binding.progress.setVisibility(showProgress ? View.VISIBLE : View.GONE);
+        if (showProgress) holder.binding.progress.setProgress((int) (position * 100 / duration));
         ImgUtil.load(item.getVodName(), item.getVodPic(), holder.binding.image);
     }
 

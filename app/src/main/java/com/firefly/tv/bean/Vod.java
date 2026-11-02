@@ -44,6 +44,11 @@ public class Vod implements Parcelable, Diffable<Vod> {
     @Element(name = "pic", required = false)
     @SerializedName("vod_pic")
     private String vodPic;
+    // T-149（拍板 47）：横版背景图字段。TVBox 源约定 JSON=vod_pic_slide、XML=pic_slide，
+    // 两套注解必须成对（本类 @Root(strict=false)，缺字段不抛），否则 type=0 的 XML 源解析不到横版图。
+    @Element(name = "pic_slide", required = false)
+    @SerializedName("vod_pic_slide")
+    private String vodPicSlide;
     @Element(name = "note", required = false)
     @SerializedName("vod_remarks")
     private String vodRemarks;
@@ -93,6 +98,7 @@ public class Vod implements Parcelable, Diffable<Vod> {
         this.vodName = in.readString();
         this.typeName = in.readString();
         this.vodPic = in.readString();
+        this.vodPicSlide = in.readString();
         this.vodRemarks = in.readString();
         this.vodYear = in.readString();
         this.vodArea = in.readString();
@@ -151,6 +157,29 @@ public class Vod implements Parcelable, Diffable<Vod> {
         this.vodPic = vodPic;
     }
 
+    /** T-149：横版图原始值（未 trim 兜空，判定交给 DetailPic.pick 的零依赖空白检查）。 */
+    public String getPicSlide() {
+        return vodPicSlide;
+    }
+
+    public void setPicSlide(String vodPicSlide) {
+        this.vodPicSlide = vodPicSlide;
+    }
+
+    /**
+     * T-149（拍板 47）：背景取图入口——**横版优先 → 竖版兜底 → null（调用方回落锁定海报）**。
+     * 关键：本方法是新增的**背景专用**入口，绝不复写 {@link #getPic()}：
+     * getPic() 全站有 20+ 调用点（首页/点播网格/搜索/收藏/历史/播放器封面），改语义=全站图片漂移（实施清单 R-2）。
+     */
+    public String getBgPic() {
+        return DetailPic.pick(vodPicSlide, vodPic);
+    }
+
+    /** T-149：当前背景命中的是否为横版图（true=Glide 直铺 centerInside；false=竖版需 centerCrop 裁切成横版构图）。 */
+    public boolean isBgSlide() {
+        return DetailPic.isSlide(getBgPic(), vodPicSlide);
+    }
+
     public String getRemarks() {
         return TextUtils.isEmpty(vodRemarks) ? "" : vodRemarks.trim();
     }
@@ -163,16 +192,18 @@ public class Vod implements Parcelable, Diffable<Vod> {
         return TextUtils.isEmpty(vodArea) ? "" : vodArea.trim();
     }
 
+    /** β25 / T-332：显示层清洗 UGC 宏（name 优先→正文→剥残留壳）；**字段本身不动**（不改库存）。 */
     public String getDirector() {
-        return TextUtils.isEmpty(vodDirector) ? "" : vodDirector.trim();
+        return TextUtils.isEmpty(vodDirector) ? "" : UgcTags.clean(vodDirector.trim());
     }
 
     public void setDirector(String vodDirector) {
         this.vodDirector = vodDirector;
     }
 
+    /** β25 / T-332：同 {@link #getDirector()}，getter 层清洗、不改库存。 */
     public String getActor() {
-        return TextUtils.isEmpty(vodActor) ? "" : vodActor.trim();
+        return TextUtils.isEmpty(vodActor) ? "" : UgcTags.clean(vodActor.trim());
     }
 
     public String getContent() {
@@ -336,6 +367,7 @@ public class Vod implements Parcelable, Diffable<Vod> {
         dest.writeString(this.vodName);
         dest.writeString(this.typeName);
         dest.writeString(this.vodPic);
+        dest.writeString(this.vodPicSlide);
         dest.writeString(this.vodRemarks);
         dest.writeString(this.vodYear);
         dest.writeString(this.vodArea);

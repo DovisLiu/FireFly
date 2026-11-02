@@ -1,4 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Round 38 / R5①：胶囊类（播放浮层按钮行 @style/Control 用）焦点态 = 2dp 描边 + 轻微提亮底。
+     宽度走 @dimen/state_stroke_focus（全站描边宽度单点，禁止再写死 1.5/2dp），颜色走 state token。
+     本族此前：焦点只有 1.5dp ?attr/colorPrimary 描边（去紫后是灰描边）且**无提亮底**，
+     与列表行/卡片各自的粗细、颜色不一致 → 现全站同一表达。 -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
 
@@ -10,8 +14,10 @@
         android:right="12dp"
         android:top="8dp" />
 
+    <solid android:color="@color/focus_card" />
+
     <stroke
-        android:width="1.5dp"
-        android:color="?attr/colorPrimary" />
+        android:width="@dimen/state_stroke_focus"
+        android:color="@color/state_focus_stroke" />
 
 </shape>

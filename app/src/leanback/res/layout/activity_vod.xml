@@ -1,25 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- TV 2.0 点播频道页（tv-2.0-ui-spec.md §3.2，浮层导航形态）：
+     层级 = 浮层导航（点播高亮）→ 二级菜单（源分类 tab，源返回什么就列什么）
+     → 三级筛选（源 filters）→ 海报网格。 -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:layout_height="match_parent">
 
-    <androidx.leanback.widget.HorizontalGridView
-        android:id="@+id/recycler"
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:id="@+id/content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:paddingTop="@dimen/content_top_inset">
+
+        <!-- T-204（口径更正，刘先生原话：要靠近导航的是**第一个菜单＝本分类行**，不是下面的筛选条）：
+             paddingTop 8dp→0dp。C 实测分类行盒顶＝128（已贴导航容器底），但行内这 16px 顶部留白把
+             胶囊墨迹顶推到 144，导航胶囊墨迹底只到 76 ⇒ 视觉空档 68px。归零后墨迹顶＝128，空档收到 52px，
+             与直播分组行（同样归零）齐平。clipToPadding=false，故此 padding 本是纯留白、不承担焦点裁切保护。
+             下方二级筛选条与本行的 16px 间距未改（只是整体随本行收缩上移 16px）。 -->
+        <androidx.leanback.widget.HorizontalGridView
+            android:id="@+id/recycler"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:clipChildren="false"
+            android:clipToPadding="false"
+            android:paddingStart="24dp"
+            android:paddingTop="0dp"
+            android:paddingEnd="24dp"
+            app:focusOutEnd="false"
+            app:focusOutFront="false" />
+
+        <com.firefly.tv.ui.custom.CustomViewPager
+            android:id="@+id/pager"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+    </androidx.appcompat.widget.LinearLayoutCompat>
+
+    <include
+        android:id="@+id/navBar"
+        layout="@layout/view_nav_toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:clipChildren="false"
-        android:clipToPadding="false"
-        android:paddingStart="24dp"
-        android:paddingTop="24dp"
-        android:paddingEnd="24dp"
-        app:focusOutEnd="false"
-        app:focusOutFront="false" />
+        android:layout_gravity="top" />
 
-    <com.firefly.tv.ui.custom.CustomViewPager
-        android:id="@+id/pager"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
-
-</androidx.appcompat.widget.LinearLayoutCompat>
+</FrameLayout>

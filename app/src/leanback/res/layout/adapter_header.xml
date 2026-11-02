@@ -1,9 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- β19 / T-308（刘先生原话：「继续观看、我的收藏，两个字的字体感觉偏大，比菜单的字体大，可调小点，
+     注意字体改小后，界面也要同步紧凑」）：行标题 24sp → **14sp**，与顶部导航胶囊同基准
+     （view_top_nav.xml:55 的 14sp）。本卡是 wrap_content ⇒ 文字行盒一收，标题块整块高度跟着收：
+     改前真机实测（beta47／density 320，1sp=2px）墨迹 45/46px、view 高 65px；
+     导航菜单实测墨迹 26-28px ⇒ 判据①「行标题 ≤ 导航」达成（45→约 26px）。
+     行距同步收紧见 HomeActivity 的 setVerticalSpacing（16dp→10dp），合计每行约省 47px。
+     β21 / T-330（刘先生「改小的继续观看、我的收藏，两段文字需要加大一号」）：14sp → **16sp**，
+     推导墨迹 ≈26→30px（16×2×1.0≈32 行盒内墨迹，实测订正）；本卡 wrap_content ⇒ 标题块行高随字盒自动长，
+     不会出现"字大了行没变"；行间距 10dp 不动（那是行与行之间，非标题行高）。 -->
 <com.google.android.material.textview.MaterialTextView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/text"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:textColor="?android:attr/textColorPrimary"
-    android:textSize="24sp"
+    android:textSize="16sp"
     tools:text="@string/home_recommend" />

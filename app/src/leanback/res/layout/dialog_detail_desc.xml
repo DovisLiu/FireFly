@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- β20 / T-321：简介全文弹层的内容视图（居中卡片、可滚动）。
+     宿主是 MaterialAlertDialog（DetailActivity#showDescDialog，主题 overlay 已在 β19/T-315 统一去紫+胶囊圆角），
+     本文件只提供"可滚动的全文卡片"内容：ScrollView wrap_content（弹窗窗口高度天然受限 ⇒ 超长自动可滚）＋
+     全文 TextView（12.5sp、行距按排版 1.7 换算 multiplier 1.26、不限行数）。BACK 关闭由 dialog 默认行为承担，关闭后焦点回简介（代码侧保证）。
+     文字色走 detail_item_text、底走弹窗主题底（不另铺底，避免与 T-315 的弹窗统一冲突）。 -->
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:overScrollMode="never"
+    android:paddingStart="8dp"
+    android:paddingTop="4dp"
+    android:paddingEnd="8dp"
+    android:paddingBottom="8dp">
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/descFull"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:lineSpacingMultiplier="1.26"
+        android:textColor="@color/detail_item_text"
+        android:textSize="@dimen/detail_text_desc"
+        tools:text="简介全文简介全文简介全文简介全文简介全文简介全文简介全文简介全文。" />
+</ScrollView>

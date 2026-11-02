@@ -2,4 +2,6 @@
 <resources>
     <color name="text_panel">#DE1B1B1B</color>
     <color name="text_panel_sub">#991B1B1B</color>
+    <!-- T-209：LOGO 提亮叠加色（tintMode=add）。浅色模式不叠加，保持品牌深绿在浅底上的对比。 -->
+    <color name="nav_logo_tint">#00FFFFFF</color>
 </resources>

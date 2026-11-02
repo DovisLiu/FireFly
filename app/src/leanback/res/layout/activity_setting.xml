@@ -1,453 +1,594 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- TV 2.0 设置页（spec §3.8）：顶部导航保留（设置高亮）+ 左侧分类宫格 + 右侧明细两栏范式。
+     功能与结构不变：全部原入口 id 保留，仅按分类重组展示。
+     Round 14 / T-136（spec v1.10 拍板 42）：content paddingTop 走 content_top_inset 避让导航浮层——
+     此前 16dp 时右栏 pane 首行（y=32~145）被导航条（高 166px）整行遮挡，
+     单行 pane（播放/显示/弹幕设置）表现为"右侧未直出"，实为被遮挡。 -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:fillViewport="true"
-    tools:ignore="NestedWeights">
+    android:layout_height="match_parent">
 
     <androidx.appcompat.widget.LinearLayoutCompat
+        android:id="@+id/content"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:padding="24dp">
+        android:orientation="horizontal"
+        android:paddingStart="24dp"
+        android:paddingTop="@dimen/content_top_inset"
+        android:paddingEnd="24dp"
+        android:paddingBottom="24dp">
+
+        <!-- 左列：分类（NestedScrollView 防小屏溢出，Round 10） -->
+        <androidx.core.widget.NestedScrollView
+            android:id="@+id/categoriesScroll"
+            android:layout_width="220dp"
+            android:layout_height="match_parent"
+            android:scrollbars="none">
+
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:id="@+id/categories"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <com.google.android.material.textview.MaterialTextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:layout_marginBottom="16dp"
+                android:text="@string/home_setting"
+                android:textColor="?android:attr/textColorPrimary"
+                android:textSize="24sp"
+                android:textStyle="bold" />
 
         <com.google.android.material.textview.MaterialTextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="4dp"
-            android:layout_marginBottom="16dp"
-            android:text="@string/home_setting"
-            android:textColor="?android:attr/textColorPrimary"
-            android:textSize="24sp"
-            android:textStyle="bold" />
+            android:id="@+id/catVod"
+            style="@style/SettingCategory"
+            android:text="@string/setting_vod" />
 
-        <androidx.appcompat.widget.LinearLayoutCompat
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/catLive"
+            style="@style/SettingCategory"
+            android:text="@string/setting_live" />
 
-            <androidx.appcompat.widget.LinearLayoutCompat
-                android:id="@+id/vod"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="16dp"
-                android:layout_weight="1"
-                android:background="@drawable/selector_item"
-                android:focusable="true"
-                android:focusableInTouchMode="true"
-                android:orientation="horizontal">
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/catPlayer"
+            style="@style/SettingCategory"
+            android:text="@string/setting_player" />
 
-                <com.google.android.material.textview.MaterialTextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="16dp"
-                    android:text="@string/setting_vod"
-                    android:textColor="?android:attr/textColorPrimary"
-                    android:textSize="18sp" />
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/catDisplay"
+            style="@style/SettingCategory"
+            android:text="@string/setting_display" />
 
-                <com.google.android.material.textview.MaterialTextView
-                    android:id="@+id/vodUrl"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:ellipsize="middle"
-                    android:gravity="end"
-                    android:singleLine="true"
-                    android:textColor="?android:attr/textColorSecondary"
-                    android:textSize="18sp"
-                    tools:text="https://" />
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/catDanmaku"
+            style="@style/SettingCategory"
+            android:text="@string/setting_danmaku" />
 
-            </androidx.appcompat.widget.LinearLayoutCompat>
+        <!-- T-160（拍板 52，刘先生 beta7 反馈六.1）："网络"+"通用"合并为"通用设置"——
+             保留 catNetwork 作为合并后分类（文案改 setting_general），删除 catGeneral -->
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/catNetwork"
+            style="@style/SettingCategory"
+            android:text="@string/setting_general" />
 
-            <androidx.appcompat.widget.AppCompatImageView
-                android:id="@+id/vodHome"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="16dp"
-                android:background="@drawable/selector_item"
-                android:focusable="true"
-                android:focusableInTouchMode="true"
-                android:padding="8dp"
-                android:src="@drawable/ic_site_change"
-                android:tint="?attr/colorOnSurface" />
-
-            <androidx.appcompat.widget.AppCompatImageView
-                android:id="@+id/vodHistory"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@drawable/selector_item"
-                android:focusable="true"
-                android:focusableInTouchMode="true"
-                android:padding="8dp"
-                android:src="@drawable/ic_setting_history"
-                android:tint="?attr/colorOnSurface" />
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/catBackup"
+            style="@style/SettingCategory"
+            android:text="@string/setting_backup" />
 
         </androidx.appcompat.widget.LinearLayoutCompat>
+        </androidx.core.widget.NestedScrollView>
 
-        <androidx.appcompat.widget.LinearLayoutCompat
+    <!-- 右列：当前分类明细 -->
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_marginStart="24dp"
+        android:layout_weight="1"
+        android:fillViewport="true">
+
+        <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
+            android:layout_height="wrap_content">
 
             <androidx.appcompat.widget.LinearLayoutCompat
-                android:id="@+id/live"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="16dp"
-                android:layout_weight="1"
-                android:background="@drawable/selector_item"
-                android:focusable="true"
-                android:focusableInTouchMode="true"
-                android:orientation="horizontal">
-
-                <com.google.android.material.textview.MaterialTextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="16dp"
-                    android:text="@string/setting_live"
-                    android:textColor="?android:attr/textColorPrimary"
-                    android:textSize="18sp" />
-
-                <com.google.android.material.textview.MaterialTextView
-                    android:id="@+id/liveUrl"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:ellipsize="middle"
-                    android:gravity="end"
-                    android:singleLine="true"
-                    android:textColor="?android:attr/textColorSecondary"
-                    android:textSize="18sp"
-                    tools:text="https://" />
-
-            </androidx.appcompat.widget.LinearLayoutCompat>
-
-            <androidx.appcompat.widget.AppCompatImageView
-                android:id="@+id/liveHome"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="16dp"
-                android:background="@drawable/selector_item"
-                android:focusable="true"
-                android:focusableInTouchMode="true"
-                android:padding="8dp"
-                android:src="@drawable/ic_site_change"
-                android:tint="?attr/colorOnSurface" />
-
-            <androidx.appcompat.widget.AppCompatImageView
-                android:id="@+id/liveHistory"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@drawable/selector_item"
-                android:focusable="true"
-                android:focusableInTouchMode="true"
-                android:padding="8dp"
-                android:src="@drawable/ic_setting_history_live" />
-
-        </androidx.appcompat.widget.LinearLayoutCompat>
-
-        <androidx.appcompat.widget.LinearLayoutCompat
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:orientation="horizontal">
-
-            <androidx.appcompat.widget.LinearLayoutCompat
-                android:id="@+id/player"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="16dp"
-                android:layout_weight="1"
-                android:background="@drawable/selector_item"
-                android:focusable="true"
-                android:focusableInTouchMode="true"
-                android:orientation="horizontal">
-
-                <com.google.android.material.textview.MaterialTextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/setting_player"
-                    android:textColor="?android:attr/textColorPrimary"
-                    android:textSize="18sp" />
-
-            </androidx.appcompat.widget.LinearLayoutCompat>
-
-            <androidx.appcompat.widget.LinearLayoutCompat
-                android:id="@+id/display"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:background="@drawable/selector_item"
-                android:focusable="true"
-                android:focusableInTouchMode="true"
-                android:orientation="horizontal">
-
-                <com.google.android.material.textview.MaterialTextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="16dp"
-                    android:text="@string/setting_display"
-                    android:textColor="?android:attr/textColorPrimary"
-                    android:textSize="18sp" />
-
-                <com.google.android.material.textview.MaterialTextView
-                    android:id="@+id/displayArrow"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="end"
-                    android:textColor="?android:attr/textColorSecondary"
-                    android:textSize="18sp"
-                    tools:text="Auto" />
-
-            </androidx.appcompat.widget.LinearLayoutCompat>
-        </androidx.appcompat.widget.LinearLayoutCompat>
-
-        <androidx.appcompat.widget.LinearLayoutCompat
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:orientation="horizontal">
-
-            <androidx.appcompat.widget.LinearLayoutCompat
-                android:id="@+id/incognito"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="16dp"
-                android:layout_weight="1"
-                android:background="@drawable/selector_item"
-                android:focusable="true"
-                android:focusableInTouchMode="true"
-                android:orientation="horizontal">
-
-                <com.google.android.material.textview.MaterialTextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="16dp"
-                    android:text="@string/setting_incognito"
-                    android:textColor="?android:attr/textColorPrimary"
-                    android:textSize="18sp" />
-
-                <com.google.android.material.textview.MaterialTextView
-                    android:id="@+id/incognitoText"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="end"
-                    android:textColor="?android:attr/textColorSecondary"
-                    android:textSize="18sp"
-                    tools:text="Off" />
-
-            </androidx.appcompat.widget.LinearLayoutCompat>
-
-            <androidx.appcompat.widget.LinearLayoutCompat
-                android:id="@+id/danmaku"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:background="@drawable/selector_item"
-                android:focusable="true"
-                android:focusableInTouchMode="true"
-                android:orientation="horizontal">
-
-                <com.google.android.material.textview.MaterialTextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/setting_danmaku"
-                    android:textColor="?android:attr/textColorPrimary"
-                    android:textSize="18sp" />
-
-            </androidx.appcompat.widget.LinearLayoutCompat>
-        </androidx.appcompat.widget.LinearLayoutCompat>
-
-            <androidx.appcompat.widget.LinearLayoutCompat
+                android:id="@+id/paneVod"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:orientation="horizontal">
+                android:orientation="vertical"
+                android:visibility="gone"
+                tools:visibility="visible">
 
-<androidx.appcompat.widget.LinearLayoutCompat
-                android:id="@+id/doh"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="16dp"
-                android:layout_weight="1"
-                android:background="@drawable/selector_item"
-                android:focusable="true"
-                android:focusableInTouchMode="true"
-                android:orientation="horizontal">
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:id="@+id/vod"
+                    style="@style/SettingRow"
+                    android:nextFocusLeft="@+id/catVod">
 
-                <com.google.android.material.textview.MaterialTextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="16dp"
-                    android:text="@string/setting_doh"
-                    android:textColor="?android:attr/textColorPrimary"
-                    android:textSize="18sp" />
+                    <com.google.android.material.textview.MaterialTextView
+                        style="@style/SettingRowTitle"
+                        android:text="@string/setting_vod" />
 
-                <com.google.android.material.textview.MaterialTextView
-                    android:id="@+id/dohText"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="end"
-                    android:textColor="?android:attr/textColorSecondary"
-                    android:textSize="18sp"
-                    tools:text="Google" />
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/vodUrl"
+                        style="@style/SettingRowValue"
+                        tools:text="https://" />
+                </androidx.appcompat.widget.LinearLayoutCompat>
 
-            </androidx.appcompat.widget.LinearLayoutCompat>
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:id="@+id/vodHome"
+                    style="@style/SettingRow"
+                    android:nextFocusLeft="@+id/catVod">
 
-<androidx.appcompat.widget.LinearLayoutCompat
-                android:id="@+id/cache"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:background="@drawable/selector_item"
-                android:focusable="true"
-                android:focusableInTouchMode="true"
-                android:orientation="horizontal">
+                    <com.google.android.material.textview.MaterialTextView
+                        style="@style/SettingRowTitle"
+                        android:text="@string/setting_vod_home" />
+                </androidx.appcompat.widget.LinearLayoutCompat>
 
-                <com.google.android.material.textview.MaterialTextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                        android:text="@string/setting_cache"
-                    android:textColor="?android:attr/textColorPrimary"
-                    android:textSize="18sp" />
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:id="@+id/vodHistory"
+                    style="@style/SettingRow"
+                    android:nextFocusLeft="@+id/catVod">
 
-                <com.google.android.material.textview.MaterialTextView
-                    android:id="@+id/cacheText"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="end"
-                    android:textColor="?android:attr/textColorSecondary"
-                    android:textSize="18sp"
-                    tools:text="1.0 MB" />
+                    <com.google.android.material.textview.MaterialTextView
+                        style="@style/SettingRowTitle"
+                        android:text="@string/setting_vod_history" />
+                </androidx.appcompat.widget.LinearLayoutCompat>
 
-            </androidx.appcompat.widget.LinearLayoutCompat>
+                <!-- β19 / T-313：点播「预览」开关——**整段照抄直播侧那一段**（本文件 :184-198）：
+                     同一个 SettingRow/SettingRowTitle/SettingRowValue 组合、同一个「点整行翻转＋右侧文字显示开/关」
+                     的形态（不是 Switch/CheckBox），同一个分组层级（放在「点播」pane 的末尾，紧接点播历史之后）。
+                     默认开＝与现行为一致；关掉后详情页不再创建播放器（门禁见 DetailActivity#requestPreview）。 -->
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:id="@+id/vodPreview"
+                    style="@style/SettingRow"
+                    android:nextFocusLeft="@+id/catVod">
+
+                    <com.google.android.material.textview.MaterialTextView
+                        style="@style/SettingRowTitle"
+                        android:text="@string/setting_vod_preview" />
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/vodPreviewText"
+                        style="@style/SettingRowValue"
+                        tools:text="On" />
+                </androidx.appcompat.widget.LinearLayoutCompat>
 
             </androidx.appcompat.widget.LinearLayoutCompat>
 
             <androidx.appcompat.widget.LinearLayoutCompat
+                android:id="@+id/paneLive"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:orientation="horizontal">
+                android:orientation="vertical"
+                android:visibility="gone">
 
-<androidx.appcompat.widget.LinearLayoutCompat
-                android:id="@+id/version"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="16dp"
-                android:layout_weight="1"
-                android:background="@drawable/selector_item"
-                android:focusable="true"
-                android:focusableInTouchMode="true"
-                android:orientation="horizontal">
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:id="@+id/live"
+                    style="@style/SettingRow"
+                    android:nextFocusLeft="@+id/catLive">
 
-                <com.google.android.material.textview.MaterialTextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="16dp"
-                    android:text="@string/setting_version"
-                    android:textColor="?android:attr/textColorPrimary"
-                    android:textSize="18sp" />
+                    <com.google.android.material.textview.MaterialTextView
+                        style="@style/SettingRowTitle"
+                        android:text="@string/setting_live" />
 
-                <com.google.android.material.textview.MaterialTextView
-                    android:id="@+id/versionText"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="end"
-                    android:textColor="?android:attr/textColorSecondary"
-                    android:textSize="18sp"
-                    tools:text="1.2.1" />
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/liveUrl"
+                        style="@style/SettingRowValue"
+                        tools:text="https://" />
+                </androidx.appcompat.widget.LinearLayoutCompat>
 
-            </androidx.appcompat.widget.LinearLayoutCompat>
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:id="@+id/liveHome"
+                    style="@style/SettingRow"
+                    android:nextFocusLeft="@+id/catLive">
 
-<androidx.appcompat.widget.LinearLayoutCompat
-                android:id="@+id/about"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:background="@drawable/selector_item"
-                android:focusable="true"
-                android:focusableInTouchMode="true"
-                android:orientation="horizontal">
+                    <com.google.android.material.textview.MaterialTextView
+                        style="@style/SettingRowTitle"
+                        android:text="@string/setting_live_home" />
+                </androidx.appcompat.widget.LinearLayoutCompat>
 
-                <com.google.android.material.textview.MaterialTextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/setting_about"
-                    android:textColor="?android:attr/textColorPrimary"
-                    android:textSize="18sp" />
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:id="@+id/liveHistory"
+                    style="@style/SettingRow"
+                    android:nextFocusLeft="@+id/catLive">
 
-            </androidx.appcompat.widget.LinearLayoutCompat>
+                    <com.google.android.material.textview.MaterialTextView
+                        style="@style/SettingRowTitle"
+                        android:text="@string/setting_live_history" />
+                </androidx.appcompat.widget.LinearLayoutCompat>
 
-            </androidx.appcompat.widget.LinearLayoutCompat>
+                <!-- 直播预览开关（spec §3.5/§3.8：低配设备可关） -->
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:id="@+id/preview"
+                    style="@style/SettingRow"
+                    android:nextFocusLeft="@+id/catLive">
 
-        <androidx.appcompat.widget.LinearLayoutCompat
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:orientation="horizontal">
+                    <com.google.android.material.textview.MaterialTextView
+                        style="@style/SettingRowTitle"
+                        android:text="@string/setting_live_preview" />
 
-            <androidx.appcompat.widget.LinearLayoutCompat
-                android:id="@+id/backup"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="16dp"
-                android:layout_weight="1"
-                android:background="@drawable/selector_item"
-                android:focusable="true"
-                android:focusableInTouchMode="true"
-                android:orientation="horizontal">
-
-                <com.google.android.material.textview.MaterialTextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/setting_backup"
-                    android:textColor="?android:attr/textColorPrimary"
-                    android:textSize="18sp" />
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/previewText"
+                        style="@style/SettingRowValue"
+                        tools:text="On" />
+                </androidx.appcompat.widget.LinearLayoutCompat>
 
             </androidx.appcompat.widget.LinearLayoutCompat>
 
             <androidx.appcompat.widget.LinearLayoutCompat
-                android:id="@+id/export"
-                android:layout_width="0dp"
+                android:id="@+id/panePlayer"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="16dp"
-                android:layout_weight="1"
-                android:background="@drawable/selector_item"
-                android:focusable="true"
-                android:focusableInTouchMode="true"
-                android:orientation="horizontal">
+                android:orientation="vertical"
+                android:visibility="gone">
 
-                <com.google.android.material.textview.MaterialTextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/backup_export"
-                    android:textColor="?android:attr/textColorPrimary"
-                    android:textSize="18sp" />
+                <!-- T-145（spec v1.10 拍板 45）：播放设置明细直出——原子页 SettingPlayerActivity 的明细平铺到右栏 -->
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:id="@+id/engine"
+                    style="@style/SettingRow">
+                    <com.google.android.material.textview.MaterialTextView
+                        style="@style/SettingRowTitle"
+                        android:text="@string/player_engine" />
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/engineText"
+                        style="@style/SettingRowValue"
+                        tools:text="EXO" />
+                </androidx.appcompat.widget.LinearLayoutCompat>
+
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:id="@+id/decode"
+                    style="@style/SettingRow">
+                    <com.google.android.material.textview.MaterialTextView
+                        style="@style/SettingRowTitle"
+                        android:text="@string/player_decode_setting" />
+                </androidx.appcompat.widget.LinearLayoutCompat>
+
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:id="@+id/adblock"
+                    style="@style/SettingRow">
+                    <com.google.android.material.textview.MaterialTextView
+                        style="@style/SettingRowTitle"
+                        android:text="@string/player_adblock" />
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/adblockText"
+                        style="@style/SettingRowValue"
+                        tools:text="On" />
+                </androidx.appcompat.widget.LinearLayoutCompat>
+
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:id="@+id/mpvConf"
+                    style="@style/SettingRow">
+                    <com.google.android.material.textview.MaterialTextView
+                        style="@style/SettingRowTitle"
+                        android:text="@string/player_mpv_conf" />
+                </androidx.appcompat.widget.LinearLayoutCompat>
+
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:id="@+id/mpvGpuNext"
+                    style="@style/SettingRow">
+                    <com.google.android.material.textview.MaterialTextView
+                        style="@style/SettingRowTitle"
+                        android:text="@string/player_mpv_gpu_next" />
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/mpvGpuNextText"
+                        style="@style/SettingRowValue"
+                        tools:text="Off" />
+                </androidx.appcompat.widget.LinearLayoutCompat>
+
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:id="@+id/mpvVulkan"
+                    style="@style/SettingRow">
+                    <com.google.android.material.textview.MaterialTextView
+                        style="@style/SettingRowTitle"
+                        android:text="@string/player_mpv_vulkan" />
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/mpvVulkanText"
+                        style="@style/SettingRowValue"
+                        tools:text="Off" />
+                </androidx.appcompat.widget.LinearLayoutCompat>
+
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:id="@+id/render"
+                    style="@style/SettingRow">
+                    <com.google.android.material.textview.MaterialTextView
+                        style="@style/SettingRowTitle"
+                        android:text="@string/player_render" />
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/renderText"
+                        style="@style/SettingRowValue"
+                        tools:text="Surface" />
+                </androidx.appcompat.widget.LinearLayoutCompat>
+
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:id="@+id/scale"
+                    style="@style/SettingRow">
+                    <com.google.android.material.textview.MaterialTextView
+                        style="@style/SettingRowTitle"
+                        android:text="@string/player_scale" />
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/scaleText"
+                        style="@style/SettingRowValue"
+                        tools:text="Auto" />
+                </androidx.appcompat.widget.LinearLayoutCompat>
+
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:id="@+id/background"
+                    style="@style/SettingRow">
+                    <com.google.android.material.textview.MaterialTextView
+                        style="@style/SettingRowTitle"
+                        android:text="@string/player_background" />
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/backgroundText"
+                        style="@style/SettingRowValue"
+                        tools:text="On" />
+                </androidx.appcompat.widget.LinearLayoutCompat>
+
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:id="@+id/buffer"
+                    style="@style/SettingRow">
+                    <com.google.android.material.textview.MaterialTextView
+                        style="@style/SettingRowTitle"
+                        android:text="@string/player_buffer" />
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/bufferText"
+                        style="@style/SettingRowValue"
+                        tools:text="3" />
+                </androidx.appcompat.widget.LinearLayoutCompat>
+
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:id="@+id/preload"
+                    style="@style/SettingRow">
+                    <com.google.android.material.textview.MaterialTextView
+                        style="@style/SettingRowTitle"
+                        android:text="@string/player_preload_setting" />
+                </androidx.appcompat.widget.LinearLayoutCompat>
+
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:id="@+id/ua"
+                    style="@style/SettingRow">
+                    <com.google.android.material.textview.MaterialTextView
+                        style="@style/SettingRowTitle"
+                        android:text="@string/player_ua" />
+                </androidx.appcompat.widget.LinearLayoutCompat>
+
 
             </androidx.appcompat.widget.LinearLayoutCompat>
 
             <androidx.appcompat.widget.LinearLayoutCompat
-                android:id="@+id/restore"
-                android:layout_width="0dp"
+                android:id="@+id/paneDisplay"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:background="@drawable/selector_item"
-                android:focusable="true"
-                android:focusableInTouchMode="true"
-                android:orientation="horizontal">
+                android:orientation="vertical"
+                android:visibility="gone">
 
-                <com.google.android.material.textview.MaterialTextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/setting_restore"
-                    android:textColor="?android:attr/textColorPrimary"
-                    android:textSize="18sp" />
+                <!-- T-145（spec v1.10 拍板 45）：显示设置明细直出——原子页 SettingDisplayActivity 的明细平铺到右栏
+                     T-172（C beta13 浅色测试：外观模式行 DOWN/UP 跳出到左列/打开其它行）：给行补显式焦点链，
+                     LEFT 回分类列、DOWN/UP 在 pane 内行间移动、末行不跳出 -->
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:id="@+id/size"
+                    style="@style/SettingRow"
+                    android:nextFocusLeft="@+id/catDisplay"
+                    android:nextFocusUp="@+id/size"
+                    android:nextFocusDown="@+id/appearance">
+                    <com.google.android.material.textview.MaterialTextView
+                        style="@style/SettingRowTitle"
+                        android:text="@string/setting_size" />
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/sizeText"
+                        style="@style/SettingRowValue"
+                        tools:text="Medium" />
+                </androidx.appcompat.widget.LinearLayoutCompat>
+
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:id="@+id/appearance"
+                    style="@style/SettingRow"
+                    android:nextFocusLeft="@+id/catDisplay"
+                    android:nextFocusUp="@+id/size"
+                    android:nextFocusDown="@+id/appearance">   <!-- β13 / T-226 顺带修真错：原指 @+id/display，本页无此 id（全页 nextFocus 目标扫描只这 1 处失效）⇒ 改成自指，与 size 的 nextFocusUp 自指同风格（T-172「末行不跳出」）；T-225 后 DOWN 已由 dispatch 成环接管，此连线属兜底 -->
+                    <com.google.android.material.textview.MaterialTextView
+                        style="@style/SettingRowTitle"
+                        android:text="@string/setting_appearance" />
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/appearanceText"
+                        style="@style/SettingRowValue"
+                        tools:text="Auto" />
+                </androidx.appcompat.widget.LinearLayoutCompat>
+
 
             </androidx.appcompat.widget.LinearLayoutCompat>
-        </androidx.appcompat.widget.LinearLayoutCompat>
+
+            <androidx.appcompat.widget.LinearLayoutCompat
+                android:id="@+id/paneDanmaku"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <!-- T-145（spec v1.10 拍板 45）：弹幕设置明细直出——原子页 SettingDanmakuActivity 的明细平铺到右栏 -->
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:id="@+id/danmakuLoad"
+                    style="@style/SettingRow">
+                    <com.google.android.material.textview.MaterialTextView
+                        style="@style/SettingRowTitle"
+                        android:text="@string/danmaku_load" />
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/danmakuLoadText"
+                        style="@style/SettingRowValue"
+                        tools:text="On" />
+                </androidx.appcompat.widget.LinearLayoutCompat>
+
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:id="@+id/danmakuApi"
+                    style="@style/SettingRow">
+                    <com.google.android.material.textview.MaterialTextView
+                        style="@style/SettingRowTitle"
+                        android:text="@string/danmaku_api" />
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/danmakuApiText"
+                        style="@style/SettingRowValue"
+                        tools:text="Yes" />
+                </androidx.appcompat.widget.LinearLayoutCompat>
+
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:id="@+id/danmakuAuto"
+                    style="@style/SettingRow">
+                    <com.google.android.material.textview.MaterialTextView
+                        style="@style/SettingRowTitle"
+                        android:text="@string/danmaku_auto_load" />
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/danmakuAutoText"
+                        style="@style/SettingRowValue"
+                        tools:text="On" />
+                </androidx.appcompat.widget.LinearLayoutCompat>
+
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:id="@+id/danmakuSpider"
+                    style="@style/SettingRow">
+                    <com.google.android.material.textview.MaterialTextView
+                        style="@style/SettingRowTitle"
+                        android:text="@string/danmaku_spider_first" />
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/danmakuSpiderText"
+                        style="@style/SettingRowValue"
+                        tools:text="Off" />
+                </androidx.appcompat.widget.LinearLayoutCompat>
+
+
+            </androidx.appcompat.widget.LinearLayoutCompat>
+
+            <androidx.appcompat.widget.LinearLayoutCompat
+                android:id="@+id/paneNetwork"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <!-- T-160（拍板 52）："通用设置"明细 = 原网络分类（doh）+ 原通用分类（incognito/cache/version/about）
+                     全部并入，完整保留可操作；原 paneGeneral 已删除 -->
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:id="@+id/doh"
+                    style="@style/SettingRow"
+                    android:nextFocusLeft="@+id/catNetwork">
+
+                    <com.google.android.material.textview.MaterialTextView
+                        style="@style/SettingRowTitle"
+                        android:text="@string/setting_doh" />
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/dohText"
+                        style="@style/SettingRowValue"
+                        tools:text="Google" />
+                </androidx.appcompat.widget.LinearLayoutCompat>
+
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:id="@+id/incognito"
+                    style="@style/SettingRow"
+                    android:nextFocusLeft="@+id/catNetwork">
+
+                    <com.google.android.material.textview.MaterialTextView
+                        style="@style/SettingRowTitle"
+                        android:text="@string/setting_incognito" />
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/incognitoText"
+                        style="@style/SettingRowValue"
+                        tools:text="Off" />
+                </androidx.appcompat.widget.LinearLayoutCompat>
+
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:id="@+id/cache"
+                    style="@style/SettingRow"
+                    android:nextFocusLeft="@+id/catNetwork">
+
+                    <com.google.android.material.textview.MaterialTextView
+                        style="@style/SettingRowTitle"
+                        android:text="@string/setting_cache" />
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/cacheText"
+                        style="@style/SettingRowValue"
+                        tools:text="1.0 MB" />
+                </androidx.appcompat.widget.LinearLayoutCompat>
+
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:id="@+id/version"
+                    style="@style/SettingRow"
+                    android:nextFocusLeft="@+id/catNetwork">
+
+                    <com.google.android.material.textview.MaterialTextView
+                        style="@style/SettingRowTitle"
+                        android:text="@string/setting_version" />
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/versionText"
+                        style="@style/SettingRowValue"
+                        tools:text="1.2.1" />
+                </androidx.appcompat.widget.LinearLayoutCompat>
+
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:id="@+id/about"
+                    style="@style/SettingRow"
+                    android:nextFocusLeft="@+id/catNetwork">
+
+                    <com.google.android.material.textview.MaterialTextView
+                        style="@style/SettingRowTitle"
+                        android:text="@string/setting_about" />
+                </androidx.appcompat.widget.LinearLayoutCompat>
+
+            </androidx.appcompat.widget.LinearLayoutCompat>
+
+            <androidx.appcompat.widget.LinearLayoutCompat
+                android:id="@+id/paneBackup"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:id="@+id/backup"
+                    style="@style/SettingRow"
+                    android:nextFocusLeft="@+id/catBackup">
+
+                    <com.google.android.material.textview.MaterialTextView
+                        style="@style/SettingRowTitle"
+                        android:text="@string/setting_backup" />
+                </androidx.appcompat.widget.LinearLayoutCompat>
+
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:id="@+id/export"
+                    style="@style/SettingRow"
+                    android:nextFocusLeft="@+id/catBackup">
+
+                    <com.google.android.material.textview.MaterialTextView
+                        style="@style/SettingRowTitle"
+                        android:text="@string/backup_export" />
+                </androidx.appcompat.widget.LinearLayoutCompat>
+
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:id="@+id/restore"
+                    style="@style/SettingRow"
+                    android:nextFocusLeft="@+id/catBackup">
+
+                    <com.google.android.material.textview.MaterialTextView
+                        style="@style/SettingRowTitle"
+                        android:text="@string/setting_restore" />
+                </androidx.appcompat.widget.LinearLayoutCompat>
+
+            </androidx.appcompat.widget.LinearLayoutCompat>
+
+        </FrameLayout>
+    </androidx.core.widget.NestedScrollView>
 
     </androidx.appcompat.widget.LinearLayoutCompat>
-</androidx.core.widget.NestedScrollView>
+
+    <include
+        android:id="@+id/navBar"
+        layout="@layout/view_nav_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top" />
+
+</FrameLayout>

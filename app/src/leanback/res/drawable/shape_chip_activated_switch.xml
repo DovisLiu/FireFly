@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Round 38 / R5（A 裁定 P2 分层 + 对照表行 #12 定稿口径）：**开关类**控件的选中态专用形状。
+     与单选类（shape_chip_activated = 1.5dp 描边 + 弱底）的区别只在"不加底"——
+     开关（on/off 可并存、非互斥单选）的选中由 **1.5dp 描边 + 文字加粗** 表达，
+     单选（互斥、当前项）由 1.5dp 描边 + 弱底 表达。两者若不分开，用户在播放控制栏上
+     无法区分"当前清晰度"和"循环播放已开"（对照表 表达归属 列按此分档）。
+     不加底不会漏底：常规态 shape_chip_normal 本就无 <solid>（透明），选中态与它同底，只多一圈描边。
+     宽度仍走 @dimen/state_stroke_select 单点，颜色仍走 @color/state_select_stroke 单点。 -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+
+    <corners android:radius="4dp" />
+
+    <padding
+        android:bottom="8dp"
+        android:left="12dp"
+        android:right="12dp"
+        android:top="8dp" />
+
+    <stroke
+        android:width="@dimen/state_stroke_select"
+        android:color="@color/state_select_stroke" />
+
+</shape>

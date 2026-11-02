@@ -84,8 +84,20 @@ public class History implements Diffable<History> {
         return items == null ? Collections.emptyList() : items;
     }
 
+    /**
+     * T-212（β2 粒度修正）：展示链口径＝**当前仓库（cid）**可见，与收藏同一条判据；不再叠站点粒度
+     * （β1 的站点级过滤在 beta31 实测把同仓其它站点的历史全滤光：{@code kind=history in=8 out=0 home=set}，
+     * 首页"继续观看"近乎恒空，详见 {@link Keep#getVodCurrent()} 的同段说明）。
+     * 带参的 {@link #get(int)} 是备份/同步导出用的仓库粒度全量，两者数据源相同但**语义分工不变**：
+     * 展示链走本方法并打留痕，导出链直接走带参版。
+     * 只过滤、不删行——切回原仓库即原样恢复（删除路径在 HistoryDao，本项不涉及）。
+     */
     public static List<History> get() {
-        return get(VodConfig.getCid());
+        int cid = VodConfig.getCid();
+        List<History> items = get(cid);
+        if (items == null) items = Collections.emptyList();
+        FavLog.filter("history", true, FavLog.len(VodConfig.get().getHome().getKey()), cid, items.size(), items.size());
+        return items;
     }
 
     public static List<History> get(int cid) {

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- β21 / T-326：简介"去按钮化"后的文字色表——**没有底色/边框/发光**，聚焦提示只靠文字提亮：
+     常态＝detail_sub（80% 白，与元信息/人员行同族），聚焦＝detail_desc_focus_text（100% 白）。
+     详情页恒深海报底 ⇒ 两档两主题同值（成对色在 values/values-night 的 detail_sub / detail_desc_focus_text）。
+     与 selector_detail_item_text 分开：那一套带"当前态"，简介没有当前态，也不得带回底色。 -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:color="@color/detail_desc_focus_text" android:state_focused="true" />
+    <item android:color="@color/detail_sub" />
+</selector>

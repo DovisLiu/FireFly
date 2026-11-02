@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- β20 / T-322＋T-324：点播详情页**选集卡专属**布局（新建，不复用 adapter_episode.xml——
+     后者被播放页 VideoActivity 经 ui/adapter/EpisodeAdapter 共用，改它会牵连播放页选集面板）。
+     规格（09 §三／§九.4）：高 @dimen/detail_episode_height（19dp=38px）、**固定单行横排**（LayoutManager 在
+     DetailActivity#setRecyclerView 改 HORIZONTAL）、文字 @dimen/detail_text_episode（11sp）、单行、超长 marquee；
+     **卡宽随内容自适应、只设上限不设下限**：layout_width=wrap_content、无 minWidth、
+     maxWidth=@dimen/detail_episode_max_width（120dp=240px，内容区加宽后短名一屏 ≥10 个、长名至多约 7 个）。
+     集数多少不影响页面高度（单行 ⇒ 行高恒 38px）。
+     三态视觉走统一 token：background=selector_detail_pill、文字色=color/selector_detail_item_text
+     （当前集=selected 档底色+描边，与聚焦态一眼可辨，T-323）。 -->
+<com.google.android.material.textview.MaterialTextView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/text"
+    android:layout_width="wrap_content"
+    android:layout_height="@dimen/detail_episode_height"
+    android:layout_marginEnd="8dp"
+    android:background="@drawable/selector_detail_pill"
+    android:ellipsize="marquee"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
+    android:gravity="center"
+    android:marqueeRepeatLimit="marquee_forever"
+    android:maxWidth="@dimen/detail_episode_max_width"
+    android:paddingStart="10dp"
+    android:paddingEnd="10dp"
+    android:singleLine="true"
+    android:textColor="@color/selector_detail_item_text"
+    android:textSize="@dimen/detail_text_episode"
+    tools:text="第01集" />

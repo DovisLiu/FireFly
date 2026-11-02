@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- T-167（A 追加线索：beta7 含 info 卡片时控制层可见，beta9 删 info 后"看不见"——控制层根 wrap_content
+     失去有固有高度的子项）：按钮行给显式高度 56dp，保证控制层整体有可测量高度 -->
 <HorizontalScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="56dp"
     android:fillViewport="true"
     android:scrollbars="none">
 
@@ -12,6 +14,16 @@
         android:gravity="center_vertical"
         android:orientation="horizontal">
 
+        <!-- Round 38 / R2①②（刘先生 2026-10-27 裁定：「播放中按下键的详情和换源都删，在播放页不需要详情和换源」）：
+             原前两位 detail / source 两个按钮**整块删除**，不挪到行尾、不保留任何入口
+             （对应 VideoActivity 侧监听同步删除、BACK 回落详情页见 VideoActivity.onBackInvoked）。
+             行首两位由 A 在 Round 40 T-189-b 裁定为「下一集 next」→「上一集 prev」，
+             依据是刘先生最新原话「焦点在进度条，再向下焦点应到菜单的第一个选项（下一集）上，然后右翻到第二个选项（上一集）」；
+             **Round 38 R2 的「prev 首位 / next 次位」口径由此作废**（交付里同步写明"旧口径已覆盖"）。
+             焦点连线（口径补充第 1 条「左右到两端不得跳空格、不得环绕到错误项，焦点顺序与视觉顺序逐项一致」）：
+             · 环绕端点随真实首末位走：首位 next 的 nextFocusLeft=@id/ending、末位 ending 的 nextFocusRight=@id/next；
+             · 相邻项交给 LinearLayout 默认顺序遍历 ⇒ 焦点顺序＝视觉顺序逐项一致；
+             · 行内 gone 项（parse/danmaku/edition/chapter）默认遍历自动跳过。 -->
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/next"
             style="@style/Control"
@@ -57,10 +69,14 @@
             android:layout_marginEnd="8dp"
             android:text="@string/play_replay" />
 
+        <!-- Round 38 / R5（A 裁定 P2「开关类 = 加粗 + 1.5dp 描边、不加底」）：本页唯一的**持续 on/off 开关**
+             （循环播放）改用 selector_chip_switch，与单选类胶囊（selector_chip：1.5dp + 弱底）区分；
+             文字加粗见 VideoActivity.setRepeatVisual()（XML 状态列表表达不了 typeface）。 -->
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/repeat"
             style="@style/Control"
             android:layout_marginEnd="8dp"
+            android:background="@drawable/selector_chip_switch"
             android:text="@string/play_repeat" />
 
         <com.firefly.tv.ui.custom.CustomUpDownView
@@ -127,6 +143,8 @@
             android:layout_marginEnd="8dp"
             android:text="@string/play_op" />
 
+        <!-- 行末位（片尾）右键环绕目标＝**当前真实首位** @id/next（T-189-b / Round 40 起行首是下一集；
+             原写 @id/prev 会让右键从末位落到次位，属"环绕到错误项"）。 -->
         <com.firefly.tv.ui.custom.CustomUpDownView
             android:id="@+id/ending"
             style="@style/Control"

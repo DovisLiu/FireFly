@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- β21 / T-326：简介"去按钮化"后的焦点提示箭头（drawableEnd，行尾小箭头）。
+     固有尺寸 12dp＝24px；本体是半透明占位色，实际显隐由 res/color/selector_desc_arrow 的 tint 控制
+     （常态全透明＝看不见但占位稳定，聚焦＝100% 白）。不新增字体/位图资源。 -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="12dp"
+    android:height="12dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24"
+    android:tint="@color/detail_desc_arrow_hidden">
+    <path
+        android:fillColor="@android:color/white"
+        android:pathData="M8.59,16.59L13.17,12L8.59,7.41L10,6l6,6 -6,6z" />
+</vector>

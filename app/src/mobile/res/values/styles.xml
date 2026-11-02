@@ -8,8 +8,31 @@
         <item name="android:colorBackground">@color/bg_page</item>
         <item name="colorSurface">@color/bg_card</item>
         <item name="colorSurfaceContainer">@color/bg_card</item>
+        <!-- β19 / T-315（手机侧）：全站弹窗的底色/文字色在此一处收口。
+             此前 AlertDialog 走 ?attr/colorSurfaceContainerHigh、BottomSheet 走 ?attr/colorSurfaceContainerLow，
+             两者本项目都没赋值 ⇒ 回落 Material 的 M3 基线紫板（浅 #ECE6F0／深 #2B2930，
+             弹窗内文字 #E6E0E9、正文 #CAC4D0 同样带紫）。现在全部指到与设置页同一族的中性 token：
+             浅＝#FFFFFF（设置页卡片底同值）、深＝#1E2126；文字色走 popup_on_surface(_variant)。
+             日夜自动切换靠 values / values-night 的**同名成对** token，不是靠本行写两遍。 -->
+        <item name="colorSurfaceContainerHigh">@color/popup_surface</item>
+        <item name="colorSurfaceContainerLow">@color/popup_surface</item>
+        <item name="colorOnSurface">@color/popup_on_surface</item>
+        <item name="colorOnSurfaceVariant">@color/popup_on_surface_variant</item>
+        <!-- β19 / T-315：手机侧本轮**只改底色/文字色**（上面四行属性），不改弹窗圆角 overlay：
+             Theme.App.Popup 与 Shape.App.Pill 定义在 leanback 源集里，mobile 引不到；
+             且 mobile 的 FAB 与弹窗共用 shapeAppearanceCornerExtraLarge，全局改会变形。
+             手机侧弹窗圆角列为待办，等 TV 验收后另批。 -->
         <item name="colorSecondaryContainer">@color/brand_primary_container</item>
         <item name="colorOnSecondaryContainer">@color/brand_on_primary_container</item>
+        <!-- β39 / beta70 批 1 第 1 项（上方 β19 注释里那条"待办"就是本行）：手机弹窗容器圆角收 16dp。
+             做法照 leanback/res/values/styles.xml:24 的同一套——**只覆盖 materialAlertDialogTheme**，
+             不动全局 shapeAppearanceCornerExtraLarge（手机 FAB 在用那个属性，全局改会变形）。
+             上一轮盘点的实测依据：全仓 `new MaterialAlertDialogBuilder(...)` 全是单参、没有一处传
+             themeResId（mobile 8／leanback 6／main 2 处），所以容器圆角只由主题的这一个属性决定；
+             改这一处即覆盖 27 个 dialog_*.xml 与 activity/fragment 里那 8 处直接建 builder 的弹窗。
+             同名 style 在 mobile 源集自己建一份（flavor 资源不与 leanback 合并，不存在"引不到"，
+             β19 那条注释的说法本轮已按实测订正在上方，原文保留不改）。 -->
+        <item name="materialAlertDialogTheme">@style/Theme.App.Popup</item>
         <item name="android:statusBarColor">@color/transparent</item>
         <item name="android:navigationBarColor">@color/transparent</item>
         <item name="android:windowDrawsSystemBarBackgrounds">true</item>
@@ -34,6 +57,19 @@
     <style name="Shape.Pill" parent="">
         <item name="cornerFamily">rounded</item>
         <item name="cornerSize">24dp</item>
+    </style>
+
+    <!-- β39 / beta70：手机侧弹窗专用 ThemeOverlay（与 leanback 那份同名、各自源集一份，互不影响）。
+         parent 用 Material 现成的 MaterialAlertDialog overlay，其余属性继续吃 Theme.Base 的覆盖结果；
+         这里只换弹窗容器的四角形状，其余一概不动。 -->
+    <style name="Theme.App.Popup" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="shapeAppearanceCornerExtraLarge">@style/Shape.App.Dialog</item>
+    </style>
+
+    <!-- 弹窗容器＝四角等值 16dp（@dimen/radius_sheet），禁 pill（同 β21/T-331 的裁定）。 -->
+    <style name="Shape.App.Dialog" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">@dimen/radius_sheet</item>
     </style>
 
     <style name="Widget.App.Nav.Indicator" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">

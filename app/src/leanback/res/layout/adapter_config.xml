@@ -17,7 +17,7 @@
         android:gravity="center"
         android:singleLine="true"
         android:textColor="?android:attr/textColorPrimary"
-        android:textSize="18sp"
+        android:textSize="14sp"
         tools:text="https://example.com/cat.json" />
 
     <androidx.appcompat.widget.AppCompatImageView

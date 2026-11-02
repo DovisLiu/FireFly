@@ -49,4 +49,19 @@ public class Migrations {
             database.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_Track_key_type` ON `Track` (`key`, `type`)");
         }
     };
+
+    /**
+     * β18 / T-213（35→36）：给收藏表补「更新进度」列——与 History.vodRemarks **同名同语义**
+     * （站点给的"更新至第N集"文本，不是数字），收藏行左上的更新角标从此有源。
+     *  · 列名 vodRemarks／类型 TEXT／**可空、不给 DEFAULT**：ADD COLUMN 不重写任何现有行，
+     *    老收藏行取回 NULL，渲染层按「空即隐藏」处理 ⇒ 绝不出现空角标／错位角标；
+     *  · 评分列本轮**不加**（全仓无任何评分数据源，见交付 INDEX 的方案段）；将来 A 拍板数据源后
+     *    并入**本条**迁移即可（本轮不出包 ⇒ 不产生第二个迁移号，零额外迁移代价）。
+     */
+    public static final Migration MIGRATION_35_36 = new Migration(35, 36) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase database) {
+            database.execSQL("ALTER TABLE Keep ADD COLUMN vodRemarks TEXT");
+        }
+    };
 }

@@ -1,6 +1,7 @@
 package com.firefly.tv.ui.custom;
 
 import android.app.Activity;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -58,6 +59,7 @@ public class CustomKeyDownVod extends GestureDetector.SimpleOnGestureListener {
             else listener.onKeyUp();
             changeSpeed = false;
         } else if (KeyUtil.isActionUp(event) && KeyUtil.isDownKey(event)) {
+            Log.d("FireFlyPlay", "keydown actionUp -> listener.onKeyDown");
             listener.onKeyDown();
         } else if (KeyUtil.isActionUp(event) && KeyUtil.isEnterKey(event)) {
             listener.onKeyCenter();

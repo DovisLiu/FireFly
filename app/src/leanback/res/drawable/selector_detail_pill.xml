@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- β20 / T-319＋T-323：点播详情页「线路 chip／选集卡」共用的三态 selector（全圆胶囊族）。
+     一套 token 六类控件共用（09 §四），本文件与 selector_detail_button.xml／selector_detail_card.xml
+     是同一套 token 的三种圆角/底形态，颜色一律走 @color/detail_*（values 与 values-night 成对），不硬编码。
+     三态：
+       聚焦＝**1.5px 外发光环**（@dimen/detail_focus_glow 宽的 detail_glow 环）＋焦点实底 detail_focus_bg；
+             shape 画不出真模糊、API 28 无 RenderEffect（T-316 判据已认模拟），落地＝layer-list 外圈 stroke 环
+             ＋内层 inset 一个环宽的实底，两缘相接即"焦点色外溢"观感。内层全圆靠 999dp 自动夹半高，与外圈同心。
+       当前＝detail_current_bg ＋ 一圈 @dimen/state_stroke_select 的 detail_current_stroke（与常态/聚焦一眼可辨）。
+       常态＝detail_item_bg ＋ @dimen/detail_glass_stroke(1px) 的 detail_item_stroke 细描边。
+     文字色另见 res/color/detail_item_text.xml（同三态）。 -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true">
+        <layer-list>
+            <item>
+                <shape android:shape="rectangle">
+                    <solid android:color="@android:color/transparent" />
+                    <corners android:radius="@dimen/pill_radius" />
+                    <stroke
+                        android:width="@dimen/detail_focus_glow"
+                        android:color="@color/detail_glow" />
+                </shape>
+            </item>
+            <item
+                android:bottom="@dimen/detail_focus_glow"
+                android:left="@dimen/detail_focus_glow"
+                android:right="@dimen/detail_focus_glow"
+                android:top="@dimen/detail_focus_glow">
+                <shape android:shape="rectangle">
+                    <solid android:color="@color/detail_focus_bg" />
+                    <corners android:radius="@dimen/pill_radius" />
+                </shape>
+            </item>
+        </layer-list>
+    </item>
+    <item android:state_selected="true">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/detail_current_bg" />
+            <corners android:radius="@dimen/pill_radius" />
+            <stroke
+                android:width="@dimen/state_stroke_select"
+                android:color="@color/detail_current_stroke" />
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@color/detail_item_bg" />
+            <corners android:radius="@dimen/pill_radius" />
+            <stroke
+                android:width="@dimen/detail_glass_stroke"
+                android:color="@color/detail_item_stroke" />
+        </shape>
+    </item>
+</selector>

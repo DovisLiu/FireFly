@@ -1,17 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- β19 / T-310（刘先生：选集受不同源影响宽度不一，长文件名看不到全名；但太宽一行又放不下几集。
+     指定照 1.1.0 的 `619e991:adapter_episode.xml` 处理）——1.1.0 那条是
+     `layout_width=wrap_content` ＋ `singleLine=true` ＋ `ellipsize=marquee` ＋ 16sp：
+     **卡片宽度跟着文字走，超长靠跑马灯**。本页现状其实早就是 wrap_content＋singleLine，
+     缺的正是 marquee，而且**没有宽度上限** ⇒ 个别源把整集名塞进 remark 时，单卡无限撑宽，
+     `GridLayoutManager(this, 8)` 的 8 列被挤成一行两三列（＝判据②要防的"被最长名字带崩"）。
+     本块补两样：①`ellipsize=marquee`＋`marqueeRepeatLimit`（焦点态滚动，长名能看全）；
+     ②`maxWidth=112dp`＝224px 上限——每列可用宽 =（1920 − 2×52dp 安全区 − 网格间距）／8 ≈ 228px，
+     取 224px 留一点余量 ⇒ 无论名字多长，8 列都站得住。字号 14sp、minWidth 56dp、内边距均未动。 -->
 <com.google.android.material.textview.MaterialTextView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/text"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:background="@drawable/selector_item"
-    android:ellipsize="marquee"
+    android:background="@drawable/shape_episode"
     android:focusable="true"
     android:focusableInTouchMode="true"
+    android:minWidth="56dp"
+    android:maxWidth="112dp"
+    android:ellipsize="marquee"
+    android:marqueeRepeatLimit="marquee_forever"
+    android:paddingStart="12dp"
+    android:paddingTop="8dp"
+    android:paddingEnd="12dp"
+    android:paddingBottom="8dp"
     android:gravity="center"
-    android:nextFocusUp="@id/flag"
-    android:nextFocusDown="@id/array"
     android:singleLine="true"
-    android:textColor="@color/text"
-    android:textSize="16sp"
-    tools:text="20" />
+    android:textColor="?android:attr/textColorPrimary"
+    android:textSize="14sp"
+    tools:text="第01集" />

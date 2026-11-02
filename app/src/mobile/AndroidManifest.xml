@@ -129,6 +129,11 @@
             android:parentActivityName=".ui.activity.HomeActivity"
             android:supportsPictureInPicture="true" />
 
+        <activity
+            android:name=".ui.activity.DetailActivity"
+            android:configChanges="screenSize|smallestScreenSize|screenLayout|uiMode|orientation"
+            android:theme="@style/Theme.App" />
+
         <receiver
             android:name=".receiver.ShortcutReceiver"
             android:exported="false" />

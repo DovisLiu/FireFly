@@ -14,26 +14,37 @@
         android:background="@color/black_20"
         app:shapeAppearanceOverlay="@style/Vod.Grid" />
 
+    <!-- Round 38 / R3（P6：TV 全改 + mobile 同批改，共享 main 侧镜像 drawable，不新增 leanback 分叉文件）：
+         左上角标（年份位）与右上 remark 统一为同一文字规格 + 水平镜像形状。
+         原 12sp + @color/text_year(?attr/colorOnSurfaceVariant) + shape_vod_year（?attr/colorSurfaceVariant 底、
+         4dp 内边距、8dp 圆角）→ 10sp + @color/text_remark（白）+ shape_vod_remark_left（暗底 3dp/5dp、12dp 外角）。
+         位置不变（原本就 alignStart/alignTop image）。 -->
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/year"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="@drawable/shape_vod_year"
+        android:layout_alignStart="@+id/image"
+        android:layout_alignTop="@+id/image"
+        android:background="@drawable/shape_vod_remark_left"
         android:singleLine="true"
-        android:textColor="@color/text_year"
-        android:textSize="12sp"
+        android:textColor="@color/text_remark"
+        android:textSize="10sp"
         android:visibility="gone"
         tools:text="2022"
         tools:visibility="visible" />
 
+    <!-- Round 38 / R3：源名角标在本卡也贴**左上**（Vod.getYearVisible 有 site 时隐藏 year，二者互斥占同一角），
+         故同样收进左上角标规格；原 12sp + @color/text_site + shape_vod_site（?attr/colorErrorContainer 底）。 -->
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/site"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="@drawable/shape_vod_site"
+        android:layout_alignStart="@+id/image"
+        android:layout_alignTop="@+id/image"
+        android:background="@drawable/shape_vod_remark_left"
         android:singleLine="true"
-        android:textColor="@color/text_site"
-        android:textSize="12sp"
+        android:textColor="@color/text_remark"
+        android:textSize="10sp"
         android:visibility="gone"
         tools:text="泥巴"
         tools:visibility="visible" />

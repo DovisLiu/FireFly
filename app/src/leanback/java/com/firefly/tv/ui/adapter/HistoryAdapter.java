@@ -91,7 +91,7 @@ public class HistoryAdapter extends BaseDiffAdapter<History, HistoryAdapter.View
         private void setFocusListener() {
             itemView.setOnFocusChangeListener((v, hasFocus) -> {
                 if (hasFocus) {
-                    v.animate().scaleX(1.1f).scaleY(1.1f).setDuration(150).start();
+                    v.animate().scaleX(ResUtil.FOCUS_SCALE).scaleY(ResUtil.FOCUS_SCALE).setDuration(150).start();
                     v.setTranslationZ(10f);
                     v.setSelected(true);
                 } else {

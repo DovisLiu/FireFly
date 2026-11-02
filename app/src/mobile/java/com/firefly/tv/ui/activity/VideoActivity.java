@@ -47,6 +47,7 @@ import com.firefly.tv.api.DanmakuApi;
 import com.firefly.tv.api.SiteApi;
 import com.firefly.tv.api.config.VodConfig;
 import com.firefly.tv.bean.Danmaku;
+import com.firefly.tv.bean.DetailLog;
 import com.firefly.tv.bean.Episode;
 import com.firefly.tv.bean.Flag;
 import com.firefly.tv.bean.History;
@@ -122,6 +123,7 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
     private VideoViewModel mViewModel;
     private VodPlaybackController mVod;
     private FlagAdapter mFlagAdapter;
+    private boolean sourceMode;
     private EpisodeAdapter mEpisodeAdapter;
     private QualityAdapter mQualityAdapter;
     private QuickAdapter mQuickAdapter;
@@ -375,6 +377,8 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
         mBinding.flag.addItemDecoration(new SpaceItemDecoration(8));
         mBinding.flag.setAdapter(mFlagAdapter = new FlagAdapter(this));
         mBinding.quick.setAdapter(mQuickAdapter = new QuickAdapter(this));
+        // 换源态入口（§3.9 手机同步：确认态⇄换源态）
+        mBinding.changeSource.setOnClickListener(v -> enterSourceMode());
         mBinding.episode.setHasFixedSize(true);
         mBinding.episode.setItemAnimator(null);
         mBinding.episode.addItemDecoration(new SpaceItemDecoration(8));
@@ -684,8 +688,39 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
 
     @Override
     public void renderSources(List<Vod> items) {
+        // 换源态（§3.9）：fallback 自动聚合出候选源时进入换源态展示
         mQuickAdapter.addAll(items);
+        if (!sourceMode) {
+            sourceMode = true;
+            mBinding.sourceTitle.setVisibility(View.VISIBLE);
+        }
         mBinding.quick.setVisibility(mQuickAdapter.isEmpty() ? View.GONE : View.VISIBLE);
+    }
+
+    // ================= 换源两态（spec §3.9 手机同步） =================
+
+    /** 进入换源态：顶部源选择行+线路选集，可直接选集播放（交互与 TV 端一致，无预览） */
+    private void enterSourceMode() {
+        if (sourceMode) return;
+        List<Site> sites = VodConfig.get().getSites();
+        String name = getVodName();
+        if (sites == null || sites.size() <= 1 || name == null || name.isEmpty()) {
+            Notify.show(getString(R.string.play_change_none));
+            return;
+        }
+        sourceMode = true;
+        mBinding.sourceTitle.setVisibility(View.VISIBLE);
+        mQuickAdapter.clear();
+        mBinding.quick.setVisibility(View.VISIBLE);
+        requestSearch(sites, name);
+    }
+
+    /** 返回确认态：收起源选择行（锁定当前源） */
+    private void exitSourceMode() {
+        sourceMode = false;
+        mBinding.sourceTitle.setVisibility(View.GONE);
+        mBinding.quick.setVisibility(View.GONE);
+        mViewModel.stopSearch();
     }
 
     @Override
@@ -993,12 +1028,25 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
 
     private void onRepeat() {
         player().setRepeatOne(!player().isRepeatOne());
-        mBinding.control.action.repeat.setSelected(player().isRepeatOne());
+        setRepeatVisual(player().isRepeatOne());
+    }
+
+    /**
+     * Round 38 / R5（P6：TV 全改 + mobile 同批改）：开关类（循环播放）的选中表达收进一个方法，
+     * 与 leanback 侧 VideoActivity.setRepeatVisual 同口径——selected 与加粗必须成对，漏一处就"半更新"。
+     * mobile 的控制栏没有状态背景（@style/Control 的 background 是 selectableItemBackgroundBorderless），
+     * 选中本来**没有任何可见表达**，加粗是本轮给它补上的唯一表达；不新建 mobile 状态 drawable
+     * （对照表 #16：mobile 沿用其既有语言=state-list 文字色，不重建 TV 那套焦点/描边）。
+     * 加粗同样走 ResUtil.setSwitchBold（双端共享 util，见其注释：TextView 上没有 setFakeBoldText）。
+     */
+    private void setRepeatVisual(boolean on) {
+        mBinding.control.action.repeat.setSelected(on);
+        ResUtil.setSwitchBold(mBinding.control.action.repeat, on);
     }
 
     @Override
     public void onRepeatModeChanged(int repeatMode) {
-        mBinding.control.action.repeat.setSelected(player().isRepeatOne());
+        setRepeatVisual(player().isRepeatOne());
     }
 
     private void onScale() {
@@ -1224,7 +1272,19 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
     }
 
     private void setArtwork(String url) {
-        mHistory.setVodPic(url);
+        // T-150（拍板 48）：与 TV 端同源缺陷同修（A 裁决 D-4=手机代码同批改）——
+        // 播放解析返回的 artwork（网盘 LOGO）只用于播放器封面显示，不再写进 History.vodPic；
+        // 仅当锁定图确实为空时才允许补位落库，否则手机收藏/历史同样会被 LOGO 永久覆盖。
+        if (TextUtils.isEmpty(url)) {
+            DetailLog.picSkip("empty", url);
+        } else if (mHistory == null) {
+            DetailLog.picSkip("nolock", url);
+        } else if (!TextUtils.isEmpty(mHistory.getVodPic())) {
+            DetailLog.picSkip("same", url);
+        } else {
+            mHistory.setVodPic(url);
+            DetailLog.picSet(url);
+        }
         setArtwork();
     }
 
@@ -1270,9 +1330,12 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
         Keep keep = new Keep();
         keep.setKey(getHistoryKey());
         keep.setCid(VodConfig.getCid());
-        keep.setVodPic(mHistory.getVodPic());
+        // T-150（拍板 48）：收藏图优先用进入播放页带入的列表锁定图（intent "pic"），避免 artwork(LOGO) 落库
+        keep.setVodPic(TextUtils.isEmpty(getPic()) ? mHistory.getVodPic() : getPic());
         keep.setVodName(mHistory.getVodName());
         keep.setSiteName(getSite().getName());
+        // β18 / T-213：与 TV 侧 createKeep 同一写法（更新进度取 mHistory）
+        keep.setVodRemarks(mHistory.getVodRemarks() == null ? "" : mHistory.getVodRemarks());
         keep.setCreateTime(System.currentTimeMillis());
         keep.save();
     }
@@ -1281,7 +1344,10 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
         Keep keep = Keep.find(getHistoryKey());
         if (keep != null) {
             keep.setVodName(mHistory.getVodName());
-            keep.setVodPic(mHistory.getVodPic());
+            // T-150（拍板 48）：同 createKeep，收藏刷新也只用列表锁定图
+            keep.setVodPic(TextUtils.isEmpty(getPic()) ? mHistory.getVodPic() : getPic());
+            // β18 / T-213：与 TV 侧 updateKeep 同一写法
+            keep.setVodRemarks(mHistory.getVodRemarks() == null ? "" : mHistory.getVodRemarks());
             keep.save();
         }
     }
@@ -1670,6 +1736,9 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
     protected void onBackInvoked() {
         if (isVisible(mBinding.control.getRoot())) {
             hideControl();
+        } else if (sourceMode) {
+            // 换源态返回=回确认态（§3.9 两态，锁定当前源）
+            exitSourceMode();
         } else if (isFullscreen() && !isLock()) {
             exitFullscreen();
         } else if (!isLock()) {

@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Round 38 / R5①：圆形头像卡（演员/UP 主等）焦点态与海报卡同一条语言（描边 + scale，不加底）。
+     原 2dp @color/white 在浅色主题下不可见 → 换 @color/state_focus_stroke（日夜都压在浅/深底上可见）。 -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="oval">
 
     <stroke
-        android:width="2dp"
-        android:color="@color/white" />
+        android:width="@dimen/state_stroke_focus"
+        android:color="@color/state_focus_stroke" />
 
 </shape>

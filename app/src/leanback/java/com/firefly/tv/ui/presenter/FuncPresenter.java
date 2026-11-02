@@ -8,6 +8,7 @@ import androidx.leanback.widget.Presenter;
 
 import com.firefly.tv.bean.Func;
 import com.firefly.tv.databinding.AdapterFuncBinding;
+import com.firefly.tv.utils.ResUtil;
 
 public class FuncPresenter extends Presenter {
 
@@ -47,7 +48,7 @@ public class FuncPresenter extends Presenter {
         public ViewHolder(@NonNull AdapterFuncBinding binding) {
             super(binding.getRoot());
             this.binding = binding;
-            binding.getRoot().setOnFocusChangeListener((v, hasFocus) -> v.animate().scaleX(hasFocus ? 1.08f : 1f).scaleY(hasFocus ? 1.08f : 1f).setDuration(150).start());
+            binding.getRoot().setOnFocusChangeListener((v, hasFocus) -> v.animate().scaleX(hasFocus ? ResUtil.FOCUS_SCALE : 1f).scaleY(hasFocus ? ResUtil.FOCUS_SCALE : 1f).setDuration(150).start());
         }
     }
 }

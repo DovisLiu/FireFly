@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- TV 2.0 导航整体容器：一条半透明圆角胶囊（效果图 01_home 顶部形态） -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@color/nav_bar_bg" />
+    <corners android:radius="999dp" />
+</shape>

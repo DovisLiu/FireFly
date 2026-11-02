@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- β20 / T-317＋T-319：点播详情页**线路 chip 专属**布局（新建，不复用 adapter_filter.xml——
+     后者被点播分类页 FilterPresenter 与手机端 FilterAdapter 共用，改它会牵连两页）。
+     规格（09 §三）：高 @dimen/detail_chip_height（15dp=30px）、圆角全圆（selector_detail_pill）、
+     文字 @dimen/detail_text_chip（12sp）、**单行**超长省略（ellipsize=end）。
+     **不写 nextFocusDown 等静态连线**（规范 08 R7：本页每方向唯一决定者＝DetailActivity 的层表 dispatch；
+     旧 adapter_flag.xml 上的 nextFocusDown=@id/episode 属第二决定者，本页不再引入）。
+     三态视觉走统一 token：background=selector_detail_pill、文字色=color/selector_detail_item_text。 -->
+<com.google.android.material.textview.MaterialTextView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/text"
+    android:layout_width="wrap_content"
+    android:layout_height="@dimen/detail_chip_height"
+    android:layout_marginEnd="8dp"
+    android:background="@drawable/selector_detail_pill"
+    android:ellipsize="end"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
+    android:gravity="center"
+    android:maxWidth="160dp"
+    android:paddingStart="12dp"
+    android:paddingEnd="12dp"
+    android:singleLine="true"
+    android:textColor="@color/selector_detail_item_text"
+    android:textSize="@dimen/detail_text_chip"
+    tools:text="泥巴" />

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 导航文字/图标色：聚焦=高亮反色；当前页=默认 icon_primary（深色模式白/浅色模式深灰）；
+     T-169（刘先生 beta7 晚间反馈：移开焦点后首页项"很暗、像缺了一块"——T-162 删 selected 灰底后，
+     selected 分支文字仍取 nav_pill_active_text（反色高亮）→ 无底但字为高亮色、深色背景上不可读/像缺失；
+     删除 selected 分支，当前页与普通项一致、正常可读） -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:color="@color/nav_pill_active_text" android:state_focused="true" />
+    <item android:color="@color/icon_primary" />
+</selector>

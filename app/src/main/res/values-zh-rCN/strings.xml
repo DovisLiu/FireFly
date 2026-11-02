@@ -266,6 +266,15 @@
     <string name="setting_backup">备份</string>
     <string name="setting_restore">恢复</string>
     <string name="setting_version">版本</string>
+    <string name="setting_network">网络</string>
+    <string name="setting_general">通用设置</string>
+    <string name="setting_vod_home">点播首页源</string>
+    <string name="setting_vod_history">点播历史</string>
+    <string name="setting_live_home">直播首页源</string>
+    <string name="setting_live_history">直播历史</string>
+    <string name="setting_live_preview">直播预览</string>
+    <string name="setting_vod_preview">点播预览</string>
+    <string name="detail_source_only">无其他源</string>
     <string name="setting_about">关于</string>
     <string name="setting_choose">选择</string>
     <string name="setting_off">关</string>
@@ -326,6 +335,9 @@
     <string name="dialog_edit">修改</string>
     <string name="dialog_positive">确定</string>
     <string name="dialog_negative">取消</string>
+    <!-- β44 / B1：首页 BACK 退出确认框（新增 key，未挪用被更新公告弹窗占用的 notice_confirm/notice_exit） -->
+    <string name="exit_app_title">退出应用？</string>
+    <string name="exit_app_msg">确定要退出应用吗？</string>
     <string name="dialog_select_edition">选择标题</string>
     <string name="dialog_select_chapter">选择章节</string>
     <string name="dialog_config_hint">请输入配置…</string>
@@ -386,8 +398,8 @@
     <string name="crash_reset">清除源配置并重启</string>
     <string name="exit_dialog_title">上次异常退出详情</string>
     <string name="exit_abnormal">检测到上次异常退出：%1$s</string>
-    <string name="crash_reset_confirm">将清除全部点播/直播/壁纸源配置并重启应用，继续吗？</string>
-    <string name="crash_reset_done">源配置已清除</string>
+    <string name="crash_reset_confirm">将清除当前点播源的配置并重启应用，继续吗？</string>
+    <string name="crash_reset_done">当前点播源配置已清除</string>
 
     <!-- Hint -->
     <string name="copied">已复制</string>
@@ -446,4 +458,5 @@
         <item>选择字幕</item>
     </string-array>
 
+    <string name="play_detail">详情</string>
 </resources>

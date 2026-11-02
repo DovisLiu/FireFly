@@ -8,6 +8,20 @@
         <item name="android:colorBackground">@color/bg_page</item>
         <item name="colorSurface">@color/bg_card</item>
         <item name="colorSurfaceContainer">@color/bg_card</item>
+        <!-- β19 / T-315（TV侧）：全站弹窗的底色/文字色在此一处收口。
+             此前 AlertDialog 走 ?attr/colorSurfaceContainerHigh、BottomSheet 走 ?attr/colorSurfaceContainerLow，
+             两者本项目都没赋值 ⇒ 回落 Material 的 M3 基线紫板（浅 #ECE6F0／深 #2B2930，
+             弹窗内文字 #E6E0E9、正文 #CAC4D0 同样带紫）。现在全部指到与设置页同一族的中性 token：
+             浅＝#FFFFFF（设置页卡片底同值）、深＝#1E2126；文字色走 popup_on_surface(_variant)。
+             日夜自动切换靠 values / values-night 的**同名成对** token，不是靠本行写两遍。 -->
+        <item name="colorSurfaceContainerHigh">@color/popup_surface</item>
+        <item name="colorSurfaceContainerLow">@color/popup_surface</item>
+        <item name="colorOnSurface">@color/popup_on_surface</item>
+        <item name="colorOnSurfaceVariant">@color/popup_on_surface_variant</item>
+        <!-- β19 / T-315：弹窗圆角按首页导航胶囊那一套（@dimen/pill_radius）。
+             这里**只覆盖 materialAlertDialogTheme**，不动全局 shapeAppearanceCornerExtraLarge——
+             那个属性还被 mobile 的 FloatingActionButton 共用，全局改会顺带变形。-->
+        <item name="materialAlertDialogTheme">@style/Theme.App.Popup</item>
         <item name="colorSecondaryContainer">@color/brand_primary_container</item>
         <item name="colorOnSecondaryContainer">@color/brand_on_primary_container</item>
         <item name="played_color">@color/brand_primary</item>
@@ -22,6 +36,22 @@
         <item name="fontFamily">@font/misans</item>
         <item name="android:textViewStyle">@style/Text.App</item>
         <item name="materialButtonStyle">@style/Button.App</item>
+    </style>
+
+    <!-- β19 / T-315：弹窗专用 ThemeOverlay——只把弹窗容器的圆角换成胶囊（与导航同一 dimen）。
+         parent 用 Material 现成的 MaterialAlertDialog overlay，其余属性继续吃 Theme.Base 的覆盖结果。
+         ⚠ β21 / T-331 回退：上面这句是 beta48 的原注释——把容器指到 pill(999dp) 后容器变成"胶囊"，
+         两侧弧边把内容裁掉（刘先生：「片源窗的内容都显示不全」）。现改回**四角固定小圆角 16dp**；
+         弹窗内**条目**不受本行影响——条目底一直走 shape_item_*/@dimen/pill_radius（设置页那套），保持原样。
+         Shape.App.Pill 本行改指后引用归零，随本批删除（R5① 死资源清理同例）。 -->
+    <style name="Theme.App.Popup" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="shapeAppearanceCornerExtraLarge">@style/Shape.App.Dialog</item>
+    </style>
+
+    <!-- β21 / T-331：弹窗容器圆角＝四角等值 16dp（@dimen/dialog_corner_radius），禁 pill。 -->
+    <style name="Shape.App.Dialog" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">@dimen/dialog_corner_radius</item>
     </style>
 
     <style name="Text.App" parent="android:Widget.Material.TextView">
@@ -76,6 +106,62 @@
         <item name="android:nextFocusUp">@id/exo_progress</item>
         <item name="android:textColor">@color/text</item>
         <item name="android:textSize">14sp</item>
+    </style>
+
+    <!-- 设置页两栏范式（spec §3.8）：左分类宫格 + 右明细行 -->
+    <style name="SettingCategory">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginBottom">8dp</item>
+        <item name="android:background">@drawable/selector_item</item>
+        <item name="android:focusable">true</item>
+        <item name="android:focusableInTouchMode">true</item>
+        <item name="android:paddingStart">16dp</item>
+        <!-- β19 / T-312：左列分类项上下 padding 12dp→8dp。改前真机实测（beta47／density 320）：
+             文字 14sp＝28px（行盒约 39px），而 catVod/catLive… 整块 bounds 高 **86px** ⇒「底大字小」。
+             收后预期 39＋2×16＝约 71px，墨迹占框比例由 0.30 提到约 0.37。 -->
+        <item name="android:paddingTop">8dp</item>
+        <item name="android:paddingEnd">16dp</item>
+        <item name="android:paddingBottom">8dp</item>
+        <item name="android:textColor">@color/text</item>
+        <item name="android:textSize">@dimen/setting_text</item> <!-- β13 / T-226：SettingCategory 16sp→14sp（导航基准） -->
+    </style>
+
+    <style name="SettingRow">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginBottom">12dp</item>
+        <item name="android:background">@drawable/selector_item</item>
+        <item name="android:focusable">true</item>
+        <item name="android:focusableInTouchMode">true</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:orientation">horizontal</item>
+        <item name="android:paddingStart">20dp</item>
+        <!-- β19 / T-312：右栏行项上下 padding 16dp→10dp。改前真机实测（beta47）：
+             vod 行 bounds 高 **102px**（文字行盒约 39px ⇒ 空白 63px）；收后预期 39＋2×20＝约 79px。
+             左右两档各自收（12/16 → 8/10），保持「左列比右栏矮一档」的既有层级差；
+             判据③：两档都是 style 级改动 ⇒ 左右列**所有行**一致，不会个别高矮不一。 -->
+        <item name="android:paddingTop">10dp</item>
+        <item name="android:paddingEnd">20dp</item>
+        <item name="android:paddingBottom">10dp</item>
+    </style>
+
+    <style name="SettingRowTitle">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginEnd">16dp</item>
+        <item name="android:textColor">?android:attr/textColorPrimary</item>
+        <item name="android:textSize">@dimen/setting_text</item> <!-- β13 / T-226：SettingRowTitle/Value 18sp→14sp（导航基准） -->
+    </style>
+
+    <style name="SettingRowValue">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:ellipsize">end</item>
+        <item name="android:gravity">end</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:textColor">?android:attr/textColorSecondary</item>
+        <item name="android:textSize">@dimen/setting_text</item> <!-- β13 / T-226：SettingRowTitle/Value 18sp→14sp（导航基准） -->
     </style>
 
 </resources>

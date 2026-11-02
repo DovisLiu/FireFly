@@ -30,14 +30,21 @@
         app:shapeAppearanceOverlay="@style/Vod.Grid.Large"
         tools:visibility="visible" />
 
+    <!-- Round 38 / R3：海报左上角标（历史/收藏网格卡的年份位）改用右上角标同规格——
+         原 14sp + ?android:attr/textColorPrimary + shape_vod_year（蓝底 8dp 圆角、4dp 内边距）
+         → 10sp + @color/text_remark（白）+ shape_vod_remark_left（暗底、3/5dp 内边距、12dp 外角水平镜像）。
+         位置不变：显式对齐到 image 左上（原先无 align 规则时由 RelativeLayout 默认落在父容器左上，
+         而 image 即父容器左上，视觉零位移，只把"贴左上"写成契约，避免后续布局调整时漂移）。 -->
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/year"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="@drawable/shape_vod_year"
+        android:layout_alignStart="@+id/image"
+        android:layout_alignTop="@+id/image"
+        android:background="@drawable/shape_vod_remark_left"
         android:singleLine="true"
-        android:textColor="?android:attr/textColorPrimary"
-        android:textSize="14sp"
+        android:textColor="@color/text_remark"
+        android:textSize="10sp"
         android:visibility="gone"
         tools:text="2022"
         tools:visibility="visible" />
@@ -56,18 +63,35 @@
         tools:text="泥巴"
         tools:visibility="visible" />
 
+    <!-- Round 38 / R3：本卡左侧角标（"更新至 1142 集"一类，贴在海报左下）与右上角标（site，右上）
+         原先进的是同一个 shape_vod_remark（为**右上**设计的 12dp 外角），但字号/文字色不同——
+         14sp + ?android:attr/textColorPrimary vs 右上的 10sp + @color/text_remark，即刘先生所见"不一致"。
+         现统一文字规格（10sp + @color/text_remark + 同字重/同内边距 3dp/5dp），
+         形状改垂直镜像的 shape_vod_remark_bottom_left（外角 12dp 落左下、内角 6dp 落右上）。 -->
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/remark"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_above="@+id/name"
-        android:background="@drawable/shape_vod_remark"
+        android:layout_alignStart="@+id/image"
+        android:background="@drawable/shape_vod_remark_bottom_left"
         android:ellipsize="marquee"
         android:singleLine="true"
-        android:textColor="?android:attr/textColorPrimary"
-        android:textSize="14sp"
+        android:textColor="@color/text_remark"
+        android:textSize="10sp"
         tools:text="1080p" />
 
+    <ProgressBar
+        android:id="@+id/progress"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="3dp"
+        android:layout_alignBottom="@+id/image"
+        android:layout_marginStart="4dp"
+        android:layout_marginEnd="4dp"
+        android:max="100"
+        android:progressDrawable="@drawable/shape_vod_progress"
+        android:visibility="gone" />
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/name"
         android:layout_width="match_parent"

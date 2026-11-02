@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- β20 / T-319：换源源列表卡的三态 selector（圆角 5dp 族，09 §三"圆角 10px"）。
+     与 selector_detail_pill.xml 同套 token，只换圆角：聚焦发光环的内层 radius 取 4dp
+     （外圈 5dp 内缩一个环宽 0.75dp 后的同心近似，差 0.25dp 不可见，不为此新增 dimen）。
+     当前源仍**另加对勾角标**（adapter_source.xml 的 @+id/badge，代码控显隐），本 selector 的 selected 档
+     只负责底色/描边——角标＋底色同向表达，不与聚焦态混淆。 -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true">
+        <layer-list>
+            <item>
+                <shape android:shape="rectangle">
+                    <solid android:color="@android:color/transparent" />
+                    <corners android:radius="@dimen/detail_source_card_radius" />
+                    <stroke
+                        android:width="@dimen/detail_focus_glow"
+                        android:color="@color/detail_glow" />
+                </shape>
+            </item>
+            <item
+                android:bottom="@dimen/detail_focus_glow"
+                android:left="@dimen/detail_focus_glow"
+                android:right="@dimen/detail_focus_glow"
+                android:top="@dimen/detail_focus_glow">
+                <shape android:shape="rectangle">
+                    <solid android:color="@color/detail_focus_bg" />
+                    <corners android:radius="4dp" />
+                </shape>
+            </item>
+        </layer-list>
+    </item>
+    <item android:state_selected="true">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/detail_current_bg" />
+            <corners android:radius="@dimen/detail_source_card_radius" />
+            <stroke
+                android:width="@dimen/state_stroke_select"
+                android:color="@color/detail_current_stroke" />
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@color/detail_item_bg" />
+            <corners android:radius="@dimen/detail_source_card_radius" />
+            <stroke
+                android:width="@dimen/detail_glass_stroke"
+                android:color="@color/detail_item_stroke" />
+        </shape>
+    </item>
+</selector>

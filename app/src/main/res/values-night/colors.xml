@@ -1,21 +1,42 @@
 <resources>
 
-    <!-- 流萤品牌色板（花瓣紫系）—— 深色模式覆盖 -->
-    <color name="brand_primary">#D3BBF5</color>
-    <color name="brand_on_primary">#452A6D</color>
-    <color name="brand_primary_container">#5D4385</color>
-    <color name="brand_on_primary_container">#EADCFF</color>
+    <!-- Round 38 / R5②（深色镜像，同 values/colors.xml 的裁定）：花瓣紫系退场 → 中性灰阶。
+         brand_primary 由浅紫 #D3BBF5 改 #BFC4CB（相对亮度 L≈0.549，压在 bg_page #14161A 上对比 10.2，
+         作进度条已播色/描边/文字强调均可辨）；on_primary 改深字 #1B1E23（与 brand_primary 对比 9.8）；
+         容器 #5D4385 → #3A4046，容器上文字 #EADCFF → #DEE2E6（对比 7.97）。 -->
+    <color name="brand_primary">#BFC4CB</color>
+    <color name="brand_on_primary">#1B1E23</color>
+    <color name="brand_primary_container">#3A4046</color>
+    <color name="brand_on_primary_container">#DEE2E6</color>
+
+    <!-- Round 38 / R5①：深色档的焦点/选中态色值单点（浅色档见 values/colors.xml 同名词，取值理由与
+         "焦点底复用 focus_card、选中底取不透明中性灰"的裁定都在那边写明）。
+         on_dark_* 与浅色文件同值成对声明：恒深底控件（详情页海报层、直播黑底面板、播放器画面浮层）
+         日夜都用白描边，这里只是把"两主题同值"的事实写全，避免 night 下缺 token 而回落到浅色档的深描边。 -->
+    <color name="state_focus_stroke">#FFF2F3F5</color>
+    <color name="state_select_stroke">#80F2F3F5</color>
+    <color name="state_select_bg">#FF3A4046</color>
+    <color name="on_dark_focus_stroke">#FFFFFFFF</color>
+    <color name="on_dark_focus_bg">#1AFFFFFF</color>
+    <color name="on_dark_select_stroke">#80FFFFFF</color>
+    <color name="on_dark_select_bg">#0DFFFFFF</color>
 
     <!-- 深色语言（爱奇艺 TV 风）：深灰蓝底 + 深灰卡 + 白底选中 -->
     <color name="bg_page">#14161A</color>
     <color name="splash_bg">#14161A</color>
     <color name="bg_card">#1E2126</color>
+    <!-- β19 / T-315：深侧镜像——弹窗底色从 M3 基线 #2B2930（紫）改回与设置页卡片同一档 #1E2126；
+         文字档取中性冷灰白，与 values 侧同名 token 成对（判据③「深浅两侧都要有对应资源」）。 -->
+    <color name="popup_surface">#1E2126</color>
+    <color name="popup_on_surface">#E8EAED</color>
+    <color name="popup_on_surface_variant">#A6ABB5</color>
     <color name="focus_card">#2C313A</color>
     <color name="text_secondary">#9BA1A8</color>
     <color name="icon_primary">#FFFFFF</color>
 
-    <color name="icon_purple_bg">#3A3450</color>
-    <color name="icon_purple">#CECBF6</color>
+    <!-- Round 38 / R5②：紫色系分类图标位转中性灰（深色档），与 values/colors.xml 同裁定 -->
+    <color name="icon_purple_bg">#343A40</color>
+    <color name="icon_purple">#BFC4CB</color>
 
     <color name="icon_teal_bg">#1E3A34</color>
     <color name="icon_teal">#9FE1CB</color>
@@ -34,4 +55,46 @@
 
     <color name="icon_amber">#FFD54F</color>
     <color name="icon_amber_bg">#3A2E10</color>
+    <color name="text_score">#FF7A5C</color>
+
+    <!-- TV 2.0 顶部胶囊导航（深色模式：深色半透明容器 + 当前页胶囊高亮）
+         Round 38 / R6②（A 2026-10-27 口径补充第 4 条：「深色顶栏纯白本身就是大反差，两侧一并改，不要只改浅色」）：
+         #FFFFFFFF（L=1.0，纯白大反差）→ #FFDADCE0（L=0.735，浅灰），文字仍用现成深字 #FF16181D（对比 11.4）。
+         与浅色侧镜像同规则：浅灰底 + 深字，不出现纯白块；相邻未选中胶囊为透明/弱底，色差可辨不刺眼。 -->
+    <color name="nav_bar_bg">#D90D1014</color>
+    <color name="nav_scrim_start">#F2101216</color>
+    <color name="nav_scrim_end">#00101216</color>
+    <color name="nav_pill_active_bg">#FFDADCE0</color>
+    <!-- nav_pill_selected_bg 已随 R5① 死资源清理删除（与 values/colors.xml 成对移除，0 引用） -->
+    <color name="nav_pill_active_text">#FF16181D</color>
+
+    <!-- T-146（拍板 46/49）：详情页底部"播放源"行（深色模式：角标用品牌萤光绿，源卡文字近白） -->
+    <color name="detail_source_current">#FFC8F73A</color>
+    <color name="detail_source_text">#F2FFFFFF</color>
+    <color name="detail_source_sub">#CCFFFFFF</color>
+    <!-- 对勾笔画色：落在恒深绿圆底上，两主题同值（成对声明，避免在 drawable 里硬编码） -->
+    <color name="detail_source_badge_mark">#FF16181D</color>
+
+    <!-- T-146（Round 36 ⑥）：详情页刊名/辅文字色（与 values/ 成对声明，详情页恒深底故同值） -->
+    <color name="detail_title">#FFFFFFFF</color>
+    <color name="detail_sub">#CCFFFFFF</color>
+
+    <!-- β20 / T-319＋T-323：详情页焦点/状态 token 的**深色档**（浅色档在 values/colors.xml，成对镜像）。
+         取值抄交接包/09 §四 表格深色列；当前态三值为 B 推导档（待刘先生真机复核，见 values/ 侧注释）。
+         对比度：深色聚焦 #EDEFF2/#111＝16.4、深色常态 #1B2026/#C7CCD2＝10.1、深色当前 #242A31/#EDEFF2＝12.6，均 ≥4.5。 -->
+    <color name="detail_item_bg">#FF1B2026</color>
+    <color name="detail_item_stroke">#FF2B323B</color>
+    <color name="detail_item_text">#FFC7CCD2</color>
+    <color name="detail_focus_bg">#FFEDEFF2</color>
+    <color name="detail_focus_text">#FF111111</color>
+    <color name="detail_current_bg">#FF242A31</color>
+    <color name="detail_current_stroke">#FF5A6470</color>
+    <color name="detail_current_text">#FFEDEFF2</color>
+    <!-- 聚焦 1.5px 外发光环色：深色档聚焦底是浅色 ⇒ 环同取浅色（与 values/ 侧"环随焦点底"同规则反向）。 -->
+    <color name="detail_glow">#66EDEFF2</color>
+    <!-- 玻璃底上的常态文字/图标色（与 values/ 成对同值：恒深海报上的浅字，不随主题翻）。 -->
+    <color name="detail_glass_text">#F2FFFFFF</color>
+    <!-- β21 / T-326 简介聚焦提亮文字与行尾箭头（与 values/ 成对同值：恒深海报底，不随主题翻）。 -->
+    <color name="detail_desc_focus_text">#FFFFFFFF</color>
+    <color name="detail_desc_arrow_hidden">#00FFFFFF</color>
 </resources>

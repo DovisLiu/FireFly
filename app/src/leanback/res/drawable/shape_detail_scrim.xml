@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- T-184（Round 39）建层，β8 / 海报（A 裁定）改水平档：**左 #E6 → 右全透明、止于屏宽 58%**，底部条保留。
+     ①水平遮罩：startColor=#E6000000（α=230/255≈0.902）在 x=0；centerColor=#00000000 落在 **centerX=0.58（=1114px@1920）**；
+        endColor 仍全透明 ⇒ 0.58 之后**不再遮**（效果图右侧海报本体不被压暗，"左边文字区 / 右边图像区"靠这一刀拉开）。
+        文字区（x∈[0,1400]）面平均 α 由旧三段（E0/CC/80，均值≈0.804）变为对 [0,0.58] 线性衰减、[0.58,0.729] 为 0：
+        α(x)=0.902·(1−x/0.58) 在 [0,0.58]，⇒ 区间平均 0.902·(1−0.58/2)/0.58·0.58 = 0.902·0.71 ≈ **0.640**，
+        再按 0.58/0.729 的占比折到整条文字区 ≈ **0.509** ⇒ 白底合成后平均 255×(1−0.509)≈**125/255**，
+        **比旧写法（≈50/255）亮得多 ⇒ 旧的“文字区 dim ≤58”判据在本批不再自动成立**。
+        ⇒ 这就是为什么背景层必须同时改成“模糊 + ×0.50 压暗”（底图自己就暗），两者是**一组参数、必须同块回滚**；
+        证据行 bgEvidence 的 dim/raw 是自算合成值，C 以真机截图复核（设计页 §五 判据 1）。
+     ②底部渐隐：**不动**（120dp＝240px@density320，α 0→0.6 即 #99 上限），继续保底部“播放源”行与选集区可读。
+     **与 DetailActivity 的 SCRIM_* 常量逐值对齐**（证据行按这组数自算，改一处必改两处）。
+     旧 shape_detail_gradient（0 引用）早已删除；mobile 侧同名资源独立存在、不受影响。 -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:angle="0"
+                android:centerColor="#00000000"
+                android:centerX="0.58"
+                android:endColor="#00000000"
+                android:startColor="#E6000000"
+                android:type="linear" />
+        </shape>
+    </item>
+    <item
+        android:gravity="bottom"
+        android:height="120dp">
+        <shape android:shape="rectangle">
+            <gradient
+                android:angle="90"
+                android:endColor="#00000000"
+                android:startColor="#99000000"
+                android:type="linear" />
+        </shape>
+    </item>
+</layer-list>

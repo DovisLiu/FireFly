@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 双端（leanback / mobile）共用的尺寸单点，放 main 源集所以两个 flavor 都能解析。
+     TV 导航/内容间距在 leanback/res/values/dimens.xml。 -->
+<resources>
+    <!-- Round 38 / R5①（刘先生真机实测「同为选中的控件，有的加框有的不加、粗细还不一致」）：
+         全站焦点/选中态**描边宽度**单点，shape XML 一律写 @dimen 引用
+         （原先 1dp / 1.5dp / 2dp 三种粗细并存，且各自写死在 shape 里）。
+         · state_stroke_focus = 2dp：焦点态（R5①「焦点态 = 2dp 描边 + 轻微提亮底」）
+         · state_stroke_select = 1.5dp：选中态（R5①「选中态 = 1.5dp 描边 + 更弱的底」）
+         颜色不在这里：主题底走 @color/state_focus_stroke / state_select_stroke（日夜自动翻），
+         恒深底（详情页海报层、直播黑底面板、播放器画面浮层）走 @color/on_dark_*（日夜同值），
+         取值与理由见 main/res/values/colors.xml 的 R5① 注释块。 -->
+    <dimen name="state_stroke_focus">2dp</dimen>
+    <dimen name="state_stroke_select">1.5dp</dimen>
+
+    <!-- β20 / T-316～T-324（交接包/09 §三 控件规格，density 320 ⇒ 1dp=2px、1sp=2px）：
+         点播详情页重排的尺寸单点。放 main 源集是因为 colors 的同族 token 也在 main（成对声明），
+         且 leanback 布局引用 main dimen 与现有 state_stroke_* 同例；mobile 详情页不引用本组，不受影响。
+         换算：胶囊高 25dp=50px（判据带 48–52px 正中）、圆钮 24dp=48px（Ø48）、图标 10dp=20px、
+         图标文字间距 5dp=10px、线路 chip 15dp=30px、选集卡 19dp=38px、源卡 31dp=62px、
+         发光环 0.75dp=1.5px、玻璃描边 0.5dp=1px、源卡圆角 5dp=10px。 -->
+    <!-- β22 / A 追加（刘先生「三个按钮可以加大一点，图标也可以大一点」）：
+         圆钮 Ø48→**Ø56**（28dp）、胶囊高 50→**56**（28dp，带 56–60 下沿）、图标 20→**24**（12dp）、
+         胶囊文字 14→**15sp**。beta50 竖向预算重算：按钮行 50→56 吃 +6px，卡行底推导
+         单线路 ≈819／多线路 ≈857、源列表展开 ≈919，仍 ≤1070 ⇒ T-325 已加的间距**无需回退**。
+         （改前值：pill 25dp=50px、circle 24dp=Ø48px、icon 10dp=20px、pill 文字 14sp。） -->
+    <dimen name="detail_btn_pill_height">28dp</dimen>
+    <dimen name="detail_btn_circle">28dp</dimen>
+    <dimen name="detail_btn_icon">12dp</dimen>
+    <dimen name="detail_btn_icon_gap">5dp</dimen>
+    <dimen name="detail_chip_height">15dp</dimen>
+    <dimen name="detail_episode_height">19dp</dimen>
+    <dimen name="detail_source_card_height">31dp</dimen>
+    <dimen name="detail_source_card_radius">5dp</dimen>
+    <dimen name="detail_focus_glow">0.75dp</dimen>
+    <dimen name="detail_glass_stroke">0.5dp</dimen>
+    <!-- T-324：内容区右边界右移（可压海报）。左安全区 52dp 不动，右 52dp→24dp ⇒ 内容宽 1712px→1872−104=1768px（+56px）。 -->
+    <dimen name="detail_content_padding_end">24dp</dimen>
+    <!-- T-322：选集卡宽随内容自适应、**只设上限不设下限**（短名「1」可一屏排 10 个）。
+         上限 120dp=240px：内容区 1768px 内短名排 ≥10、长名至多 240px（≈7 个），落在 09 §二"7–10 集"带内。 -->
+    <dimen name="detail_episode_max_width">120dp</dimen>
+    <!-- 09 §三 字号档（sp）：线路 chip 12、选集卡 11、播放胶囊 14。
+         β21 / T-325（刘先生「字体可大一号」）：元信息/人员/简介 12.5→**13.5sp**。 -->
+    <dimen name="detail_text_meta">13.5sp</dimen>
+    <dimen name="detail_text_desc">13.5sp</dimen>
+    <dimen name="detail_text_chip">12sp</dimen>
+    <dimen name="detail_text_episode">11sp</dimen>
+    <dimen name="detail_text_pill">15sp</dimen>
+    <!-- β21 / T-327（刘先生「排了满屏跟海报冲突，到海报区域就换行」）＋ β22 / A 补精确值
+         （刘先生 2026-10-30：「右边界差不多在满屏的 65%–70%」，A 取 1300px 默认、带内可微调）：
+         文字块（元信息行/人员行/简介）最大宽＝**600dp=1200px ⇒ 右界 104+1200=1304px≈屏宽 68%**（带 1248–1344 内）。
+         只约束这三块；**选集行与换源列表行**见下方 detail_list_max_width（A 最终表＝90%≈1728，非满宽也非 85%）
+         ⇒ 版面"上窄中更宽"，五段**左边距同为 104px**，靠左对齐统一、不产生撕裂。
+         如实登记：竖版海报主体左缘实测 1155px ⇒ 文字带 1155–1304 会压过接缝 149px，
+         该段在 scrim 尾部（scrim 水平止于屏宽 58%＝1114px 之外已无强压暗）——可读性由 C 真机深浅两模式复验，
+         若判"压海报"越界，只回退本 dimen 一个值即可（带内 624–672dp 连续可调）。 -->
+    <dimen name="detail_text_max_width">600dp</dimen>
+    <!-- β22 / A 最终宽度表（刘先生 85% 取消→**90%≈1728px**）：选集行与换源列表行的行宽。
+         内容左界 104px ⇒ 1728−104＝1624px＝**812dp**（右界恰落屏宽 90%）。
+         线路行（flagRow）与按钮行不在本表内⇒ 维持满宽（1872）；左边距与文字块同为 104px，三段对齐。
+         可见集数推导（"第XX集"卡 122px＝墨 66＋padding 40＋margin 16）：选集行内宽 1624−标题 76＝1548 ⇒ **≈12 卡**
+         （满宽时 ≈13，收 90% 少 1 卡）；短名「1」≈19 卡；长名触上限 240px ≈6 卡。 -->
+    <dimen name="detail_list_max_width">812dp</dimen>
+</resources>

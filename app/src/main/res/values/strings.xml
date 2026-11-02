@@ -267,6 +267,15 @@
     <string name="setting_backup">Backup</string>
     <string name="setting_restore">Restore</string>
     <string name="setting_version">Version</string>
+    <string name="setting_network">Network</string>
+    <string name="setting_general">General Settings</string>
+    <string name="setting_vod_home">Vod home source</string>
+    <string name="setting_vod_history">Vod history</string>
+    <string name="setting_live_home">Live home channel</string>
+    <string name="setting_live_history">Live history</string>
+    <string name="setting_live_preview">Live preview</string>
+    <string name="setting_vod_preview">VOD preview</string>
+    <string name="detail_source_only">No other sources</string>
     <string name="setting_about">About</string>
     <string name="setting_choose">Choose</string>
     <string name="setting_off">Off</string>
@@ -327,6 +336,9 @@
     <string name="dialog_edit">Edit</string>
     <string name="dialog_positive">OK</string>
     <string name="dialog_negative">Cancel</string>
+    <!-- β44 / B1：首页 BACK 退出确认框（A 定稿：新增 key，不挪用被更新公告弹窗占用的 notice_confirm/notice_exit） -->
+    <string name="exit_app_title">Exit app?</string>
+    <string name="exit_app_msg">Are you sure you want to exit?</string>
     <string name="dialog_select_edition">Select title</string>
     <string name="dialog_select_chapter">Select chapter</string>
     <string name="dialog_config_hint">Please enter the config…</string>
@@ -386,8 +398,8 @@
     <string name="crash_reset">Clear source config and restart</string>
     <string name="exit_dialog_title">Last abnormal exit details</string>
     <string name="exit_abnormal">Abnormal exit detected last time: %1$s</string>
-    <string name="crash_reset_confirm">This will clear all VOD/Live/Wallpaper source configs and restart the app. Continue?</string>
-    <string name="crash_reset_done">Source config cleared</string>
+    <string name="crash_reset_confirm">This will clear the current VOD source config and restart the app. Continue?</string>
+    <string name="crash_reset_done">Current VOD source config cleared</string>
 
     <!-- Hint -->
     <string name="copied">Copied</string>
@@ -456,4 +468,5 @@
         <item>Select subtitle track</item>
     </string-array>
 
+    <string name="play_detail">Detail</string>
 </resources>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 直播选台页频道大卡（spec v1.10 拍板 44，刘先生 05_live-reference 效果图）：
+     默认 = 主题卡片色 token（bg_card）；聚焦 = 主题聚焦色（focus_card）+ 描边（nav_pill_active_bg，双主题自动适配）。
+     卡片尺寸/圆角见 adapter_channel_select.xml；颜色全部走 token，不硬编码。
+     Round 38 / R5①：描边由"nav_pill_active_bg（顶栏胶囊反色块专用 token，语义错位）"换成全站焦点描边单点
+     @color/state_focus_stroke + @dimen/state_stroke_focus，本卡与其它列表行/卡片就是同一种焦点表达。 -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/focus_card" />
+            <corners android:radius="14dp" />
+            <stroke android:width="@dimen/state_stroke_focus" android:color="@color/state_focus_stroke" />
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@color/bg_card" />
+            <corners android:radius="14dp" />
+        </shape>
+    </item>
+</selector>

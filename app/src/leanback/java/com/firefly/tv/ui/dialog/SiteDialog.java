@@ -1,5 +1,6 @@
 package com.firefly.tv.ui.dialog;
 
+import android.util.Log;
 import android.view.View;
 
 import androidx.fragment.app.FragmentActivity;
@@ -44,6 +45,15 @@ public class SiteDialog extends BaseAlertDialog implements SiteAdapter.OnClickLi
     public void show(FragmentActivity activity) {
         show(activity.getSupportFragmentManager(), null);
         if (activity instanceof SiteListener) listener = (SiteListener) activity;
+        // T-210：接口未接上必须留痕——原写法 instanceof 失败时静默降级，onItemClick 只剩 dismiss()，
+        // 表现是「点了没反应、日志里什么都没有」，与 T-186 的 NoPresenter 同一类失败模式。
+        // T-212（β2）补仓库字段：本项目「源」有两级——SiteDialog 只列**当前仓库内**的站点
+        // （SiteAdapter.addAll 走 VodConfig.get().getSites()），切仓库要另走 LOGO/设置里的仓库列表。
+        // 打出 repo= 与 cid 后，C 一眼就能判"找不到原源"是站点级还是仓库级的问题，不再靠猜。
+        Log.d("FireFlyHome", "siteDialog host=" + activity.getClass().getSimpleName()
+                + " siteListener=" + (listener != null)
+                + " repo=" + VodConfig.get().getConfig().getName()
+                + " cid=" + VodConfig.getCid());
     }
 
     private boolean list() {

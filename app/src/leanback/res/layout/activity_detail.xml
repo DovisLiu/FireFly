@@ -1,0 +1,465 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- TV 2.0 详情页（spec §3.3 单页两态）。
+     T-146（拍板 46/49，D-5）：视觉向 research/design/04_detail.png 靠拢，底部"播放源"行=确认态常显只读行。
+     **Round 40 / T-192-2 + T-187-a（2026-10-27，以 C 的 beta24 真机复测为准）**：
+       片名 64sp → **50sp**（beta24 实测 64sp 墨迹 119px ⇒ 系数 1.859px/sp ⇒ 50sp 预测 93px，判据 88–98 正中）；
+       评分 13sp / 类型 12sp / 元信息 12sp（回收进带，见各块注释）；四处文字统一 **85% 白 @color/detail_sub**（A《更正》口径，片名保持纯白）；
+       块间距按新行盒重新补平（paddingTop 158dp、评分行 marginTop 8dp、元信息 marginTop 8dp），
+       整链预算见 **build/r40-budget-out.txt**；**Round 41 起改以 C 的 beta25 真机 bounds 为锚**：确认态 3 行简介下
+       源卡实测 [104,952][324,1080]，A 新判据＝行底 ≤1070 且完整可见（贴 1080 不合格）⇒ 本轮 ⑥/⑦ 标题 marginTop
+       8dp→4dp、卡行 4dp→2dp（共 −12px）⇒ 预测源卡 940..**1068** ✓；简介聚焦展开整体取消（恒 3 行，见 desc 注释）。
+     Round 39 口径保留：左边界 52dp、简介宽 648dp（右边界 1400px）、简介 3 行截断（文档 §3.3 优先于设计图 4 行）。
+     纪律不变：不新增硬编码白字（文字一律走 @color/detail_* / play_btn_* / on_dark_* token，values 与 values-night 成对）。 -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?android:attr/colorBackground">
+
+    <!-- T-184（Round 39）：背景改**双层管线**，取图优先级不变（拍板 47/48 原样，数据层一行未改）。
+         bgFill＝同图放大铺满整屏并**强制不透明**（消除图源自带 alpha 时四周露底＝C 报的"圆角半透明面板"表现）；
+         bgMain＝主体层：竖版源按**整高**铺满（fitCenter ⇒ 主体保留竖图全高 100%，不再"只取中部 37% 放大 2.4 倍"），
+         横版源（slideLen>0）16:9 时 fitCenter 恰好整图铺满、零裁切。两层都由 DetailActivity.loadBg() 统一驱动。 -->
+    <!-- β8 / 海报（A 拍板：主体宽取 720＝不放大；效果图构图＝主体在右、左侧留给文字）。
+         竖版主体层不再全屏居中，而是**按高整铺、右贴边**：
+         · height=match_parent ⇒ 整高 1080，**不裁不放大**（源 1920×2560 之类 ⇒ 显示宽=1080×宽高比；2:3 时约 720px）；
+         · wrap_content + adjustViewBounds ⇒ 宽度由图片比例推出来，不做二次缩放；
+         · layout_gravity=end|center_vertical ⇒ 右贴边、垂直居中（不再有左右等宽的信箱）。
+         背景层（bgFill）在 DetailActivity.loadBg 里按档位切换：横版真图=centerCrop（原行为不变）；竖版＝左缘列横向拉伸（见下方 β11 注释）。
+         竖版（β11 起）＝**主体左缘那一列横向拉伸**（PosterWash：同源、不模糊）＋逐列亮度斜坡（贴接缝 96px k=1、再向左 320px 降到 kMin）后 fitXY 铺满。
+         ⚠ 两层都是 FrameLayout 里的**覆盖层**（match_parent / wrap_content 都不参与下方内容的测量），
+         所以本块不会推高"卡行底 ≤1070"；简介 3 行、片名墨迹、播放源行位置一律未动。 -->
+    <ImageView
+        android:id="@+id/bgFill"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:contentDescription="@null"
+        android:scaleType="centerCrop"
+        tools:src="@tools:sample/backgrounds/scenic" />
+
+    <ImageView
+        android:id="@+id/bg"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="end|center_vertical"
+        android:adjustViewBounds="true"
+        android:contentDescription="@null"
+        android:scaleType="fitCenter"
+        tools:src="@tools:sample/backgrounds/scenic" />
+
+
+    <!-- 实时预览（spec §3.3 v1.9）：静音试看，未出画保留锁定海报，出画淡入 -->
+    <TextureView
+        android:id="@+id/preview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:alpha="0"
+        android:visibility="gone" />
+
+    <!-- T-184 压暗：文字区（x≤1400、y320–900）平均亮度 ≤58/255、对比 ≥4.5:1，由 shape_detail_scrim 承担
+         （左浓右淡的水平渐变 + 底部 240px 由 0 递增到 ≥50% 黑的垂直渐变两层叠加，见 drawable 内注释）。 -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/shape_detail_scrim" />
+
+    <!-- 预览加载指示（未出画期间显示，海报不黑屏） -->
+    <FrameLayout
+        android:id="@+id/previewLoading"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_marginBottom="24dp"
+        android:layout_marginEnd="52dp"
+        android:visibility="gone">
+
+        <ProgressBar
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:indeterminate="true" />
+    </FrameLayout>
+
+    <com.firefly.tv.ui.custom.ProgressLayout
+        android:id="@+id/progressLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <!-- T-183：左右安全区 58dp→52dp（左边界 116px→104px＝设计值）；
+             T-192-2 / T-187-a（Round 40）：paddingTop 146dp→**158dp＝316px** ⇒ 片名 50sp 行盒 133.6px、
+             墨迹 93px ⇒ 墨迹顶边 = 316 + (133.6−93)/2 = **336.3px**（判据 325–365 ✓）。
+             146dp 时是 312.3px（差 12.7px 出带）——片名从 64sp 收到 50sp 后行盒内留白变薄，顶边跟着上浮，
+             这一段必须用 paddingTop 补回来； paddingBottom 24dp→0 保持（T-185 首屏五项 bounds 全落 1080 内）。
+             整链预算见 build/r40-budget-out.txt；**Round 41 改锚 C 的 beta25 真机 bounds**（确认态源卡实测顶 952、
+             本轮 −12px ⇒ 940..1068 ≤1070 ✓；模型累加口径的 1068.6/974.6 均已作废，不再作绝对判据）。
+             β19 / T-309（刘先生：「左边的文字部分可适当向上移，为下方的选集留出空间」）——本块五处间距**同批**收紧：
+             paddingTop 158→**138dp**（−40px）、评分行 marginTop 8→**6dp**（−4px）、按钮行 14→**10dp**（−8px）、
+             「选集」小标题 20→**12dp**（−16px）、集数网格 8→**6dp**（−4px），合计**净上移 72px**。
+             改前真机实测（beta47，本屏）：desc 顶 554、play 691..773、flagRecycler 813..889、
+             **episodeRecycler 顶 981 ⇒ 集数完整可见 1 行（8 集）**；预期改后顶约 909 ⇒ **完整可见 2 行（16 集）**。
+             不动项：简介仍 3 行（T-184/T-226 判据）、按钮行高 82px 与三按钮尺寸未动、
+             「卡行底 ≤1070」只会更小不回退；paddingTop 收 20dp 后片名顶边仍在导航（底 104px）下方约 146px，不产生遮挡。
+             β21 / T-325（刘先生「上下间距太紧，可稍松一点，字体可大一号」）——本块六处间距**同批各放 4–8px**：
+             元信息行 marginTop 6→**8dp**(+4px)、人员行 4→**6dp**(+4px)、简介 8→**12dp**(+8px)、
+             按钮行 10→**12dp**(+4px)、线路行 2→**4dp**(+4px)、选集行 12→**16dp**(+8px)，合计 **+32px**；
+             正文三档字号 12.5→**13.5sp**（@dimen/detail_text_meta/desc）。paddingTop 138dp 不再动。
+             推导（13.5sp 行盒≈37px、简介 3 行 multiplier 1.26 ⇒ 46px/行＝138px）：单线路＋有人员行时
+             选集行底 ≈**813**、多线路 ≈**851**、源列表展开 ≈**913**，均 ≤1070 ✓（真机复测订正）。 -->
+        <ScrollView
+            android:id="@+id/scroll"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingStart="52dp"
+            android:paddingTop="138dp"
+            android:paddingEnd="@dimen/detail_content_padding_end"
+            android:overScrollMode="never"
+            android:scrollbars="none"
+            android:paddingBottom="0dp">
+
+            <androidx.appcompat.widget.LinearLayoutCompat
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <!-- ①片名（T-192-2 / T-187-a 合并）：64sp → **50sp**。
+                     C 在 beta24 真机实测 64sp 墨迹 ≈119px ⇒ 实测比值 1.86px/sp（不是我 Round 39 用的 1.481 锚点）；
+                     50sp ⇒ 预测 93.0px，落在新判据 88–98 正中；按比值 ±5% 抖动仍是 88.4–97.7，不出带。
+                     行盒按 2.672px/sp：64sp=171px → 50sp=133.6px，省出的 37.4px 全部让给 T-187-a 的紧凑预算。
+                     textStyle=bold、letterSpacing=-0.06 保持（R5 口径与多字标题不撑行不变）。 -->
+                <!-- β33 / 详情页 v2 第四条（刘先生 2026-10-31「整个电影标题的文字可再减小一号」）：
+                     textSize **48sp→44sp**（现值 48sp 系 β29/T-325 定档，本行独立记录，上方原注不改）。
+                     行盒比值 2.672px/sp ⇒ 48sp≈128px（真机 `b63-detail-switch.xml` 实测 name 高 **129px**）
+                     → 44sp≈**118px**，片名行省 **约 11px**；GA 项待真机复核。 -->
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:fontFamily="@font/misans"
+                    android:letterSpacing="-0.06"
+                    android:singleLine="true"
+                    android:textColor="@color/detail_title"
+                    android:textSize="44sp"
+                    android:textStyle="bold"
+                    tools:text="海贼王" />
+
+                <!-- ②元信息**合并一行**（β20 / T-318，09 §二/§三：★评分 · 画质 · 类型 · 年份 · 地区 · 站点）。
+                     改前是两行（score+type 一行、meta 一行，beta48 真机实测 36px＋33px＋间距 8px＝77px）；
+                     本块把三个 TextView 收进同一个 horizontal 行：score/type 保持 wrap，meta 吃剩余宽并单行省略。
+                     字号统一 @dimen/detail_text_meta（12.5sp，09 §三）；行内间距 12dp 与改前 type 的 marginStart 同档。
+                     注意：Vod bean **没有评分字段**（全仓 grep vod_score/douban 均 0 命中），score 位绑的仍是
+                     vod_remarks（"已完结"一类画质/状态串）⇒ 09 表里的"★评分"无数据源，**不造假星号**，
+                     该格有 remarks 才显示、无则 GONE（绑定逻辑见 DetailActivity#bind）。
+                     β22 / T-327 补值：本行容器宽 match_parent→**@dimen/detail_text_max_width**（右界 1304px），
+                     与人员行/简介同宽＝文字区三段统一"上窄"，列表区（选集/源列表）仍满宽"下宽"。 -->
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:layout_width="@dimen/detail_text_max_width"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/score"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:singleLine="true"
+                        android:textColor="@color/detail_sub"
+                        android:textSize="@dimen/detail_text_meta"
+                        android:textStyle="bold"
+                        tools:text="已完结"
+                        tools:visibility="visible" />
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/type"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"
+                        android:singleLine="true"
+                        android:textColor="@color/detail_sub"
+                        android:textSize="@dimen/detail_text_meta"
+                        tools:text="剧情 / 科幻" />
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/meta"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"
+                        android:layout_weight="1"
+                        android:ellipsize="end"
+                        android:singleLine="true"
+                        android:textColor="@color/detail_sub"
+                        android:textSize="@dimen/detail_text_meta"
+                        tools:text="2022 · 日本 · 更新至 1142 集 · 电影天堂" />
+                </androidx.appcompat.widget.LinearLayoutCompat>
+
+                <!-- ②b 人员行（β20 / T-318，09 §二：导演：X · 演员：A/B/C…，12.5sp 单行省略）。
+                     数据源 Vod#getDirector / #getActor（bean 已有字段，见 Vod.java:195-205）；
+                     **两者皆空则 GONE 且不留空白**（09 §七.2），显隐由 DetailActivity#bind 控。
+                     β21 / T-327：宽度 wrap_content＋maxWidth 500dp（同简介口径）⇒ 长名单**换行不压海报**，
+                     上限 2 行、再长省略号；T-325：marginTop 4→6dp、字号随 detail_text_meta 到 13.5sp。 -->
+                <!-- β33 / 详情页 v2 第五条（刘先生「导演演员控制在一行，一行排不下的加上省略号，
+                     并和下方的内容介绍合并成一个容器」）：credits＋desc 收进 `descWrap`（vertical）。
+                     容器宽 **wrap_content**（不写死 600dp）⇒ 保持改前实测口径：credits/desc 各自 wrap＋maxWidth 600dp，
+                     撑满时右界 1304（真机 `b63-detail-switch.xml` 实测 `[104,470][1304,543]`／`[104,567][1304,695]`），
+                     短简介时 `desc` 的行尾箭头仍贴文字尾而不跳到行右界（若容器定宽会位移，故不这么写）。
+                     块顶间距＝原 credits 的 marginTop 6dp（12px）上移到容器；两子块 marginTop→0（省下的 24px 见测算 §3.2）。
+                     credits 由 2 行改 **1 行＋省略号**（实测省 37px），完整名单改由简介弹层承载（§六③(a)）。
+                     显隐：代码 bind 里 credits／desc 各按空串 GONE，**两者皆空 ⇒ descWrap GONE 不留空洞**（比照 :967 flagRow 口径）。
+                     焦点仍只给 desc（credits 未声明 focusable＝默认不可聚焦）⇒ 层表 L_DESC 不用改。 -->
+                <!-- ④简介（β21 / T-328：**恢复 3 行**＋省略号，点击弹层保留；T-326 **去按钮化**＝
+                     任何状态无底色/无边框/无外发光——删掉 beta49 的 background=selector_detail_pill 与 padding；
+                     焦点提示改用**文字提亮到 100% 白＋行尾小箭头**（textColor=selector_desc_text、
+                     drawableEnd=ic_detail_desc_more 由 selector_desc_arrow 控显隐：常态透明占位、聚焦 100% 白）。
+                     T-327：宽度 wrap_content＋maxWidth=@dimen/detail_text_max_width（500dp＝右界 1104px，
+                     beta49 真机海报左缘实测 1155px 前留 51px）⇒ 超长在块内换行、不压海报。
+                     T-325：字号 @dimen/detail_text_meta/desc 12.5→13.5sp、marginTop 8→12dp。
+                     行距 multiplier 1.26＝排版口径 1.7（行高=字号×1.7）÷默认行盒系数 1.35，beta49 已标定。
+                     仍可聚焦、OK/点击弹居中可滚动全文弹层；空简介 GONE 且不可聚焦（bind 控）。 -->
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:id="@+id/descWrap"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:orientation="vertical">
+
+                    <!-- β35（刘先生 2026-10-31 拍板方案 1）：**去掉行尾箭头**。β34 给 credits 挂的
+                         `drawableEnd=ic_detail_desc_more` ＋ `drawableTint=selector_desc_arrow` ＋ `drawablePadding 6dp`
+                         是**静态属性** ⇒ _arrow_ 常态全透明但**仍占位**（12dp 图标＋6dp padding＝≈36px），
+                         于是**所有片**的导演演员行可用文字宽从 1200px 掉到约 1164px，名单长的会提前截断。
+                         基线核对（`git show HEAD:…` 而非只读当前文件）：credits 原本**没有** drawablePadding，
+                         那三个 drawable 属性＋contentDescription 全是 β34 引入 ⇒ 本行连 padding 一起摘。
+                         **保留** `textColor=@color/selector_desc_text`（其常态档就是改前的 `detail_sub` #CCFFFFFF ⇒
+                         常态零变化；聚焦提亮到 `detail_desc_focus_text` #FFFFFFFF 是"可点"的**唯一**视觉线索）。
+                         **双入口的代码逻辑（creditsEntry／layerVisible／layerEntry／layerOf／早退／关窗回焦）一行未动。** -->
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/credits"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:contentDescription="@string/detail_desc_more"
+                        android:ellipsize="end"
+                        android:maxLines="1"
+                        android:maxWidth="@dimen/detail_text_max_width"
+                        android:textColor="@color/selector_desc_text"
+                        android:textSize="@dimen/detail_text_meta"
+                        android:visibility="gone"
+                        tools:text="导演：某某 · 演员：甲 / 乙 / 丙"
+                        tools:visibility="visible" />
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/desc"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:contentDescription="@string/detail_desc_more"
+                        android:drawableEnd="@drawable/ic_detail_desc_more"
+                        android:drawablePadding="6dp"
+                        android:drawableTint="@color/selector_desc_arrow"
+                        android:ellipsize="end"
+                        android:focusable="true"
+                        android:focusableInTouchMode="true"
+                        android:lineSpacingMultiplier="1.26"
+                        android:maxLines="3"
+                        android:maxWidth="@dimen/detail_text_max_width"
+                        android:textColor="@color/selector_desc_text"
+                        android:textSize="@dimen/detail_text_desc"
+                        tools:text="简介内容简介内容简介内容简介内容简介内容简介内容简介内容简介内容简介内容简介内容简介内容简介内容简介内容。" />
+                </androidx.appcompat.widget.LinearLayoutCompat>
+
+                <!-- ⑤播放 + 收藏 + 换源（β20 / T-316：三钮**同高同态**；β22 / A 追加：整体加大一档；
+                     β32 / T-334：再放大一号，行间距 +8px＝本行 marginTop 12→16dp）。
+                     胶囊高 @dimen/detail_btn_pill_height（32dp=64px，带 62–64）、宽 wrap+左右 16dp 内边距随内容自适应；
+                     圆钮 @dimen/detail_btn_circle（32dp=Ø64px）、padding 8dp ⇒ 图标槽 64−2×16=32px，图标 28px 不裁；
+                     胶囊文字 @dimen/detail_text_pill（**16sp** 加粗）＋图标与文字间距 @dimen/detail_btn_icon_gap（5dp=10px）；
+                     播放图标由 DetailActivity#initView 按 @dimen/detail_btn_icon（14dp=28px）重设 bounds。
+                     行内间距 keep/source marginStart 8dp 不变（16px，判据带 12–16px），三钮垂直居中同一行不变。
+                     三钮背景统一 selector_detail_button（聚焦=发光环+焦点底——**外发光按刘先生 2026-10-30 指示暂停，
+                     保留 beta49 现行、不返工不加强**；常态=模拟玻璃），
+                     胶囊文字色 color/detail_button_text（聚焦深字/常态白字），圆钮图标 tint 同表。 -->
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/play"
+                        android:layout_width="wrap_content"
+                        android:layout_height="@dimen/detail_btn_pill_height"
+                        android:background="@drawable/selector_detail_button"
+                        android:drawableStart="@drawable/ic_widget_play"
+                        android:drawablePadding="@dimen/detail_btn_icon_gap"
+                        android:drawableTint="@color/detail_button_text"
+                        android:focusable="true"
+                        android:focusableInTouchMode="true"
+                        android:gravity="center"
+                        android:paddingStart="16dp"
+                        android:paddingEnd="16dp"
+                        android:stateListAnimator="@null"
+                        android:text="@string/detail_play"
+                        android:textColor="@color/detail_button_text"
+                        android:textSize="@dimen/detail_text_pill"
+                        android:textStyle="bold" />
+
+                    <ImageView
+                        android:id="@+id/keep"
+                        android:layout_width="@dimen/detail_btn_circle"
+                        android:layout_height="@dimen/detail_btn_circle"
+                        android:layout_marginStart="24dp"
+                        android:background="@drawable/selector_detail_button"
+                        android:contentDescription="@string/detail_keep"
+                        android:focusable="true"
+                        android:focusableInTouchMode="true"
+                        android:padding="8dp"
+                        android:src="@drawable/ic_detail_keep_off"
+                        android:tint="@color/detail_button_text"
+                        tools:src="@drawable/ic_detail_keep_off" />
+
+                    <ImageView
+                        android:id="@+id/source"
+                        android:layout_width="@dimen/detail_btn_circle"
+                        android:layout_height="@dimen/detail_btn_circle"
+                        android:layout_marginStart="24dp"
+                        android:background="@drawable/selector_detail_button"
+                        android:contentDescription="@string/detail_source"
+                        android:focusable="true"
+                        android:focusableInTouchMode="true"
+                        android:padding="8dp"
+                        android:src="@drawable/ic_vod_filter_on"
+                        android:tint="@color/detail_button_text" />
+                </androidx.appcompat.widget.LinearLayoutCompat>
+
+                <!-- ⑥「线路」标题**与选项同行**（β20 / T-317，09 §二：标题独占的 36px＋marginTop 全省）。
+                     标题为**静态文字、不可聚焦、不进焦点链**（09 §五）；TextView 默认 focusable=false，此处不另声明。
+                     标题 @dimen/detail_text_row_title（14sp，β32 随 chip 13sp 同步抬一档，
+                     保持 T-317「选项比标题小一号」）；选项 chip 13sp（@dimen/detail_text_chip）、高 34px（17dp）。
+                     行内：标题 wrap＋marginEnd 12dp，flagRecycler 吃剩余宽；两者 gravity 垂直居中 ⇒ 起始对齐。
+                     β32 / T-334：行间距 +8px＝本行 marginTop 4→8dp。单线路时整行 GONE（DetailActivity#bind 同时控标题与 recycler，间距不留空洞）。 -->
+                <!-- β33 / 详情页 v2 第三条（刘先生「间距 30PX」，四排等距 g=30px＝15dp）：
+                     本行 marginTop **8dp→15dp**（按钮底↔线路线顶：实测 16px→**30px**）。
+                     真机改前实测（`b63-detail-single.xml`）：play 底 791、flagRow 顶 807 ⇒ 间距 16px。 -->
+                <!-- β37 / beta68（A 2026-10-31 放行）：线路行宽度收边，补 beta50「列表 90% 收边」的漏项——
+                     那次只把 episodeRow 与 sourceRow 两处改成 @dimen/detail_list_max_width，flagRow 留在 match_parent
+                     ⇒ 真机右缘 1872（父链可用宽 1920−paddingStart 52dp−paddingEnd 24dp＝1768px），比另两行（1728）宽 144px。
+                     本行只改宽度、不动任何其他属性；`flagRecycler` 是 0dp＋weight=1 ⇒ 自动跟随。
+                     改后 chip 余量：实测 4 条线路内容总宽 654px vs 可用 1544px ⇒ 余 890px（详见交付）。 -->
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:id="@+id/flagRow"
+                    android:layout_width="@dimen/detail_list_max_width"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="15dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/flagTitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="12dp"
+                        android:text="@string/detail_line"
+                        android:textColor="@color/detail_source_text"
+                        android:textSize="@dimen/detail_text_row_title"
+                        android:textStyle="bold" />
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/flagRecycler"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:clipToPadding="false"
+                        android:orientation="horizontal"
+                        android:overScrollMode="never"
+                        android:scrollbars="none"
+                        tools:itemCount="3" />
+                </androidx.appcompat.widget.LinearLayoutCompat>
+
+                <!-- ⑥b「选集」标题**与选项同行**（同 T-317 口径）。选集改**固定单行横向模块**（T-322）：
+                     LayoutManager 由 GridLayoutManager(8) 改 LinearLayoutManager(HORIZONTAL)（DetailActivity#setRecyclerView），
+                     集数多少不再影响页面高度；卡高 @dimen/detail_episode_height（β32：22dp=44px）、文字 @dimen/detail_text_episode（12sp）、单行 marquee、
+                     卡宽随内容自适应只设上限（adapter_detail_episode.xml）。β32 / T-334：行间距 +8px＝本行 marginTop 16→20dp。 -->
+                <!-- β33 / 详情页 v2 第三条（四排等距 g=30px）：本行 marginTop **20dp→15dp**
+                     （线路线底↔选集行顶：实测 40px→**30px**；改前 `b63-detail-single.xml` flagRow 底 845、episodeRow 顶 885）。 -->
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:id="@+id/episodeRow"
+                    android:layout_width="@dimen/detail_list_max_width"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="15dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/episodeTitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="12dp"
+                        android:text="@string/detail_episode"
+                        android:textColor="@color/detail_source_text"
+                        android:textSize="@dimen/detail_text_row_title"
+                        android:textStyle="bold" />
+
+                    <!-- β28 / T-329 第六刀：选集行改回 leanback HorizontalGridView（与源行同型）。
+                         原生 RecyclerView 没有 leanback 的"焦点接近边缘即带入并把持焦 child 保住"能力，
+                         我们自己在 dispatch 里 scrollBy/scrollToPositionWithOffset 会被布局期
+                         requestChildRectangleOnScreen 回拉（真机：advance 执行了但 scrolledX 恒为 0），
+                         五刀都卡在这一处。换回框架能力，呈现（单行/自适应宽/单行不换行）不变。 -->
+                    <androidx.leanback.widget.HorizontalGridView
+                        android:id="@+id/episodeRecycler"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:clipToPadding="false"
+                        android:overScrollMode="never"
+                        android:scrollbars="none"
+                        tools:itemCount="10" />
+                </androidx.appcompat.widget.LinearLayoutCompat>
+
+                <!-- β19 / T-311（刘先生选 B，定稿）：换源＝**页内底部横排源列表**，形态逐条照 1.1.0
+                     （`git show 619e991:.../activity_video.xml` 的 `@id/quick`：位于集数行之下的滚动区最末、
+                     `HorizontalGridView`、默认 gone、`marginBottom=16dp`）；数据用现成的跨站搜索名单，
+                     不新增网络请求。显隐由 DetailActivity#toggleSourceRow 控（非空才显示 ⇒ 单源时保持 gone），
+                     收起后本块不占高度（GONE），选集区回到原位（判据⑥）。
+                     与已下线的弹窗（SourceDialog / dialog_source.xml）互斥：本块上线即那一套下线，见补丁。 -->
+                <!-- β33 / 详情页 v2 第一条（刘先生「源前面没有换源字样…要加上"换源"文字并将卡片与线路左对齐」）：
+                     原裸 HorizontalGridView 外面包一层 `sourceRowWrap`（**逐条照抄 flagRow 的结构**：horizontal
+                     ＋gravity=center_vertical＋标题 wrap＋marginEnd 12dp＋列表 0dp/weight=1），
+                     使「换源」标题左界＝104、源列表左界＝184，与「线路」「选集」同 x（改前实测：源卡左界 104、
+                     集卡左界 184 ⇒ 偏 80px，见 detail-v2-measure.md §四）。
+                     显隐**只控本容器**（代码 :1577/:1592 同调），故源不显示时"换源"文字一并消失（判据②）。
+                     marginTop **15dp＝30px** 是本批第三条的第三处间距（选集行底↔换源行顶，改前实测 **0px**＝贴边重合）。 -->
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:id="@+id/sourceRowWrap"
+                    android:layout_width="@dimen/detail_list_max_width"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="15dp"
+                    android:layout_marginBottom="16dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:visibility="gone">
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/sourceTitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="12dp"
+                        android:text="@string/detail_source"
+                        android:textColor="@color/detail_source_text"
+                        android:textSize="@dimen/detail_text_row_title"
+                        android:textStyle="bold" />
+
+                    <androidx.leanback.widget.HorizontalGridView
+                        android:id="@+id/sourceRow"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:clipChildren="false"
+                        android:clipToPadding="false"
+                        android:overScrollMode="never"
+                        android:scrollbars="none"
+                        tools:itemCount="4"
+                        tools:listitem="@layout/adapter_source" />
+                </androidx.appcompat.widget.LinearLayoutCompat>
+
+            </androidx.appcompat.widget.LinearLayoutCompat>
+        </ScrollView>
+    </com.firefly.tv.ui.custom.ProgressLayout>
+</FrameLayout>

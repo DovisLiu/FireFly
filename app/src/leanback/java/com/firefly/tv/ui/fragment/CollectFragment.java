@@ -20,7 +20,7 @@ import com.firefly.tv.bean.Result;
 import com.firefly.tv.bean.Vod;
 import com.firefly.tv.databinding.FragmentTypeBinding;
 import com.firefly.tv.model.SiteViewModel;
-import com.firefly.tv.ui.activity.VideoActivity;
+import com.firefly.tv.ui.activity.DetailActivity;
 import com.firefly.tv.ui.activity.VodActivity;
 import com.firefly.tv.ui.base.BaseFragment;
 import com.firefly.tv.ui.custom.CustomRowPresenter;
@@ -118,8 +118,14 @@ public class CollectFragment extends BaseFragment implements CustomScroller.Call
     @Override
     public void onItemClick(Vod item) {
         requireActivity().setResult(Activity.RESULT_OK);
+        // β4 / T-201（A 案「入口直达详情页、取消预览页中转」）：搜索结果/合集条目原先走
+        // `VideoActivity.collect(...)` = **直进播放页小窗形态**（这就是刘先生说的那条"多一跳"），
+        // 现改为直达 `DetailActivity`——这是全站**唯一**还绕开详情页的入口
+        // （首页 HomeActivity:536/548/573、点播 TypeFragment:291、收藏 KeepActivity:99/119、
+        //   历史 HistoryActivity:91 本来就直达详情，本轮不动）。
+        // 直达之后 BACK 天然是「播放页→详情页→来源页」各回一层，不再依赖 backToDetail() 补开。
         if (item.isFolder()) VodActivity.start(requireActivity(), item.getSiteKey(), Result.folder(item));
-        else VideoActivity.collect(requireActivity(), item.getSiteKey(), item.getId(), item.getName(), item.getPic());
+        else DetailActivity.start(requireActivity(), item.getSiteKey(), item.getId(), item.getName(), item.getPic());
     }
 
     @Override

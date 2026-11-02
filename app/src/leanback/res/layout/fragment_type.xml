@@ -10,6 +10,10 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
+        <!-- T-190-a（Round 40）：paddingTop 16dp→8dp。刘先生原话「二、三、四级菜单中间的间隔太大了」。
+             本值是「二级菜单（activity_vod 源分类 tab）行底 → 首个筛选行行顶」的唯一间距来源，
+             8dp=16px 与下面 recycler 的纵向行距取同一档，满足 190-b「二级与四级之间间距＝190-a 收紧后的档」。
+             左右 24dp、paddingBottom 24dp、clipChildren/clipToPadding 均未动。 -->
         <com.firefly.tv.ui.custom.CustomVerticalGridView
             android:id="@+id/recycler"
             android:layout_width="match_parent"
@@ -17,7 +21,7 @@
             android:clipChildren="false"
             android:clipToPadding="false"
             android:paddingStart="24dp"
-            android:paddingTop="16dp"
+            android:paddingTop="8dp"
             android:paddingEnd="24dp"
             android:paddingBottom="24dp"
             app:focusOutEnd="true"

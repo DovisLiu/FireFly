@@ -72,7 +72,13 @@ public class LiveParser {
     private static void apply(Live live) {
         int number = 0;
         for (Group group : live.getGroups()) {
+            // T-153：防御 null 分组（源 JSON 数组含 null 时 Gson 会解析出 null 元素）
+            if (group == null) continue;
             for (Channel channel : group.trans().getChannel()) {
+                if (channel == null) continue;
+                // T-153 根因修复：统一补挂渠道反向引用（覆盖 json 等不经 Group.find 的解析入口），
+                // 保证 channel.getGroup() 非空（崩溃点 LiveConfig.setKeep:197 依赖它）
+                channel.setGroup(group);
                 if (channel.getNumber().isEmpty()) channel.setNumber(++number);
                 channel.trans().live(live);
             }

@@ -4,6 +4,7 @@ import androidx.media3.common.C;
 import androidx.media3.common.MediaMetadata;
 
 import com.firefly.tv.api.config.VodConfig;
+import com.firefly.tv.bean.DetailLog;
 import com.firefly.tv.bean.Episode;
 import com.firefly.tv.bean.Flag;
 import com.firefly.tv.bean.History;
@@ -81,7 +82,17 @@ public class VodPlaybackController {
         String name = item.getName();
         boolean hasPic = !pic.isEmpty();
         boolean hasName = !name.isEmpty();
-        if (hasPic) history.setVodPic(pic);
+        // T-150（拍板 48）：图片与播放地址**解耦**——原实现只要新详情带图就无条件覆盖 History.vodPic，
+        // 而 History.vodPic 是首页"继续观看"/历史/收藏/DLNA 元数据共用的持久字段，网盘类源详情返回
+        // "网盘 LOGO"时就把正常海报冲掉了。改为**仅补空**（与 Vod.checkPic 同语义）：已有图=锁定图优先。
+        if (hasPic && history.getVodPic().isEmpty()) {
+            history.setVodPic(pic);
+            DetailLog.picSet(pic);
+        } else if (hasPic) {
+            DetailLog.picSkip("same", pic);
+        } else {
+            DetailLog.picSkip("empty", pic);
+        }
         if (hasName) history.setVodName(name);
         if (hasName || hasPic) historyPolicy.saveCurrent(history);
     }

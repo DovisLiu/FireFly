@@ -5,6 +5,7 @@ import android.content.res.Configuration;
 import android.content.res.TypedArray;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.util.DisplayMetrics;
@@ -15,6 +16,7 @@ import android.view.MotionEvent;
 import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.TextView;
 
 import androidx.annotation.AnimRes;
 import androidx.annotation.ArrayRes;
@@ -27,6 +29,28 @@ import com.firefly.tv.App;
 import com.firefly.tv.R;
 
 public class ResUtil {
+
+    /**
+     * Round 38 / R5①（A 裁定 Q-3「焦点缩放全站统一 1.05，收进单点」）：全站唯一的焦点缩放值。
+     * 此前 1.08 / 1.1 / 1.12 三档并存（海报卡 BaseVodHolder、收藏/历史卡、顶栏胶囊与 LOGO、功能宫格各写各的），
+     * 同类控件跨页面的焦点反馈强弱不一 → Java 侧一律引用本常量，不再写字面量。
+     * 说明：缩放只是焦点态的"位移反馈"，描边/底色表达见 leanback+mobile 的 selector_* 族与
+     * main/res/values/dimens.xml 的 state_stroke_focus / state_stroke_select。
+     */
+    public static final float FOCUS_SCALE = 1.05f;
+
+    /**
+     * Round 38 / R5（A 裁定 P2「开关类选中 = 加粗 + 1.5dp 描边、不加底」）：**开关类文字加粗的唯一入口**。
+     * 为什么需要它（beta23 首次构建踩到的坑，写死在这里防止再犯）：TextView 上并没有
+     * `setFakeBoldText(boolean)`——那是 Paint/TextPaint 的 API，`view.setFakeBoldText()` 直接编译不通过；
+     * 而 `getPaint().setFakeBoldText()` 是合成伪粗（描边式加粗，字形发糊）且不会自动重绘。
+     * 故走 Typeface.create(当前字族, BOLD/NORMAL)：取真实粗体字面、幂等（反复切换不累加），
+     * setTypeface 自带 invalidate。
+     */
+    public static void setSwitchBold(TextView view, boolean on) {
+        if (view == null) return;
+        view.setTypeface(Typeface.create(view.getTypeface(), on ? Typeface.BOLD : Typeface.NORMAL));
+    }
 
     public static DisplayMetrics getDisplayMetrics() {
         return getDisplayMetrics(App.get());

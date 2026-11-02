@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- TV 2.0 顶部胶囊导航（tv-2.0-ui-spec.md §2.1 定稿）：一条整体胶囊容器，
+     固定 6 项 = 搜索(图标) / 首页 / 点播 / 直播 / 片源 / 设置。
+     电影/剧集/动漫/综艺等为源分类，属点播页二级菜单（源返回什么就列什么），不占一级导航。
+     T-158（拍板 50④，刘先生 beta7 反馈五.1）：胶囊高亮底色加宽——各项左右内边距 12/14dp→16/18dp；
+     容器 clipChildren=false/clipToPadding=false，保证首/末项高亮胶囊左右半圆完整不被裁切。
+     T-162（拍板 50⑤）：当前页不再留常亮灰底框（selector_nav_pill 已去掉 selected 底色）。 -->
+<androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:clipChildren="false"
+    android:clipToPadding="false"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:background="@drawable/shape_nav_bar"
+    android:paddingStart="8dp"
+    android:paddingEnd="8dp"
+    android:paddingTop="5dp"
+    android:paddingBottom="5dp">
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/nav_search"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/selector_nav_pill"
+        android:textColor="@color/selector_nav_text"
+        android:drawableStart="@drawable/ic_nav_search"
+        android:drawableTint="@color/selector_nav_text"
+        android:drawablePadding="5dp"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="7dp"
+        android:paddingBottom="7dp"
+        android:singleLine="true"
+        android:contentDescription="@string/nav_search"
+        tools:text="" />
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/nav_home"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="2dp"
+        android:background="@drawable/selector_nav_pill"
+        android:textColor="@color/selector_nav_text"
+        android:drawableStart="@drawable/ic_nav_home"
+        android:drawableTint="@color/selector_nav_text"
+        android:drawablePadding="5dp"
+        android:paddingStart="18dp"
+        android:paddingEnd="18dp"
+        android:paddingTop="7dp"
+        android:paddingBottom="7dp"
+        android:singleLine="true"
+        android:text="@string/nav_home"
+        android:textSize="14sp" />
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/nav_vod"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="2dp"
+        android:background="@drawable/selector_nav_pill"
+        android:textColor="@color/selector_nav_text"
+        android:drawableStart="@drawable/ic_nav_movie"
+        android:drawableTint="@color/selector_nav_text"
+        android:drawablePadding="5dp"
+        android:paddingStart="18dp"
+        android:paddingEnd="18dp"
+        android:paddingTop="7dp"
+        android:paddingBottom="7dp"
+        android:singleLine="true"
+        android:text="@string/nav_vod"
+        android:textSize="14sp" />
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/nav_live"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="2dp"
+        android:background="@drawable/selector_nav_pill"
+        android:textColor="@color/selector_nav_text"
+        android:drawableStart="@drawable/ic_nav_live"
+        android:drawableTint="@color/selector_nav_text"
+        android:drawablePadding="5dp"
+        android:paddingStart="18dp"
+        android:paddingEnd="18dp"
+        android:paddingTop="7dp"
+        android:paddingBottom="7dp"
+        android:singleLine="true"
+        android:text="@string/nav_live"
+        android:textSize="14sp" />
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/nav_source"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="2dp"
+        android:background="@drawable/selector_nav_pill"
+        android:textColor="@color/selector_nav_text"
+        android:drawableStart="@drawable/ic_nav_source"
+        android:drawableTint="@color/selector_nav_text"
+        android:drawablePadding="5dp"
+        android:paddingStart="18dp"
+        android:paddingEnd="18dp"
+        android:paddingTop="7dp"
+        android:paddingBottom="7dp"
+        android:singleLine="true"
+        android:text="@string/nav_source"
+        android:textSize="14sp" />
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/nav_setting"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="2dp"
+        android:background="@drawable/selector_nav_pill"
+        android:textColor="@color/selector_nav_text"
+        android:drawableStart="@drawable/ic_nav_setting"
+        android:drawableTint="@color/selector_nav_text"
+        android:drawablePadding="5dp"
+        android:paddingStart="18dp"
+        android:paddingEnd="18dp"
+        android:paddingTop="7dp"
+        android:paddingBottom="7dp"
+        android:singleLine="true"
+        android:text="@string/nav_setting"
+        android:textSize="14sp" />
+
+</androidx.appcompat.widget.LinearLayoutCompat>

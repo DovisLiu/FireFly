@@ -1,7 +1,10 @@
 package com.firefly.tv.ui.fragment;
 
+import com.firefly.tv.ui.activity.DetailActivity;
+
 import android.annotation.SuppressLint;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
@@ -36,6 +39,7 @@ import com.firefly.tv.ui.custom.CustomScroller;
 import com.firefly.tv.ui.custom.CustomSelector;
 import com.firefly.tv.ui.presenter.FilterPresenter;
 import com.firefly.tv.ui.presenter.VodPresenter;
+import com.firefly.tv.utils.FilterUtil;
 import com.firefly.tv.utils.Notify;
 import com.firefly.tv.utils.ResUtil;
 import com.google.common.collect.Lists;
@@ -89,7 +93,21 @@ public class TypeFragment extends BaseFragment implements CustomScroller.Callbac
     }
 
     private List<Filter> getFilter() {
-        return Cache.copy(getTypeId());
+        // T-190-b（Round 40）：排序/热度族（热度/最近/积分…）整行不入列表。
+        // 过滤必须发生在 getFilter() 这唯一的入口：mFilters 同时是 showFilter() 建行、hideFilter()
+        // 删行、checkFilter() 保留行数三处的口径，任何一处再单独跳过都会让口径分叉——
+        // 被隐藏的行不会消失，而是变成一条空行占位（刘先生判据明确禁止占位）。
+        List<Filter> kept = new ArrayList<>();
+        for (Filter filter : Cache.copy(getTypeId())) {
+            if (filter == null) continue;
+            if (FilterUtil.isSortFamily(filter)) {
+                Log.d("FireFlyVod", "filter hide key=" + filter.getKey() + " name=" + filter.getName() + " values=" + filter.getValue().size());
+            } else {
+                kept.add(filter);
+            }
+        }
+        Log.d("FireFlyVod", "filter rows=" + kept.size());
+        return kept;
     }
 
     private Site getSite() {
@@ -113,6 +131,11 @@ public class TypeFragment extends BaseFragment implements CustomScroller.Callbac
         setRecyclerView();
         setViewModel();
         setFilters();
+        // 筛选行常显（效果图 02/03：分类+筛选同屏，刘先生反馈"没有三级菜单"）
+        if (!mFilters.isEmpty()) {
+            filterVisible = true;
+            mBinding.recycler.post(() -> showFilter());
+        }
         getVideo();
     }
 
@@ -130,7 +153,15 @@ public class TypeFragment extends BaseFragment implements CustomScroller.Callbac
         selector.addPresenter(ListRow.class, new CustomRowPresenter(8, FocusHighlight.ZOOM_FACTOR_NONE, HorizontalGridView.FOCUS_SCROLL_ALIGNED), FilterPresenter.class);
         mBinding.recycler.setAdapter(new ItemBridgeAdapter(mAdapter = new ArrayObjectAdapter(selector)));
         mBinding.recycler.setHeader(getActivity(), R.id.recycler);
-        mBinding.recycler.setVerticalSpacing(ResUtil.dp2px(16));
+        // T-190-a（Round 40）：本视图纵向行距 16dp(32px)→8dp(16px)，与 fragment_type 的 paddingTop 同档。
+        // 刘先生所见「间隔太大」发生在筛选行与筛选行之间，而 leanback 的纵向间距是 GridLayoutManager
+        // 全视图统一值（CustomRowPresenter 第一个参数只管行内水平间距），没有逐行独立档可用，
+        // 故这里必须改它才能收紧菜单行。连带效应（如实报，不隐藏）：同视图的海报行↔海报行
+        // 也由 32px 收到 16px——卡内 name 自带 6dp(12px) 内边距，收紧后海报上下留白仍≈28px，
+        // ZOOM_FACTOR_SMALL 的放大余量远小于此，不会互贴；观感最终由 C 真机截图判读。
+        // 未做「逐 presenter 行高补偿」把海报节奏钉回 32px：Style.list() 站点的海报是直接进网格的
+        // Vod 项（不经 ListRow），per-presenter 补偿覆盖不到，反而造成不同站点节奏不一致。
+        mBinding.recycler.setVerticalSpacing(ResUtil.dp2px(8));
     }
 
     private void setViewModel() {
@@ -257,7 +288,7 @@ public class TypeFragment extends BaseFragment implements CustomScroller.Callbac
             headerVisible = mBinding.recycler.isHeaderVisible();
         } else {
             if (getSite().isIndex()) CollectActivity.start(requireActivity(), item.getName());
-            else VideoActivity.start(requireActivity(), getKey(), item.getId(), item.getName(), item.getPic(), isFolder() ? item.getName() : null);
+            else DetailActivity.start(requireActivity(), getKey(), item.getId(), item.getName(), item.getPic());
         }
     }
 

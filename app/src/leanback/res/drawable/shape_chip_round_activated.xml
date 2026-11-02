@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Round 38 / R5①：圆胶囊选中态 = 1.5dp 描边 + 更弱底（与 shape_chip_activated 同表达）。
+     原文件与常规态完全相同（无任何选中表达）。 -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
 
@@ -9,5 +11,11 @@
         android:left="14dp"
         android:right="14dp"
         android:top="8dp" />
+
+    <solid android:color="@color/state_select_bg" />
+
+    <stroke
+        android:width="@dimen/state_stroke_select"
+        android:color="@color/state_select_stroke" />
 
 </shape>

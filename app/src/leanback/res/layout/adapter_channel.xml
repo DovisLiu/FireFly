@@ -1,41 +1,62 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- 频道卡（效果图 09）：深灰圆角卡，台标居中，卡下频道名；当前台绿色高亮
+     T-175（C beta16：面板网格内 RIGHT/LEFT 焦点不移动——根因=卡片 match_parent 占满整行，
+     VerticalGridView numberOfColumns=5 失效（每行仅 1 个 item）→ 行内无右移目标）：
+     卡片宽度改为固定 200dp → 1920 宽下每行 5 列，行内左右自由移动 -->
 <com.firefly.tv.ui.custom.CustomLeftRightLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="wrap_content"
+    android:layout_width="200dp"
     android:layout_height="wrap_content"
-    android:background="@drawable/selector_live"
+    android:layout_margin="6dp"
+    android:background="@drawable/selector_live_card"
     android:focusable="true"
     android:focusableInTouchMode="true"
     android:gravity="center"
-    android:orientation="horizontal">
+    android:orientation="vertical"
+    android:paddingStart="12dp"
+    android:paddingTop="14dp"
+    android:paddingEnd="12dp"
+    android:paddingBottom="12dp">
 
-    <com.google.android.material.textview.MaterialTextView
-        android:id="@+id/number"
+    <androidx.appcompat.widget.LinearLayoutCompat
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="12dp"
-        android:duplicateParentState="true"
-        android:fontFeatureSettings="tnum"
-        android:textColor="@color/text"
-        android:textSize="16sp"
-        tools:text="01" />
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
 
-    <androidx.appcompat.widget.AppCompatImageView
-        android:id="@+id/logo"
-        android:layout_width="48dp"
-        android:layout_height="36dp"
-        android:layout_marginEnd="12dp"
-        android:visibility="gone" />
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/number"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:duplicateParentState="true"
+            android:fontFeatureSettings="tnum"
+            android:textColor="@color/text"
+            android:textSize="12sp"
+            tools:text="01" />
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/logo"
+            android:layout_width="72dp"
+            android:layout_height="44dp"
+            android:duplicateParentState="true"
+            android:visibility="gone"
+            tools:src="@tools:sample/backgrounds/scenic"
+            tools:visibility="visible" />
+
+    </androidx.appcompat.widget.LinearLayoutCompat>
 
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
         android:duplicateParentState="true"
         android:ellipsize="marquee"
+        android:gravity="center"
         android:singleLine="true"
         android:textColor="@color/text"
-        android:textSize="16sp"
-        tools:text="CNN" />
+        android:textSize="13sp"
+        tools:text="CCTV 1 綜合「Relay」" />
 
 </com.firefly.tv.ui.custom.CustomLeftRightLayout>

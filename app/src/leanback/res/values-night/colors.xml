@@ -2,4 +2,9 @@
 <resources>
     <color name="text_panel">#FFFFFFFF</color>
     <color name="text_panel_sub">#99FFFFFF</color>
+    <!-- T-209：深色模式 LOGO 提亮叠加（tintMode=add）。
+         根因实测：logo_lockup.png 为 RGBA，不透明像素仅占 20.8%，其 alpha 均值只有 157.4
+         ⇒ 图自带半透明，压在 bg_page(#14161A) 上实测亮度仅 101（C 的 α 取证）；
+         ImageView 无法提高已烘焙进图的 alpha，故走叠加提亮。最终值需 C 真机取样校准。 -->
+    <color name="nav_logo_tint">#CCFFFFFF</color>
 </resources>

@@ -3,8 +3,12 @@
     <!-- Home -->
     <string name="home_vod">點播</string>
     <string name="home_live">直播</string>
+    <string name="live_empty">未取得直播頻道，請到設定檢查直播源</string>
+    <string name="live_group">分組</string>
+    <string name="home_vod_empty">請先在設定中配置點播源</string>
     <string name="home_search">搜尋</string>
     <string name="home_keep">收藏</string>
+    <string name="home_keep_other_repo">該收藏屬於其它片倉，請切換片倉後檢視</string>
     <string name="home_push">推送</string>
     <string name="home_setting">設定</string>
     <string name="home_history">最近觀看</string>
@@ -16,5 +20,30 @@
     <!-- Push -->
     <string name="push_clip">推送剪貼簿內容</string>
     <string name="push_info">使用手機掃描 QR Code，或於瀏覽器輸入網址\n<xliff:g name="name">%s</xliff:g></string>
+
+    <!-- T-146（Round 36 验收⑦）：详情页 6 键补繁中（本檔原無 detail_* 條目，繁中用户整页显英文）。
+         另 detail_error 同属本页，随手一并补齐（超出 A 列的 6 键，纯新增、无行为改动，已在实施记录报备）。 -->
+    <string name="detail_play">播放</string>
+    <string name="detail_keep">收藏</string>
+    <string name="detail_source">換源</string>
+    <string name="detail_source_title">播放源</string>
+    <string name="detail_line">線路</string>
+    <string name="detail_episode">選集</string>
+    <string name="detail_error">詳情載入失敗</string>
+
+    <!-- T-146（拍板 49 方案甲）：底部「播放源」行占位文案 -->
+    <string name="detail_source_loading">正在搜尋播放源…</string>
+    <string name="detail_source_none">未找到其他播放源</string>
+    <string name="detail_source_only">當前僅 1 個播放源</string>
+    <string name="detail_desc_more">點擊查看全文</string>
+    <string name="detail_director">導演：</string>
+    <string name="detail_actor">演員：</string>
+
+    <!-- T-191-c（Round 40）：直播選單「反轉/跨類/換源」點擊即生效後的 Toast 反饋文案 -->
+    <string name="live_invert_on">換台方向已反轉</string>
+    <string name="live_invert_off">換台方向已恢復</string>
+    <string name="live_across_on">已允許跨分類換台</string>
+    <string name="live_across_off">已關閉跨分類換台</string>
+    <string name="live_line_only">該頻道只有一條線路</string>
 
 </resources>

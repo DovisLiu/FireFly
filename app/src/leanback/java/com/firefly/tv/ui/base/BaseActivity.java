@@ -117,6 +117,23 @@ public abstract class BaseActivity extends AppCompatActivity {
         finish();
     }
 
+    /**
+     * β44 / B1（A 2026-11-01 定稿四点）：一级页 BACK 的统一出口＝回首页，不再沿任务栈往下掉。
+     * flag 组合沿用本仓既有的两处写法（VideoActivity#onBackInvoked 的任务根分支、LiveActivity 同分支），
+     * 不是新发明：CLEAR_TOP 会销毁 Home 之上的全部中间实例，顺带治"一级页互相 startActivity 叠栈"；
+     * SINGLE_TOP＋HomeActivity 是 singleTop ⇒ 复用栈底那个 Home，走它已有的 onNewIntent→checkAction，
+     * 而 checkAction（HomeActivity:230-239）三个分支全按 intent.getAction() 判等，本 intent 无 action ⇒ 空转，
+     * 不会"回首页顺带触发了某个 action"。finish() 关掉当前页，回不去"上一个实例"是本条的**预期行为**。
+     */
+    protected void backToHome() {
+        android.util.Log.d("FireFlyBack", getClass().getSimpleName() + " back -> home (CLEAR_TOP)");
+        startActivity(new android.content.Intent(this, com.firefly.tv.ui.activity.HomeActivity.class)
+                .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK
+                        | android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP
+                        | android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP));
+        finish();
+    }
+
     @Override
     protected void onDestroy() {
         EventBus.getDefault().unregister(this);

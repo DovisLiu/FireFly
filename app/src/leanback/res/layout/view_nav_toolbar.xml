@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- TV 2.0 列表页通用顶栏（浮层形态，刘先生拍板全站实施）
+     Round 14 / T-135（spec v1.10 拍板 41）：结构拆分为两层独立视觉层——
+     · navStatic 常驻层：左上 LOGO（点击=仓库切换）+ 右上时间，菜单栏收起/呼出时**不动**、无背景色；
+     · navMenu 菜单层：居中胶囊导航 + 自上而下渐变底衬（shape_nav_scrim），由 NavOverlay 动画收起/呼出。
+     两层同高（@dimen/nav_bar_min_height）重叠；Round 38 / R1 后**常驻层顶对齐**（LOGO/时间贴顶，
+     见 @dimen/nav_static_padding_top）。
+     Round 40 / T-188-a：R1 的「两层上下错位」是当时的要求结果，本轮按 T-188-a 判据（三项 bounds 垂直中心差 ≤8px）
+     把菜单层也顶对齐到同一条中心线（详见 navMenu 注释）；P7 的"胶囊层不动"裁定至此失效。
+     内容区顶部以 @dimen/content_top_inset 避让，菜单呼出不再覆盖内容上部。
+     沉浸页（详情/播放/直播播放）不保留 LOGO/时间（拍板 41 补充）。 -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <!-- 常驻层：LOGO + 时间（不随菜单栏动画；ViewBinding 字段 navBar.logo / navBar.clock 保持可用）
+         Round 38 / R1：本层顶对齐 + paddingTop=@dimen/nav_static_padding_top（6dp）保留（刘先生要求 LOGO/时间贴顶）。
+         Round 40 / T-188-a：判据改成**三项 bounds 垂直中心差 ≤8px**（不再是顶边差），顶对齐下
+         LOGO（固定 32dp=64px）与时间（wrap_content，行高≈46px）**顶边虽同为 12px，中心却差 ≈8.5px** ⇒ 超判据。
+         修法：时间视图高度与 LOGO 取同一个 32dp，文字在框内垂直居中 ⇒ 两者 bounds 恒等（中心都是 44px），
+         且不依赖字体行高估算，机型间不会漂。本层左右位置与 paddingTop 未改。
+         T-209（β3 层序修复，刘先生实测「LOGO 被改成一块白底」时一并查明）：本层与 navMenu 同高重叠，
+         而 navMenu 的 background=shape_nav_scrim 是**自上而下的半透明深灰渐变**（深色端 #F2101216，alpha 0.949），
+         原先本层先声明 ⇒ 画在底衬**之下**，LOGO 与时间被持续压暗（实测时钟最亮像素仅 156.8/255≈0.615，
+         与底衬在该高度的残余 alpha 吻合；胶囊在底衬之上故仍 255）。NavOverlay.conceal() 是空实现
+         （T-156「本期不做收起」）⇒ 这层压暗是常驻的、不是动画瞬时。
+         修法：本层加 android:elevation=2dp 抬到底衬之上（**没有**调低 nav_scrim_start 的 alpha，胶囊可读性不受影响）。
+         副作用自查：本层无 background ⇒ 无 outline ⇒ 不生成阴影；elevation 只改 z 序，不改 bounds ⇒
+         T-188-a 的「三项中心差 ≤8px」判据不变；LOGO/时间与胶囊水平位置不重叠，菜单展开时可读性不变。 -->
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:id="@+id/navStatic"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/nav_bar_min_height"
+        android:elevation="2dp"
+        android:gravity="top"
+        android:orientation="horizontal"
+        android:paddingStart="24dp"
+        android:paddingTop="@dimen/nav_static_padding_top"
+        android:paddingEnd="24dp">
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/logo"
+            android:layout_width="wrap_content"
+            android:layout_height="32dp"
+            android:layout_marginEnd="12dp"
+            android:adjustViewBounds="true"
+            android:src="@drawable/logo_lockup" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/clock"
+            android:layout_width="wrap_content"
+            android:layout_height="32dp"
+            android:gravity="center"
+            android:textColor="@color/icon_primary"
+            android:textSize="20sp"
+            tools:text="09:20:00" />
+
+    </androidx.appcompat.widget.LinearLayoutCompat>
+
+    <!-- 菜单层（浮层）：只动画本层，LOGO/时间不随动；渐变底衬随菜单栏一起收/呼。
+         Round 40 / T-188-a：由 gravity="center" 改为 "center_horizontal|top"。
+         · center_horizontal 必须显式保留——原 center 同时负责水平居中，只写 top 会让整条胶囊贴左边界（回归）。
+         · top 让胶囊按其自身高度贴顶：胶囊内各项 bounds = navMenu 顶(0) + TopNavView paddingTop 5dp(10px)
+           → 顶 10px、中心 ≈40.5px，与常驻层 LOGO/时间中心 44px 差 ≈3.5px ≤8px（判据 188-a）；
+           相对原「垂直居中」的 64px 中心，菜单整体上移 ≈23px（≈12dp），即刘先生要的"菜单栏也向上移动一点"。
+         · 层高度（nav_bar_min_height 64dp）、底衬 shape_nav_scrim、左右 24dp 均未改 → 首行卡片避让不受影响。 -->
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:id="@+id/navMenu"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/nav_bar_min_height"
+        android:background="@drawable/shape_nav_scrim"
+        android:gravity="center_horizontal|top"
+        android:orientation="horizontal"
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp">
+
+        <com.firefly.tv.ui.custom.TopNavView
+            android:id="@+id/topNav"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:focusable="false" />
+
+    </androidx.appcompat.widget.LinearLayoutCompat>
+
+</FrameLayout>

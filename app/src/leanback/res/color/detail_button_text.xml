@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- β20 / T-316：播放胶囊文字/图标与两枚圆钮图标的两态色表。
+     聚焦＝detail_focus_text（深档 #111 压浅焦点底、浅档 #FFF 压深焦点底，values/night 成对）；
+     常态＝detail_glass_text（近白，压在模拟玻璃＋恒深海报上，两主题同值）。
+     与 selector_detail_button.xml 的两态一一对应。 -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:color="@color/detail_focus_text" android:state_focused="true" />
+    <item android:color="@color/detail_glass_text" />
+</selector>

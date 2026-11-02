@@ -10,10 +10,16 @@
     android:paddingEnd="24dp"
     android:paddingBottom="16dp">
 
+    <!-- β45 / 缺陷3（C 真机：回看呼出控制层后按 UP，`seekFocus=false`、焦点进不了进度条 ⇒ 快进丢失）：
+         补 `android:focusable="true"`，与点播控制层 `view_control_vod.xml:48`（T-167 同一条）对齐。
+         本页此前**只有库内 exo_progress（DefaultTimeBar）自带 focusable**，外层 PlayerSeekView 不可聚焦，
+         而直播页的落焦与 `hasFocus()` 判据都是打在这个外层上（LiveActivity#getSeekView/`:1360`）⇒
+         "呼出→UP→左右步进"这条路在本页缺了 Vod 那一侧已有的那一半。 -->
     <androidx.media3.ui.PlayerSeekView
         android:id="@+id/seek"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:focusable="true"
         android:layout_marginBottom="12dp" />
 
     <include
