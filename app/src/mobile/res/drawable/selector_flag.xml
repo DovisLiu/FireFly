@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- β85 裁定三（A＝chip 选中态要有底色，照 TV selector_item_round 的三态形态；本批净新增一件）：
+     详情页线路 chip 与播放页同类 chip 共用这一份；此前默认与选中都是 shape_item 的同一张白底，
+     选中只靠 selector_text 换字色＝"点过了看不出来"。
+     三态落法＝TV 是 焦点／选中／常规 三档（遥控器有焦点态），手机触屏没有焦点态 ⇒
+     焦点那一档由外层 ripple 的按下水波承担，selector 本体两档＝选中／默认。
+     选中档的底色与描边全取 main 里现成 token（@color/state_select_bg＋@color/state_select_stroke＋
+     @dimen/state_stroke_select 1.5dp，日夜各一套，TV 的 chip 选中态用的就是这三枚），0 新建颜色与尺寸；
+     两档的圆角 14dp 与 padding 14/16/16/14 逐字照 shape_item ⇒ 选中不会让 chip 变尺寸。
+     ⚠ 本件只挂 adapter_flag（线路/分类 chip）；shape_item 被设置页等 50 余处共用，一字未动。 -->
+<ripple xmlns:android="http://schemas.android.com/apk/res/android"
+    android:color="?attr/colorControlHighlight">
+
+    <item>
+        <selector>
+            <item android:state_selected="true">
+                <shape android:shape="rectangle">
+                    <solid android:color="@color/state_select_bg" />
+                    <corners android:radius="14dp" />
+                    <padding
+                        android:bottom="14dp"
+                        android:left="16dp"
+                        android:right="16dp"
+                        android:top="14dp" />
+                    <stroke
+                        android:width="@dimen/state_stroke_select"
+                        android:color="@color/state_select_stroke" />
+                </shape>
+            </item>
+            <item>
+                <shape android:shape="rectangle">
+                    <solid android:color="@color/bg_card" />
+                    <corners android:radius="14dp" />
+                    <padding
+                        android:bottom="14dp"
+                        android:left="16dp"
+                        android:right="16dp"
+                        android:top="14dp" />
+                </shape>
+            </item>
+        </selector>
+    </item>
+
+    <item android:id="@android:id/mask">
+        <shape android:shape="rectangle">
+            <solid android:color="@android:color/white" />
+            <corners android:radius="14dp" />
+        </shape>
+    </item>
+
+</ripple>

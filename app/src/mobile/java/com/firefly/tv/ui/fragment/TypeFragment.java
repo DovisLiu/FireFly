@@ -21,7 +21,6 @@ import com.firefly.tv.bean.Value;
 import com.firefly.tv.bean.Vod;
 import com.firefly.tv.databinding.FragmentTypeBinding;
 import com.firefly.tv.model.SiteViewModel;
-import com.firefly.tv.ui.activity.DetailActivity;
 import com.firefly.tv.ui.activity.SearchActivity;
 import com.firefly.tv.ui.activity.VideoActivity;
 import com.firefly.tv.ui.adapter.VodAdapter;
@@ -77,10 +76,6 @@ public class TypeFragment extends BaseFragment implements CustomScroller.Callbac
         return getArguments().getBoolean("folder");
     }
 
-    private boolean isHome() {
-        return "home".equals(getTypeId());
-    }
-
     private Site getSite() {
         return VodConfig.get().getSite(getKey());
     }
@@ -127,16 +122,13 @@ public class TypeFragment extends BaseFragment implements CustomScroller.Callbac
         mViewModel.getAction().observe(getViewLifecycleOwner(), result -> Notify.show(result.getMsg()));
     }
 
-    private void getHome() {
-        mAdapter.clear(() -> mViewModel.homeContent());
-    }
-
     private void getVideo() {
         mScroller.reset();
         mAdapter.clear(() -> {
             if (!mBinding.swipeLayout.isRefreshing()) mBinding.progressLayout.showProgress();
-            if (isHome()) setAdapter(getParent().getResult());
-            else getVideo(getTypeId(), "1");
+            // β82 第1条：首位伪项已删 ⇒ 本页 typeId 恒为真实分类 id，直接取分类数据。
+            // A 定的三条验收都从这里往外看：出卡＝本行取数回来的结果；翻页见 onLoadMore；刷新见 onRefresh。
+            getVideo(getTypeId(), "1");
         });
     }
 
@@ -160,10 +152,7 @@ public class TypeFragment extends BaseFragment implements CustomScroller.Callbac
     }
 
     private void checkMore() {
-        mBinding.recycler.post(() -> {
-            if (isHome()) return;
-            mScroller.checkMore(mBinding.recycler);
-        });
+        mBinding.recycler.post(() -> mScroller.checkMore(mBinding.recycler));
     }
 
     public void scrollToTop() {
@@ -178,13 +167,11 @@ public class TypeFragment extends BaseFragment implements CustomScroller.Callbac
 
     @Override
     public void onRefresh() {
-        if (isHome()) getHome();
-        else getVideo();
+        getVideo();
     }
 
     @Override
     public boolean onLoadMore(String page) {
-        if (isHome()) return false;
         getVideo(getTypeId(), page);
         return true;
     }
@@ -197,10 +184,11 @@ public class TypeFragment extends BaseFragment implements CustomScroller.Callbac
             getParent().openFolder(item.getId(), mExtends);
         } else if (getSite().isIndex()) {
             // 聚合站无详情数据：保持按片名搜索（既有行为）
-            SearchActivity.start(requireActivity(), item.getName());
+            // β85 第10条：这一跳也是"卡片当跳板"，带 jump＝从搜索页进详情后收页，返回一拍回点播页
+            SearchActivity.start(requireActivity(), item.getName(), true);
         } else {
-            // 点播页点海报=详情页换源态（§3.9，与 TV §3.3 入口判定一致）
-            DetailActivity.source(requireActivity(), getKey(), item.getId(), item.getName(), item.getPic());
+            // 点播页点海报=合并页换源态（§3.9，与 TV §3.3 入口判定一致；β91 结构批＝原详情页 source() 那条入口改落本页换源态）
+            VideoActivity.start(requireActivity(), getKey(), item.getId(), item.getName(), item.getPic(), null, false, true);
         }
     }
 

@@ -7,9 +7,10 @@
     android:orientation="vertical">
 
     <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        app:navigationIconTint="?attr/colorOnSurface"
+        app:navigationIcon="@drawable/ic_nav_back"
         app:title="@string/nav_setting"
         app:titleTextAppearance="@style/ToolbarTextAppearance" />
 
@@ -36,10 +37,13 @@
                 <androidx.appcompat.widget.LinearLayoutCompat
                     android:id="@+id/vod"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="48dp"
+                    android:minHeight="48dp"
                     android:layout_marginEnd="12dp"
                     android:layout_weight="1"
                     android:background="@drawable/shape_item"
+                    android:paddingTop="8dp"
+                    android:paddingBottom="8dp"
                     android:gravity="center_vertical"
                     android:orientation="horizontal">
 
@@ -73,22 +77,29 @@
 
                 </androidx.appcompat.widget.LinearLayoutCompat>
 
+                <!-- β32 A1：四枚小钮（vodHome/vodHistory/liveHome/liveHistory）改正方形 48dp×48dp＋layout_gravity center_vertical，
+                     弃 β31 的 match_parent 高（那会撑成 48宽×60高竖长方形）。行高仍由主格决定＝60dp（32dp 图标＋shape_item 上下内衬 14dp×2），
+                     小钮 48dp 垂直居中于 60dp 行内。图标 padding 12dp＋scaleType center 仍居中。 -->
                 <androidx.appcompat.widget.AppCompatImageView
                     android:id="@+id/vodHome"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_gravity="center_vertical"
                     android:layout_marginEnd="12dp"
                     android:background="@drawable/shape_item"
-                    android:padding="7dp"
+                    android:padding="12dp"
+                    android:scaleType="center"
                     android:src="@drawable/ic_site_change"
                     app:tint="?attr/colorOnSurfaceVariant" />
 
                 <androidx.appcompat.widget.AppCompatImageView
                     android:id="@+id/vodHistory"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_gravity="center_vertical"
                     android:background="@drawable/shape_item"
-                    android:padding="7dp"
+                    android:padding="12dp"
+                    android:scaleType="center"
                     android:src="@drawable/ic_setting_history_live"
                     app:tint="?attr/colorOnSurfaceVariant" />
 
@@ -104,10 +115,13 @@
                 <androidx.appcompat.widget.LinearLayoutCompat
                     android:id="@+id/live"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="48dp"
+                    android:minHeight="48dp"
                     android:layout_marginEnd="12dp"
                     android:layout_weight="1"
                     android:background="@drawable/shape_item"
+                    android:paddingTop="8dp"
+                    android:paddingBottom="8dp"
                     android:gravity="center_vertical"
                     android:orientation="horizontal">
 
@@ -143,20 +157,24 @@
 
                 <androidx.appcompat.widget.AppCompatImageView
                     android:id="@+id/liveHome"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_gravity="center_vertical"
                     android:layout_marginEnd="12dp"
                     android:background="@drawable/shape_item"
-                    android:padding="7dp"
+                    android:padding="12dp"
+                    android:scaleType="center"
                     android:src="@drawable/ic_site_change"
                     app:tint="?attr/colorOnSurfaceVariant" />
 
                 <androidx.appcompat.widget.AppCompatImageView
                     android:id="@+id/liveHistory"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_gravity="center_vertical"
                     android:background="@drawable/shape_item"
-                    android:padding="7dp"
+                    android:padding="12dp"
+                    android:scaleType="center"
                     android:src="@drawable/ic_setting_history_live"
                     app:tint="?attr/colorOnSurfaceVariant" />
 
@@ -165,9 +183,11 @@
             <androidx.appcompat.widget.LinearLayoutCompat
                 android:id="@+id/player"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="48dp"
                 android:layout_marginTop="16dp"
                 android:background="@drawable/shape_item"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
                 android:minHeight="48dp">
@@ -193,9 +213,11 @@
             <androidx.appcompat.widget.LinearLayoutCompat
                 android:id="@+id/display"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="48dp"
                 android:layout_marginTop="16dp"
                 android:background="@drawable/shape_item"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
                 android:minHeight="48dp">
@@ -222,9 +244,11 @@
 <androidx.appcompat.widget.LinearLayoutCompat
                 android:id="@+id/danmaku"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="48dp"
                 android:layout_marginTop="16dp"
                 android:background="@drawable/shape_item"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
                 android:minHeight="48dp">
@@ -250,9 +274,11 @@
             <androidx.appcompat.widget.LinearLayoutCompat
                 android:id="@+id/incognito"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="48dp"
                 android:layout_marginTop="16dp"
                 android:background="@drawable/shape_item"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
                 android:minHeight="48dp">
@@ -291,9 +317,11 @@
 <androidx.appcompat.widget.LinearLayoutCompat
                 android:id="@+id/doh"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="48dp"
                 android:layout_marginTop="16dp"
                 android:background="@drawable/shape_item"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
                 android:minHeight="48dp">
@@ -332,9 +360,11 @@
             <androidx.appcompat.widget.LinearLayoutCompat
                 android:id="@+id/cache"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="48dp"
                 android:layout_marginTop="16dp"
                 android:background="@drawable/shape_item"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
                 android:minHeight="48dp">
@@ -370,9 +400,11 @@
             <androidx.appcompat.widget.LinearLayoutCompat
                 android:id="@+id/version"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="48dp"
                 android:layout_marginTop="16dp"
                 android:background="@drawable/shape_item"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
                 android:minHeight="48dp">
@@ -408,9 +440,11 @@
             <androidx.appcompat.widget.LinearLayoutCompat
                 android:id="@+id/about"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="48dp"
                 android:layout_marginTop="16dp"
                 android:background="@drawable/shape_item"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
                 android:minHeight="48dp">
@@ -434,24 +468,28 @@
 
             </androidx.appcompat.widget.LinearLayoutCompat>
 
+            <!-- β32 A2：备份/导出/恢复行固定 60dp（与标准行同高＝32dp 内容＋shape_item 上下内衬 14dp×2）。
+                 改前＝minHeight48dp＋文字钮 wrap_content＋上下 padding 8dp ⇒ 实际偏高（约 64dp）。改后容器固定 60dp、
+                 三文字钮 match_parent 填满内容区并垂直居中、去上下 padding（保留水平 12dp），不撑高。 -->
             <androidx.appcompat.widget.LinearLayoutCompat
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="48dp"
                 android:layout_marginTop="16dp"
                 android:background="@drawable/shape_item"
-                android:orientation="horizontal"
-                android:padding="0dp">
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
 
                 <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/backup"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:background="?android:attr/selectableItemBackground"
+                    android:gravity="center_vertical"
                     android:paddingStart="12dp"
-                    android:paddingTop="8dp"
                     android:paddingEnd="12dp"
-                    android:paddingBottom="8dp"
                     android:text="@string/setting_backup"
                     android:textColor="?android:attr/textColorPrimary"
                     android:textSize="16sp" />
@@ -459,14 +497,12 @@
                 <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/export"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:background="?android:attr/selectableItemBackground"
                     android:gravity="center"
                     android:paddingStart="12dp"
-                    android:paddingTop="8dp"
                     android:paddingEnd="12dp"
-                    android:paddingBottom="8dp"
                     android:text="@string/backup_export"
                     android:textColor="?android:attr/textColorPrimary"
                     android:textSize="16sp" />
@@ -474,14 +510,12 @@
                 <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/restore"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:background="?android:attr/selectableItemBackground"
-                    android:gravity="end"
+                    android:gravity="center_vertical|end"
                     android:paddingStart="12dp"
-                    android:paddingTop="8dp"
                     android:paddingEnd="12dp"
-                    android:paddingBottom="8dp"
                     android:text="@string/setting_restore"
                     android:textColor="?android:attr/textColorPrimary"
                     android:textSize="16sp" />

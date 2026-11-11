@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- β31 A6：线路/选集/换源三组的圆角底色容器框。solid 取 mobile 独立色 group_container（浅 #E9EEF2／夜 #232830，弱对比），
+     圆角 16dp（容器尺度，较 chip 的 14dp 略大）。chip 仍用 selector_card_bg，本件只做组框。 -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="@color/group_container" />
+    <corners android:radius="16dp" />
+</shape>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- β85 第7条（刘先生原话＝选中与未选中要"明显"区别；A 复述＝不必完全实心，但不能只靠一档颜色微调）。
+     做法＝给底导加 itemBackground（Material 的 itemBackground 会替换默认按压反馈，所以 pressed 档必须自己带上，
+     否则把 β12 的按压感弄没＝本文件第三档存在的全部理由）。
+     2026-11-04 刘先生改判（β25 视觉批）：选中档的描边胶囊去掉（黑框观感），选中态改由两件事表达——
+     ①图标双态形状（selector_nav_*.xml，空心/实心成对，本批就是新建这 10 件资产）
+     ②选中色改纯白专用档。pressed 档必须留着（itemBackground 会替换默认按压反馈）。 -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:state_pressed="true">
+        <shape android:shape="rectangle">
+            <solid android:color="?attr/colorControlHighlight" />
+            <corners android:radius="16dp" />
+        </shape>
+    </item>
+
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@android:color/transparent" />
+            <corners android:radius="16dp" />
+        </shape>
+    </item>
+
+</selector>

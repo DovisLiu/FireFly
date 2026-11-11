@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- β85（刘先生挑丙形＝纯尖角无杆，装进乙档圆形钮；A 裁路径一＝三合一收在同一支矢量，仍是 β15 那"一处收口"）：
+     ①圆底＝现成 token @color/glass_fill（β12 建，黑 45%，日夜同值）；
+     ②描边环＝β18 方向性高光的同一套机制：沿**主对角线**一条线性渐变，三个停靠点 bright→dim→bright，
+       对角线两端＝左上与右下＝两个亮角，垂直投影到中点的另两角＝暗；停靠中点写 0.5＝
+       @integer/glass_edge_stop_mid(50)/100 的同源值（VectorDrawable 的 item offset 只收字面浮点、
+       不收资源引用，故这里落数字，改 token 要跟着改这行）；环宽＝数字字面 1.5（strokeWidth 同属那一类：它也是纯 float，@dimen 解析完是"1.5dip"，当场抛 NumberFormatException，β85 那版就踩在这上面）；
+       ⚠ 颜色**不**用 glass_edge_bright／dim：那对浅档是黑（#1F000000／#0A000000），是给"浅色海报边缘压暗"用的，
+         本件宿主恒为 45% 黑圆底 ⇒ 黑边压黑底零对比（A 裁 2026-11-04＝颜色语义跟宿主底色反了，不是值调得不够）
+         ⇒ 改取按钮专用一对 @color/glass_edge_on_dark_bright／@color/glass_edge_on_dark_dim：恒白、
+         深浅两档只调不透明度（β87 按实测算＝values 白 32.9%／11.0%（#54／#1C），values-night 白 65.1%／22.0%（#A6／#38）；
+         旧注释那两对百分数是抬档前的值，与实 hex 不符，已订正）；海报侧那两枚 token 一字未动。
+       笔画宽＝两档数字（A 裁 β87 定的环 1.5／箭头 2.5 两档不变），但【落数字、不落 @dimen】，理由见文末 ⚠；
+     ③箭头＝丙形（纯尖角、无杆），颜色沿用仓内既有约定 @color/white。
+     尺寸＝A 定：外径 30dp、环描边 1.5dp、箭头笔画 2.5dp、圆底直径 28.5（＝30−1.5，描边压在圆缘上不被裁，外缘正好顶到视口边）、
+     箭头包围盒 4.5×9dp（本件视口 30 且渲染 30dp ⇒ 1 单位＝1dp），单条斜边实算 √(4.5^2+4.5^2)＝6.364dp；
+       旧款（β82＝4fdd88a，视口 24、渲染 24dp）包围盒 4×8、斜边 √(4^2+4^2)＝5.657dp ⇒ 现值为旧值 1.125 倍。本件是重画（丙形、去杆），非缩放——任何缩放系数都得不出 4.5×9，别再往这里写系数。
+     几何对圆心的方式＝**重算 pathData**（没用 group 平移，便于逐字验算）：丙形三点包围盒
+     x∈[12.75,17.25]、y∈[10.5,19.5] ⇒ 中心 (15.00,15.00)＝圆心＝视口中心。
+     ⚠ 根着色属性已摘＝着色作用于整支 drawable，留着会把圆底与高光一起涂成单色；
+       14 个布局的 app:navigationIconTint 同批摘掉（实测：β85 父提交 4336fec 的 res/layout 恰 14 件各 1 行，本批删 14 行，β85 末态与 beta21 残留 0），加上矢量根着色共两类，缺一处都不成立。
+     ⚠ float 属性一律不收资源引用（本件两次踩同一坑，写成规矩防复发）：strokeWidth／fillAlpha／strokeAlpha／trimPath*／pivot*／viewport* 这类属性由 TypedArray.getFloat 直读，@dimen 解析成"1.5dip"后⇒NumberFormatException，VectorDrawable 加载失败再被 Toolbar.<init> 报成 Resources$NotFoundException（＝2026-11-04 手机 beta19~beta21 装机即此）。只有 android:width／height 这类 dimension 属性才能用 @dimen。守卫脚本（出包前置检查）＝Test/evidence/round3-v200/p41-scan-vectorfloat.py。
+     ⚠ theme 的 homeAsUpIndicator（styles.xml:7）也指本文件 ⇒ 那八页的返回钮同批变圆底，已单列给刘先生复验。 -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="30dp"
+    android:height="30dp"
+    android:viewportWidth="30"
+    android:viewportHeight="30">
+
+    <path
+        android:fillColor="@color/glass_fill"
+        android:pathData="M15,15m-14.25,0a14.25,14.25 0 1,0 28.5,0a14.25,14.25 0 1,0 -28.5,0" />
+
+    <path
+        android:pathData="M15,15m-14.25,0a14.25,14.25 0 1,0 28.5,0a14.25,14.25 0 1,0 -28.5,0"
+        android:strokeWidth="1.5">
+        <aapt:attr name="android:strokeColor">
+            <gradient
+                android:endX="30"
+                android:endY="30"
+                android:startX="0"
+                android:startY="0"
+                android:type="linear">
+                <item
+                    android:color="@color/glass_edge_on_dark_bright"
+                    android:offset="0.0" />
+                <item
+                    android:color="@color/glass_edge_on_dark_dim"
+                    android:offset="0.5" />
+                <item
+                    android:color="@color/glass_edge_on_dark_bright"
+                    android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <path
+        android:pathData="M17.25,10.5 L12.75,15 L17.25,19.5"
+        android:strokeColor="@color/white"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:strokeWidth="2.5" />
+
+</vector>

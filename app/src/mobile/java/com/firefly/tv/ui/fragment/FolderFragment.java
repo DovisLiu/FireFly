@@ -12,7 +12,6 @@ import androidx.viewbinding.ViewBinding;
 import com.firefly.tv.R;
 import com.firefly.tv.bean.Class;
 import com.firefly.tv.bean.Filter;
-import com.firefly.tv.bean.Result;
 import com.firefly.tv.bean.Value;
 import com.firefly.tv.databinding.FragmentFolderBinding;
 import com.firefly.tv.ui.base.BaseFragment;
@@ -46,10 +45,6 @@ public class FolderFragment extends BaseFragment {
         return getArguments().getInt("y");
     }
 
-    private VodFragment getParent() {
-        return (VodFragment) getParentFragment();
-    }
-
     private TypeFragment getChild() {
         return (TypeFragment) getChildFragmentManager().findFragmentById(R.id.container);
     }
@@ -78,10 +73,6 @@ public class FolderFragment extends BaseFragment {
         ft.add(R.id.container, next);
         ft.addToBackStack(null);
         ft.commit();
-    }
-
-    public Result getResult() {
-        return getParent().getResult();
     }
 
     public void onRefresh() {

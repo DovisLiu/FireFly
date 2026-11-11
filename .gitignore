@@ -10,6 +10,7 @@ fireflykey.txt
 # 构建日志与临时目录（调试产物，不入库）
 *.log
 .gradle-tmp/
+.kotlin/
 backgrounds_gen/
 LOGO_backup.png
 # 安装包不入库（交付物只走 Test/ 目录）

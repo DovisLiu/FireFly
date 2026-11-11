@@ -51,6 +51,8 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder> 
 
     public int getPosition() {
         for (int i = 0; i < mItems.size(); i++) if (mItems.get(i).isSelected()) return i;
+        // β68 乙案（A 令 2）：无选中项时「优第一个非空」，全空才落 0——口径同 TV β74 的 !isEmpty() 过滤。
+        for (int i = 0; i < mItems.size(); i++) if (!mItems.get(i).isEmpty()) return i;
         return 0;
     }
 
@@ -82,9 +84,18 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder> 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Group item = mItems.get(position);
+        boolean usable = !item.isEmpty();
         holder.binding.name.setText(item.getName());
         holder.binding.getRoot().setSelected(item.isSelected());
-        holder.binding.getRoot().setOnClickListener(view -> listener.onItemClick(item));
+        holder.binding.getRoot().setEnabled(usable);
+        holder.binding.getRoot().setClickable(usable);
+        holder.binding.getRoot().setFocusable(usable);
+        holder.binding.name.setAlpha(usable ? 1f : 0.3f);
+        // β68 乙案（A 令 1）：空分组置灰不可点。判据用现成 `Group.isEmpty()`（＝getChannel().isEmpty()），与渲染处
+        // renderGroupChannels 的 addAll(group.getChannel()) 同源⇒置灰项点进去必然空，不会误灰非空项。
+        // 复用 holder 必须显式清空监听：只 setClickable(false) 不绑新监听，会残留上一个组的点击回调。
+        if (usable) holder.binding.getRoot().setOnClickListener(view -> listener.onItemClick(item));
+        else holder.binding.getRoot().setOnClickListener(null);
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {

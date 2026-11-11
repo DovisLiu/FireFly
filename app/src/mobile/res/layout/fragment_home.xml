@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- β80 项1（刘先生「首页补顶部导航条：LOGO＋搜索那一整条」）：根由单 NestedScrollView 改为竖向 LinearLayout——
+     header＝点播页 fragment_vod.xml 那条 64dp bar 的逐控件复制（logo/搜索/收藏/历史/站点 五控件，样式同源）；
+     内容区＝原三行（继续观看/我的收藏/站点推荐）原样进 scroll。
+     两处刻意的"不一样"：
+     ① header 的收藏/历史控件 id 加 header_ 前缀——本页 include 行已占用 @+id/keep、@+id/history（ViewBinding 同域撞名，
+        点播页无此冲突）；logo/search/site 无撞名保持原名。
+     ② bar 放在 scroll 之外固定不滚（首页内容仅三行，不引入 Coordinator 的 scrollFlags 语义）。
+     状态栏：activity_home.xml 根已有 fitsSystemWindows=true，本文件不再做 insets。 -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <!-- 横版品牌 LOGO（图标+中英文整图资产），点击＝点播历史弹窗＝本页 header 自有行为（点播页同款头栏 β82 已删，参照物不存在） -->
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/logo"
+            android:layout_width="wrap_content"
+            android:layout_height="44dp"
+            android:layout_marginStart="10dp"
+            android:adjustViewBounds="true"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/app_history"
+            android:padding="2dp"
+            android:src="@drawable/logo_lockup" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/search"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"
+            android:layout_weight="1"
+            android:background="@drawable/shape_search"
+            android:drawableStart="@drawable/ic_action_search"
+            android:drawablePadding="10dp"
+            android:drawableTint="?attr/colorOnSurfaceVariant"
+            android:ellipsize="none"
+            android:gravity="center_vertical"
+            android:maxLines="1"
+            android:text="@string/menu_search"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:textSize="14sp" />
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/header_keep"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_marginStart="10dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/detail_keep"
+            android:src="@drawable/ic_action_keep"
+            app:tint="@color/icon_primary" />
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/header_history"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_marginStart="10dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/nav_history"
+            android:src="@drawable/ic_action_history"
+            app:tint="@color/icon_primary" />
+
+        <!-- β28 批一（刘先生「本地从底导拿掉、入口移到左上角，功能一样只移入口」）：这一枚＝原 site 那枚的位（10 行等长替换）。
+             id 前缀 header_ 沿用本件既有口径（见 HomeFragment.java:150 那两行注释＝避开本页 include 行的 @+id/keep/history）。
+             画法严格跟隔壁 ic_action_keep／ic_action_history 同一套＝24dp／viewport 24／根 tint 在件内／fillColor 白；
+             不引底导那枚 ic_nav_local（它同尺寸但无根 tint，且按 A 裁继续只服务底导两态）。 -->
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/header_local"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/nav_local"
+            android:src="@drawable/ic_action_local"
+            app:tint="@color/icon_primary" />
+
+    </androidx.appcompat.widget.LinearLayoutCompat>
+
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/scroll"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:clipToPadding="false"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingBottom="16dp">
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/empty"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="48dp"
+                android:layout_marginEnd="16dp"
+                android:gravity="center"
+                android:text="@string/home_empty"
+                android:textColor="?android:attr/textColorSecondary"
+                android:textSize="14sp"
+                android:visibility="gone" />
+
+            <include
+                android:id="@+id/history"
+                layout="@layout/item_home_row" />
+
+            <include
+                android:id="@+id/keep"
+                layout="@layout/item_home_row" />
+
+            <include
+                android:id="@+id/recommend"
+                layout="@layout/item_home_row" />
+
+        </LinearLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+</LinearLayout>

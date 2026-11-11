@@ -1,16 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- β80（刘先生图证「第1..被截」，A 批"保持 4 列、只放宽文字区"）：margin 6→4dp、水平 padding 8→6dp。
+     账（density 2.0，4 列宫格 cell=(360−32)/4=82dp）：改前文字区＝82−12(margin)−16(左右 padding)＝54dp≈3.8 字
+     ——但 shape_accent 的 solid＋stroke 视觉内衬再吃掉约 2dp，「第123集」临界被 ellipsize；
+     改后＝82−8−12＝62dp≈4.4 字，四位集数「第1234集」仍不保，β36 的「第N集」裁剪在前，双保险。
+     垂直 padding 8dp 不变（卡高节奏不动，与 shape_accent 的 intrinsic 8/12 内衬关系：view 自身 padding 属性优先）。 -->
 <com.google.android.material.textview.MaterialTextView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/text"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="6dp"
-    android:background="@drawable/shape_accent"
+    android:layout_margin="4dp"
+    android:background="@drawable/selector_card_bg"
     android:ellipsize="marquee"
     android:focusable="true"
     android:gravity="center"
-    android:padding="8dp"
+    android:paddingStart="6dp"
+    android:paddingTop="8dp"
+    android:paddingEnd="6dp"
+    android:paddingBottom="8dp"
     android:singleLine="true"
-    android:textColor="@color/selector_control"
+    android:textColor="?android:attr/textColorPrimary"
     android:textSize="14sp"
     tools:text="20" />

@@ -1,9 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- β91 结构批（详情页＋小窗播放页合一，A 裁路线一＝以小窗播放页为唯一页）：
+     上半＝常驻返回条 ＋ 220dp 小窗（原样保留，只把 #video 的 layout_below 从 statusBar 改指 toolbar）；
+     下半＝行序按 TV 详情页重排（片名→元信息一行→人员行→简介→三钮→线路→选集→质量→源），
+     文字区取详情页那四件（#score/#meta/#credits/#desc），播放页原六件（remark/site/other/director/actor/content）随本批废止；
+     尺寸取 TV 数值（A 裁 Q1/Q2/Q3 甲）＝行标题 14sp、行间 15dp、圆钮 40dp 与 marginStart 24dp、播放胶囊 40dp 高＋16sp＋水平 padding 16dp、元信息与人员与简介 13.5sp。
+     TV 的两枚 token 不走：detail_text_max_width 600dp 与 detail_list_max_width 812dp 是 TV 屏宽（960dp）口径，手机 360dp 装不下 ⇒ 本件仍用 match_parent＋16dp 边距。
+     回退＝本件整档退回 5b42b2f 版本（留档＝改前备份-b91/mobile-layout__activity_video.xml）。 -->
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="?android:attr/colorBackground"
     android:tag="port">
 
     <View
@@ -47,6 +55,17 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
 
+        <!-- A2 常驻返回（端口态）：复用 control.back 的图标与 onBack 语义，独立于控制层显隐 -->
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/videoBack"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_gravity="top|start"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/detail_back"
+            android:scaleType="center"
+            android:src="@drawable/ic_control_back" />
+
     </FrameLayout>
 
     <View
@@ -81,135 +100,181 @@
                     android:paddingTop="16dp"
                     android:paddingBottom="8dp">
 
-                    <com.google.android.material.textview.MaterialTextView
-                        android:id="@+id/name"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="16dp"
-                        android:layout_marginEnd="16dp"
-                        android:ellipsize="end"
-                        android:maxLines="3"
-                        android:textColor="?android:attr/textColorPrimary"
-                        android:textSize="20sp"
-                        tools:text="庆余年第二季" />
-
-                    <com.google.android.material.textview.MaterialTextView
-                        android:id="@+id/remark"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="16dp"
-                        android:layout_marginTop="8dp"
-                        android:layout_marginEnd="16dp"
-                        android:singleLine="true"
-                        android:textColor="?android:attr/textColorPrimary"
-                        android:textSize="14sp"
-                        tools:text="更新到第二季" />
-
-                    <com.google.android.material.textview.MaterialTextView
-                        android:id="@+id/site"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="16dp"
-                        android:layout_marginTop="8dp"
-                        android:layout_marginEnd="16dp"
-                        android:singleLine="true"
-                        android:textColor="?android:attr/textColorPrimary"
-                        android:textSize="14sp"
-                        tools:text="站源：泥巴" />
-
-                    <com.google.android.material.textview.MaterialTextView
-                        android:id="@+id/other"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="16dp"
-                        android:layout_marginTop="8dp"
-                        android:layout_marginEnd="16dp"
-                        android:singleLine="true"
-                        android:textColor="?android:attr/textColorPrimary"
-                        android:textSize="14sp"
-                        tools:text="年份：2022 地区：台湾 类型：科幻" />
-
-                    <com.google.android.material.textview.MaterialTextView
-                        android:id="@+id/director"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="16dp"
-                        android:layout_marginTop="8dp"
-                        android:layout_marginEnd="16dp"
-                        android:singleLine="true"
-                        android:textColor="?android:attr/textColorPrimary"
-                        android:textSize="14sp"
-                        tools:text="导演：Firefly" />
-
-                    <com.google.android.material.textview.MaterialTextView
-                        android:id="@+id/actor"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="16dp"
-                        android:layout_marginTop="8dp"
-                        android:layout_marginEnd="16dp"
-                        android:ellipsize="end"
-                        android:maxLines="1"
-                        android:textColor="?android:attr/textColorPrimary"
-                        android:textSize="14sp"
-                        tools:text="演员：Firefly" />
-
+                    <!-- β31 A2/A5：片名行＝片名(大)＋简介›入口；原挂片名旁的红/橙状态字 #score 已撤（状态内容并入下方元信息行，不再单独红字） -->
                     <androidx.appcompat.widget.LinearLayoutCompat
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="16dp"
-                        android:layout_marginTop="16dp"
                         android:layout_marginEnd="16dp"
                         android:gravity="center_vertical"
                         android:orientation="horizontal">
 
                         <com.google.android.material.textview.MaterialTextView
+                            android:id="@+id/name"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="@string/detail_flag"
+                            android:ellipsize="end"
+                            android:maxLines="2"
                             android:textColor="?android:attr/textColorPrimary"
-                            android:textSize="16sp" />
+                            android:textSize="20sp"
+                            android:textStyle="bold"
+                            tools:text="庆余年第二季" />
 
-                        <!-- 换源态入口（§3.9 手机同步：确认态⇄换源态） -->
                         <com.google.android.material.textview.MaterialTextView
-                            android:id="@+id/changeSource"
+                            android:id="@+id/descEntry"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:background="@drawable/shape_btn_play"
-                            android:paddingStart="12dp"
-                            android:paddingTop="4dp"
-                            android:paddingEnd="12dp"
-                            android:paddingBottom="4dp"
-                            android:text="@string/detail_source"
-                            android:textColor="@color/play_btn_text"
-                            android:textSize="13sp"
-                            android:textStyle="bold" />
-
+                            android:layout_marginStart="8dp"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:singleLine="true"
+                            android:text="@string/detail_intro"
+                            android:textColor="?android:attr/textColorSecondary"
+                            android:textSize="13.5sp" />
                     </androidx.appcompat.widget.LinearLayoutCompat>
 
-                    <androidx.recyclerview.widget.RecyclerView
-                        android:id="@+id/flag"
+                    <!-- β31 A2：元信息行上移到导演主演/简介之上（顺序＝片名→元信息→导演主演→简介）；
+                         A5：状态字（remarks）并入本行尾部，整行改主色 textColorPrimary（深白浅黑），不再红字。 -->
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/meta"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginTop="10dp"
+                        android:layout_marginEnd="16dp"
+                        android:ellipsize="end"
+                        android:singleLine="true"
+                        android:textColor="?android:attr/textColorPrimary"
+                        android:textSize="13.5sp"
+                        tools:text="2024 · 大陆 · 古装 · 已完结" />
+
+                    <!-- 导演＋主演（元信息之后、简介之前） -->
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/credits"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="16dp"
                         android:layout_marginTop="8dp"
-                        android:clipChildren="false"
-                        android:clipToPadding="false"
-                        android:orientation="horizontal"
-                        android:paddingStart="16dp"
-                        android:paddingEnd="16dp"
-                        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+                        android:layout_marginEnd="16dp"
+                        android:ellipsize="end"
+                        android:singleLine="true"
+                        android:textColor="?android:attr/textColorSecondary"
+                        android:textSize="13.5sp"
+                        tools:text="导演：xxx · 演员：xxx" />
+
+                    <!-- β31 A10／β32 C2/C3：简介截断 ellipsize=end＋固定 maxLines=3（无 singleLine/marquee，… 落末行行尾）；点正文区不弹窗。
+                         C3 行距 lineSpacingMultiplier 1.26→1.4、段距 marginTop 8dp→10dp（较 beta3 稍宽松，整体仍整洁）。 -->
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/desc"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginTop="10dp"
+                        android:layout_marginEnd="16dp"
+                        android:ellipsize="end"
+                        android:lineSpacingMultiplier="1.4"
+                        android:maxLines="3"
+                        android:textColor="?android:attr/textColorSecondary"
+                        android:textSize="13.5sp"
+                        tools:text="一个身世神秘的少年范闲……" />
+
+                    <!-- 三钮同行（TV 序＝播放、收藏、换源）；数值取 TV＝胶囊 40dp 高＋水平 padding 16dp＋16sp，圆钮 40dp＋marginStart 24dp＋padding 8dp。
+                         〔旧句留痕，不抹〕β91 此处原写：「两颗圆钮的 id 与控制层里的同名件（view_control_vod 的 play/keep）不冲突：include 在 ViewBinding 里生成嵌套类（A 裁 Q8 不改名）」——该句只对编译面成立、运行时不成立，2026-11-05 P0 推翻。
+                         运行时语义：宿主 binding 字段类型取本布局里该 id 的元素类，bind() 用 rootView.findViewById(id) 在【include 合并后的整棵树】深度优先、先命中先绑；include 在本文件第 65／71／78 行、三钮在其后 ⇒ 同名的 play／keep 会先撞上控制条那两颗。
+                         β24 现场：play＝一进页 ClassCastException（AppCompatImageView→MaterialTextView）；keep＝cast 得过但拿到的是控制条那颗。注意 setOnClickListener 是覆盖语义、不是叠加，所以「详情区那颗」与「控制条那颗」塌成同一只 View 时行为无差别（不会重复触发），真正的缺陷是详情区那颗一次都没被设监听。
+                         故三钮 id 定为 detailPlay／detailKeep／source，默认与 sw600dp 两版同时改；view_control_vod 系（点播与直播共用）一字不动——控制条那颗 play 是「播放/暂停」，语义不能抢。-->
+                    <androidx.appcompat.widget.LinearLayoutCompat
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginTop="15dp"
+                        android:layout_marginEnd="16dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <com.google.android.material.textview.MaterialTextView
+                            android:id="@+id/detailPlay"
+                            android:layout_width="wrap_content"
+                            android:layout_height="40dp"
+                            android:background="@drawable/shape_btn_play"
+                            android:drawableStart="@drawable/exo_icon_play"
+                            android:drawablePadding="6dp"
+                            android:gravity="center"
+                            android:paddingStart="16dp"
+                            android:paddingEnd="16dp"
+                            android:text="@string/detail_play"
+                            android:textColor="@color/detail_glass_text"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+
+                        <ImageView
+                            android:id="@+id/detailKeep"
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:layout_marginStart="24dp"
+                            android:background="@drawable/shape_detail_circle"
+                            android:contentDescription="@string/detail_keep"
+                            android:padding="8dp"
+                            android:tint="@color/detail_glass_text"
+                            android:src="@drawable/ic_control_keep_off" />
+
+                        <!-- 换源圆钮＝合并页唯一的换源入口（刘先生直派：文字钮删掉、留这颗圆形按钮）；进页即换源态另走 autoSource 键 -->
+                        <ImageView
+                            android:id="@+id/source"
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:layout_marginStart="24dp"
+                            android:background="@drawable/shape_detail_circle"
+                            android:contentDescription="@string/detail_source"
+                            android:padding="8dp"
+                            android:tint="@color/detail_glass_text"
+                            android:src="@drawable/ic_site_change" />
+                    </androidx.appcompat.widget.LinearLayoutCompat>
+
+                    <!-- β31 A6：线路组圆角容器框（title＋RecyclerView 内置，容器内 padding 12dp，chip 仍 selector_card_bg）；
+                         整组 <2 隐藏由代码控 flagGroup（renderFlags）。title/recycler 去原 16dp 边距，改由容器 margin＋padding 承载。 -->
+                    <androidx.appcompat.widget.LinearLayoutCompat
+                        android:id="@+id/flagGroup"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginTop="15dp"
+                        android:layout_marginEnd="16dp"
+                        android:background="@drawable/shape_group_container"
+                        android:orientation="vertical"
+                        android:padding="12dp">
+
+                        <com.google.android.material.textview.MaterialTextView
+                            android:id="@+id/flagTitle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/detail_line"
+                            android:textColor="?android:attr/textColorPrimary"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
+
+                        <androidx.recyclerview.widget.RecyclerView
+                            android:id="@+id/flag"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:clipChildren="true"
+                            android:clipToPadding="true"
+                            android:orientation="horizontal"
+                            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+                    </androidx.appcompat.widget.LinearLayoutCompat>
 
                     <com.google.android.material.textview.MaterialTextView
                         android:id="@+id/quality_text"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="16dp"
-                        android:layout_marginTop="16dp"
+                        android:layout_marginTop="15dp"
                         android:layout_marginEnd="16dp"
                         android:text="@string/detail_quality"
                         android:textColor="?android:attr/textColorPrimary"
                         android:textSize="16sp"
+                        android:textStyle="bold"
                         android:visibility="gone"
                         tools:visibility="visible" />
 
@@ -218,8 +283,8 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
-                        android:clipChildren="false"
-                        android:clipToPadding="false"
+                        android:clipChildren="true"
+                        android:clipToPadding="true"
                         android:orientation="horizontal"
                         android:paddingStart="16dp"
                         android:paddingEnd="16dp"
@@ -227,121 +292,110 @@
                         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                         tools:visibility="visible" />
 
+                    <!-- β31 A6：选集组圆角容器框（标题行＋横向 RecyclerView 内置）；A9：<2 集整组隐藏由代码控 episodeGroup。
+                         标题行去原 16dp/12dp 边距、recycler 去 16dp padding，改由容器 margin 16dp＋padding 12dp 承载。 -->
                     <androidx.appcompat.widget.LinearLayoutCompat
+                        android:id="@+id/episodeGroup"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="16dp"
-                        android:layout_marginTop="16dp"
-                        android:layout_marginEnd="12dp"
-                        android:gravity="center_vertical">
+                        android:layout_marginTop="15dp"
+                        android:layout_marginEnd="16dp"
+                        android:background="@drawable/shape_group_container"
+                        android:orientation="vertical"
+                        android:padding="12dp">
 
-                        <com.google.android.material.textview.MaterialTextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/detail_episode"
-                            android:textColor="?android:attr/textColorPrimary"
-                            android:textSize="16sp" />
-
-                        <androidx.appcompat.widget.AppCompatImageView
-                            android:id="@+id/reverse"
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
-                            android:layout_marginStart="8dp"
-                            android:background="?attr/selectableItemBackgroundBorderless"
-                            android:src="@drawable/ic_action_reverse"
-                            android:visibility="gone"
-                            tools:visibility="visible" />
-
-                        <View
-                            android:layout_width="0dp"
-                            android:layout_height="0dp"
-                            android:layout_weight="1" />
-
-                        <androidx.appcompat.widget.AppCompatImageView
-                            android:id="@+id/more"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:background="?attr/selectableItemBackgroundBorderless"
-                            android:src="@drawable/ic_action_more"
-                            android:visibility="gone"
-                            tools:visibility="visible" />
-
-                    </androidx.appcompat.widget.LinearLayoutCompat>
-
-                    <androidx.recyclerview.widget.RecyclerView
-                        android:id="@+id/episode"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:layout_marginBottom="8dp"
-                        android:clipChildren="false"
-                        android:clipToPadding="false"
-                        android:orientation="horizontal"
-                        android:paddingStart="16dp"
-                        android:paddingEnd="16dp"
-                        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
-
-                    <androidx.appcompat.widget.LinearLayoutCompat
-                        android:id="@+id/content_layout"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical">
-
-                        <com.google.android.material.textview.MaterialTextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="16dp"
-                            android:layout_marginTop="8dp"
-                            android:layout_marginEnd="16dp"
-                            android:text="@string/detail_content"
-                            android:textColor="?android:attr/textColorPrimary"
-                            android:textSize="16sp" />
-
-                        <com.google.android.material.textview.MaterialTextView
-                            android:id="@+id/content"
+                        <androidx.appcompat.widget.LinearLayoutCompat
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginStart="16dp"
-                            android:layout_marginTop="8dp"
-                            android:layout_marginEnd="16dp"
-                            android:layout_marginBottom="8dp"
-                            android:ellipsize="end"
-                            android:lineSpacingExtra="4dp"
-                            android:maxLines="3"
-                            android:textColor="?android:attr/textColorPrimary"
-                            android:textSize="14sp"
-                            tools:text="一个身世神秘的少年范闲（张若昀饰），因对自身身世的好奇而离开故乡澹州，前赴南庆京都。范闲在京中各大势力之间游走，以探查自己屡遭刺杀的原因。其间结识靖王世子、二皇子，与太子、长公主等人对抗，并游历四方、闯荡江湖，却意外发现这世界隐藏著的秘密。本剧第一季上半部主要描述范闲在南庆京都追查刺杀的幕后黑手，京中各式人等对范闲继承内库的态度和应对，以及监察院院长陈萍萍希望范闲接掌监察院所做的一切举动。下半部剧情发生在北齐上京。南庆驻北齐上京谍报首领言冰云被北齐官方抓获，庆帝与陈萍萍同意用已被关在监察院大牢多年的前北魏谍报首领肖恩交换言冰云，并派范闲亲率南庆使团负责此事。" />
+                            android:gravity="center_vertical">
 
+                            <com.google.android.material.textview.MaterialTextView
+                                android:id="@+id/episodeTitle"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginEnd="12dp"
+                                android:text="@string/detail_episode"
+                                android:textColor="?android:attr/textColorPrimary"
+                                android:textSize="14sp"
+                                android:textStyle="bold" />
+
+                            <androidx.appcompat.widget.AppCompatImageView
+                                android:id="@+id/reverse"
+                                android:layout_width="20dp"
+                                android:layout_height="20dp"
+                                android:layout_marginStart="8dp"
+                                android:background="?attr/selectableItemBackgroundBorderless"
+                                android:src="@drawable/ic_action_reverse"
+                                android:visibility="gone"
+                                tools:visibility="visible" />
+
+                            <View
+                                android:layout_width="0dp"
+                                android:layout_height="0dp"
+                                android:layout_weight="1" />
+
+                            <com.google.android.material.textview.MaterialTextView
+                                android:id="@+id/episodeCount"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:background="?attr/selectableItemBackgroundBorderless"
+                                android:singleLine="true"
+                                android:textColor="?android:attr/textColorSecondary"
+                                android:textSize="13.5sp"
+                                android:visibility="gone"
+                                tools:text="共12集›"
+                                tools:visibility="visible" />
+
+                        </androidx.appcompat.widget.LinearLayoutCompat>
+
+                        <!-- 选集＝横向单行（A 裁 Q4 甲，与 TV 同构） -->
+                        <androidx.recyclerview.widget.RecyclerView
+                            android:id="@+id/episode"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:clipChildren="true"
+                            android:clipToPadding="true"
+                            android:orientation="horizontal"
+                            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
                     </androidx.appcompat.widget.LinearLayoutCompat>
 
-                    <com.google.android.material.textview.MaterialTextView
-                        android:id="@+id/sourceTitle"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="16dp"
-                        android:layout_marginTop="16dp"
-                        android:layout_marginEnd="16dp"
-                        android:text="@string/detail_source_title"
-                        android:textColor="?android:attr/textColorPrimary"
-                        android:textSize="16sp"
-                        android:textStyle="bold"
-                        android:visibility="gone"
-                        tools:visibility="visible" />
-
-                    <androidx.recyclerview.widget.RecyclerView
-                        android:id="@+id/quick"
+                    <!-- β31 A6：换源组圆角容器框（title＋GridView 内置）；整组显隐由代码控 sourceGroup（enterSourceMode/renderSources/exitSourceMode），默认 gone。 -->
+                    <androidx.appcompat.widget.LinearLayoutCompat
+                        android:id="@+id/sourceGroup"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:clipChildren="false"
-                        android:clipToPadding="false"
-                        android:nestedScrollingEnabled="false"
-                        android:paddingStart="8dp"
-                        android:paddingEnd="8dp"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginTop="15dp"
+                        android:layout_marginEnd="16dp"
+                        android:background="@drawable/shape_group_container"
+                        android:orientation="vertical"
+                        android:padding="12dp"
                         android:visibility="gone"
-                        app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
-                        app:spanCount="2"
-                        tools:listitem="@layout/adapter_quick"
-                        tools:visibility="visible" />
+                        tools:visibility="visible">
+
+                        <com.google.android.material.textview.MaterialTextView
+                            android:id="@+id/sourceTitle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/detail_source_title"
+                            android:textColor="?android:attr/textColorPrimary"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
+
+                        <androidx.recyclerview.widget.RecyclerView
+                            android:id="@+id/quick"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:clipChildren="true"
+                            android:clipToPadding="true"
+                            android:nestedScrollingEnabled="false"
+                            app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+                            app:spanCount="2"
+                            tools:listitem="@layout/adapter_quick" />
+                    </androidx.appcompat.widget.LinearLayoutCompat>
 
                 </androidx.appcompat.widget.LinearLayoutCompat>
             </androidx.core.widget.NestedScrollView>

@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -99,9 +100,23 @@ public class LiveActivity extends PlaybackActivity implements CustomKeyDown.List
     private String mPlaybackKey;
     private boolean rotate;
     private int count;
+    private String mIntentGroup;
+    private String mIntentChannel;
+    private boolean mFromBoot;
+    private boolean mPlayedOnce;
 
     public static void start(Context context) {
         context.startActivity(new Intent(context, LiveActivity.class).putExtra("empty", LiveConfig.isEmpty()));
+    }
+
+    /** β75 甲案：从选台页进入，带指定台（组名＋台名，extras 与 TV 侧 LiveSelectActivity:437 同名） */
+    public static void start(Context context, String group, String channel) {
+        context.startActivity(new Intent(context, LiveActivity.class).putExtra("empty", LiveConfig.isEmpty()).putExtra("group", group).putExtra("channel", channel));
+    }
+
+    /** BOOT 开机自启：直达播放页（A 裁的产品判断），extras 打标——首次起播失败从这里退选台页 */
+    public static void startBoot(Context context) {
+        context.startActivity(new Intent(context, LiveActivity.class).putExtra("empty", LiveConfig.isEmpty()).putExtra("boot", true));
     }
 
     private boolean isEmpty() {
@@ -155,6 +170,9 @@ public class LiveActivity extends PlaybackActivity implements CustomKeyDown.List
     @Override
     protected void initView(Bundle savedInstanceState) {
         super.initView(savedInstanceState);
+        mIntentGroup = getIntent().getStringExtra("group");
+        mIntentChannel = getIntent().getStringExtra("channel");
+        mFromBoot = getIntent().getBooleanExtra("boot", false);
         mKeyDown = CustomKeyDown.create(this, mBinding.player);
         setPadding(mBinding.control.getRoot());
         setPadding(mBinding.recycler, true);
@@ -269,6 +287,15 @@ public class LiveActivity extends PlaybackActivity implements CustomKeyDown.List
             @Override
             public void error(String msg) {
                 Notify.show(msg);
+                // A 裁判据的另一档：源配置本身加载失败，BOOT 直达同样退选台页
+                if (mFromBoot && !mPlayedOnce) {
+                    Log.d("FireFlyLiveSelect", "boot live load fail msg=" + msg);
+                    // β29 批二（A 落码单接线④）：选台已收编为宿主 Fragment（position 8），退档改走 HomeActivity＋EXTRA_TAB(live)
+                    startActivity(new Intent(LiveActivity.this, HomeActivity.class)
+                            .putExtra(HomeActivity.EXTRA_TAB, R.id.live)
+                            .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP));
+                    finish();
+                }
             }
         };
     }
@@ -283,7 +310,23 @@ public class LiveActivity extends PlaybackActivity implements CustomKeyDown.List
         List<Group> items = new ArrayList<>();
         for (Group group : live.getGroups()) (group.isHidden() ? mHides : items).add(group);
         mGroupAdapter.addAll(items);
-        setPosition(LiveConfig.get().findKeepPosition(items));
+        // β75：指定台优先于 keep（选台页进来按选的台定位；找不到回落 keep，不黑屏卡死）
+        setPosition(mIntentChannel != null ? findIntentPosition(items) : LiveConfig.get().findKeepPosition(items));
+    }
+
+    private int[] findIntentPosition(List<Group> items) {
+        for (int i = 0; i < items.size(); i++) {
+            Group group = items.get(i);
+            if (group == null || !group.getName().equals(mIntentGroup)) continue;
+            int index = group.find(mIntentChannel);
+            if (index >= 0) {
+                Log.d("FireFlyLiveSelect", "intent play group=" + mIntentGroup + " channel=" + mIntentChannel + " at=" + i + "," + index);
+                return new int[]{i, index};
+            }
+            break;
+        }
+        Log.d("FireFlyLiveSelect", "intent play miss group=" + mIntentGroup + " channel=" + mIntentChannel);
+        return LiveConfig.get().findKeepPosition(items);
     }
 
     private void setWidth(Live live) {
@@ -325,6 +368,13 @@ public class LiveActivity extends PlaybackActivity implements CustomKeyDown.List
         if (position[0] == -1) return;
         int size = mGroupAdapter.getItemCount();
         if (size == 1 || position[0] >= size) return;
+        // β68 乙案（A 令 4）：记住的落点若指向空组⇒改第一个非空，否则「进页就空白」不解决（findKeepPosition 未记台时返 {0,0}）。
+        if (mGroupAdapter.get(position[0]).isEmpty()) {
+            int next = -1;
+            for (int i = 0; i < size; i++) if (!mGroupAdapter.get(i).isEmpty()) { next = i; break; }
+            if (next == -1) return;
+            position = new int[]{next, 0};
+        }
         mGroup = mGroupAdapter.get(position[0]);
         mGroup.setPosition(position[1]);
         mLive.selectGroup(mGroup);
@@ -576,6 +626,7 @@ public class LiveActivity extends PlaybackActivity implements CustomKeyDown.List
 
     @Override
     public void onItemClick(Group item) {
+        if (item.isEmpty()) return;   // β68 乙案（A 令 3）：防御其他路径把空组递进来（置灰已在 GroupAdapter 做）
         mLive.selectGroup(item);
         scrollToPosition(mBinding.channel, Math.max(item.getPosition(), 0));
         if (!item.isKeep() || ++count < 5 || mHides.isEmpty()) return;
@@ -593,6 +644,8 @@ public class LiveActivity extends PlaybackActivity implements CustomKeyDown.List
         }
     }
 
+    // β67 甲案说明（注释级，行为零改动）：本方法的唯一调用点是 ChannelAdapter 里那行长按绑定，绑定摘除后它在包内不可达；
+    // 本体一字未动，保留作本改动的回滚点。要让长按有别的落点请单独给令。
     @Override
     public boolean onLongClick(Channel item) {
         if (mGroup.isHidden()) return false;
@@ -718,11 +771,23 @@ public class LiveActivity extends PlaybackActivity implements CustomKeyDown.List
 
     @Override
     public void startPlayback(Result result, long position, MediaMetadata metadata) {
+        mPlayedOnce = true;
         startPlayer(mPlaybackKey = result.getRealUrl(), result, false, getHome().getTimeout(), position, metadata);
     }
 
     @Override
     public void resetPlaybackForError(String msg) {
+        // BOOT 直达（A 追加约束）：从未成功起播过且走到这里＝首起失败（主层 applyPlaybackResult 的 hasMsg／realUrl 空，
+        // 或逐线兜底到最后一线仍失败）⇒ 退选台页，不停黑屏。已播过任何一次（mPlayedOnce）的后续断流维持原 showError 行为。
+        if (mFromBoot && !mPlayedOnce) {
+            Log.d("FireFlyLiveSelect", "boot first play fail msg=" + msg);
+            // β29 批二（A 落码单接线④）：同上，退档改走宿主 Fragment 档
+            startActivity(new Intent(this, HomeActivity.class)
+                    .putExtra(HomeActivity.EXTRA_TAB, R.id.live)
+                    .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP));
+            finish();
+            return;
+        }
         PlaybackReset.afterError(player());
         showError(msg);
     }

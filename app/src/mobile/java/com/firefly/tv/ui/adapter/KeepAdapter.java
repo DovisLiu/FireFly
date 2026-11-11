@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.firefly.tv.bean.Keep;
 import com.firefly.tv.databinding.AdapterVodBinding;
+import com.firefly.tv.ui.custom.GlassEdgeDrawable;
 import com.firefly.tv.utils.ImgUtil;
 
 public class KeepAdapter extends BaseDiffAdapter<Keep, KeepAdapter.ViewHolder> {
@@ -64,21 +65,24 @@ public class KeepAdapter extends BaseDiffAdapter<Keep, KeepAdapter.ViewHolder> {
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Keep item = getItem(position);
         holder.binding.name.setText(item.getVodName());
+        // β83 第6条（Q3 甲）：收藏行左上＝更新进度角标，与上面历史行、leanback 收藏档同一写法；
+        // 老数据（35→36 迁移前）该列为 NULL／空串 ⇒ 隐藏，绝不出现空角标。源名不再进卡面。
+        holder.binding.year.setText(item.getVodRemarks());
+        holder.binding.year.setVisibility(item.getVodRemarks() == null || item.getVodRemarks().isEmpty()
+                ? View.GONE : View.VISIBLE);
+        holder.binding.site.setVisibility(View.GONE);
         holder.binding.remark.setVisibility(View.GONE);
-        holder.binding.site.setVisibility(View.VISIBLE);
-        holder.binding.site.setText(item.getSiteName());
         holder.binding.progress.setVisibility(View.GONE);
         holder.binding.delete.setVisibility(!delete ? View.GONE : View.VISIBLE);
         ImgUtil.load(item.getVodName(), item.getVodPic(), holder.binding.image);
-        setClickListener(holder.binding.getRoot(), item);
+        setClickListener(holder.binding, item);
     }
 
-    private void setClickListener(View root, Keep item) {
-        root.setOnLongClickListener(view -> listener.onLongClick());
-        root.setOnClickListener(view -> {
-            if (isDelete()) listener.onItemDelete(item);
-            else listener.onItemClick(item);
-        });
+    private void setClickListener(AdapterVodBinding binding, Keep item) {
+        // β31 B2：root 恒 onItemClick（删除态由宿主监听退态，不再在卡上分流）；垃圾桶独立监听才删除该条。
+        binding.getRoot().setOnLongClickListener(view -> listener.onLongClick());
+        binding.getRoot().setOnClickListener(view -> listener.onItemClick(item));
+        binding.delete.setOnClickListener(view -> listener.onItemDelete(item));
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
@@ -88,6 +92,9 @@ public class KeepAdapter extends BaseDiffAdapter<Keep, KeepAdapter.ViewHolder> {
         ViewHolder(@NonNull AdapterVodBinding binding) {
             super(binding.getRoot());
             this.binding = binding;
+            // β84 玻璃批 2：收藏卡叠同一条方向性高光边（本卡＝首页那一行与收藏页共用的同一张卡，与 HistoryAdapter 那处成对）。
+            // 本卡叠 5 层，顺序就地写全、不让人再去别处找＝①底板 black_20 ②海报图 ③**高光**（image 的 foreground）④左上/右上/左下三枚角标与删除覆盖层 ⑤根布局的水波。
+            binding.image.setForeground(new GlassEdgeDrawable(binding.image.getContext()));
         }
     }
 }

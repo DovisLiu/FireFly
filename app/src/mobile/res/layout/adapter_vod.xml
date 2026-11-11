@@ -29,6 +29,25 @@
         app:shapeAppearanceOverlay="@style/Vod.Grid.Large"
         tools:visibility="visible" />
 
+    <!-- β83 第6条（Q3 甲＝统一到 TV 首页行档：左上＝集数、不显源名）：本卡原先没有左上位，补一个节点。
+         规格逐字照本仓两处现成先例（leanback 的 adapter_vod.xml 左上角标＋本端 adapter_vod_rect.xml 同位）＝
+         10sp ＋ @color/text_remark ＋ shape_vod_remark_left（暗底、水平镜像 12dp 外角），显式对齐海报左上。
+         id 名复用现成符号（同名节点在本源集别处已被引用）⇒ 引用面零迁移、本条净新增资源 0。
+         连带面：本卡由历史与收藏两个适配器共用＝首页两行＋历史页＋收藏页四个入口一起变观感，真机按四个入口分别看。 -->
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/year"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/image"
+        android:layout_alignTop="@+id/image"
+        android:background="@drawable/shape_vod_remark_left"
+        android:singleLine="true"
+        android:textColor="@color/text_remark"
+        android:textSize="10sp"
+        android:visibility="gone"
+        tools:text="更新至 12"
+        tools:visibility="visible" />
+
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/site"
         android:layout_width="wrap_content"
@@ -84,10 +103,6 @@
         android:maxLines="1"
         android:textColor="?android:attr/textColorPrimary"
         android:textSize="13sp"
-        app:autoSizeMaxTextSize="13sp"
-        app:autoSizeMinTextSize="11sp"
-        app:autoSizeStepGranularity="1sp"
-        app:autoSizeTextType="uniform"
         tools:text="蜘蛛人" />
 
 </RelativeLayout>

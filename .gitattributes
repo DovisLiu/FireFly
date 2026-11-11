@@ -1,0 +1,20 @@
+# 行尾规则（β29 甲案，A 2026-11-07 定档）：文本件入库与检出一律 LF；二进制一律不转；未列出的扩展名走 git 自动嗅探兜底。
+# 兜底：text=auto 让 git 自己判二进制（含 NUL 的件不转），eol=lf 把检出方向也定死，不再依赖每台机器的 core.autocrlf。
+* text=auto eol=lf
+
+# 实测二进制族（β29 前置 k19 r4〔3〕HEAD 态 111 件的扩展名全集，逐个钉死，不靠嗅探）。
+*.png -text
+*.so -text
+*.aar -text
+*.webp -text
+*.jpg -text
+*.ttf -text
+*.ico -text
+*.jar -text
+
+# 预防性归 -text：当前跟踪集里 apk／zip／jks／keystore 命中 0，唯一的 pem 是公开 CA 证书；只防行尾转换，不改内容、也不把任何密钥加进跟踪集。
+*.apk -text
+*.zip -text
+*.jks -text
+*.keystore -text
+*.pem -text

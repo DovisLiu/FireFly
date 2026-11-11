@@ -79,7 +79,10 @@ public class ChannelAdapter extends RecyclerView.Adapter<ChannelAdapter.ViewHold
         holder.binding.number.setText(item.getNumber());
         holder.binding.getRoot().setSelected(item.isSelected());
         holder.binding.getRoot().setOnClickListener(view -> listener.onItemClick(item));
-        holder.binding.getRoot().setOnLongClickListener(view -> listener.onLongClick(item));
+        // β67 甲案（A 令，与 TV beta78 的 `b78s-01` 同形）：**「长按频道卡＝收藏」的绑定摘除**——
+        // 本行是手机侧直播收藏唯一的写入口（→ `LiveActivity.onLongClick` → `addKeep` 往 Keep 表写 type=1 行）。
+        // 屏蔽版必须「不显示也不写入」，故摘掉这一行；`onLongClick`／`addKeep`／`delKeep` 三个本体一字未动，
+        // 它们是本改动的回滚点（恢复这一行即回到长按收藏）。长按现在的行为＝与点击同效（无监听 ⇒ 事件不再被消费）。
     }
 
     @Override

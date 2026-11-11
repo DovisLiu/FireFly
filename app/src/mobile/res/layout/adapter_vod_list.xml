@@ -13,8 +13,8 @@
 
     <com.google.android.material.imageview.ShapeableImageView
         android:id="@+id/image"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
         android:layout_marginEnd="12dp"
         app:shapeAppearanceOverlay="@style/Vod.Grid.Large" />
 
@@ -30,7 +30,7 @@
             android:layout_height="wrap_content"
             android:singleLine="true"
             android:textColor="@color/text_panel"
-            android:textSize="14sp"
+            android:textSize="16sp"
             tools:text="蜘蛛人" />
 
         <com.google.android.material.textview.MaterialTextView
@@ -40,7 +40,7 @@
             android:layout_marginTop="2dp"
             android:singleLine="true"
             android:textColor="@color/text_panel"
-            android:textSize="12sp"
+            android:textSize="14sp"
             tools:text="1080p" />
 
     </androidx.appcompat.widget.LinearLayoutCompat>

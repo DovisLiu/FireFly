@@ -147,8 +147,10 @@ public class ResUtil {
     // 菜单图标跟随主题染色（深色=白、浅色=深），修复浅色模式下硬编码白色图标不可见。
     // 注意：不可用 resolveAttribute(colorControlNormal)——M3 主题下该属性解析可能返回非颜色值，
     // setTint(坏值) 会导致图标完全透明（beta2 首版事故）；改用 icon_primary 颜色资源（DayNight 自动切换）。
-    public static void tintMenuIcons(Menu menu) {
-        int color = getColor(R.color.icon_primary);
+    // β28 批一收尾⑤（甲案，A 单）：取色必须用宿主上下文，不再用 getColor(resId) 那条 Application 路径——
+    // Application 上下文不保证跟着 AppCompat 夜档走 ⇒ 夜档取到浅档 #3C434E 落在深底上＝刘先生看到的"发灰"；浅档读数与改前逐字相同（同一资源号、同一色值）。
+    public static void tintMenuIcons(Context context, Menu menu) {
+        int color = ContextCompat.getColor(context, R.color.icon_primary);
         for (int i = 0; i < menu.size(); i++) {
             Drawable icon = menu.getItem(i).getIcon();
             if (icon != null) icon.setTint(color);

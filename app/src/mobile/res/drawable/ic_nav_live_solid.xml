@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- β25 视觉批（A 裁「底导案一」＝新增空心/实心两态资产，现有五支实心件一字不动；
+     本件只被底导的 selector_nav_<名>.xml 引用 ⇒ 电视端顶部导航与手机设置页零影响）。
+     width／height 逐枚跟随对应现状件（本批第三条订正），viewport 一律 960，不带 android:tint
+     （底导上色由 app:itemIconTint 负责，见 p60 取证）。
+     strokeWidth 只写纯浮点字面（β21 三页进不去的教训：该属性由 TypedArray.getFloat 直读，
+     写成资源引用或带单位串会在 inflate 时抛 NumberFormatException）。 -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="960"
+    android:viewportHeight="960">
+    <path
+        android:fillColor="@android:color/white"
+        android:fillType="evenOdd"
+        android:pathData="M100.0,278.0L102.7,257.8L110.5,239.0L122.8,222.8L139.0,210.5L157.8,202.7L178.0,200.0L782.0,200.0L802.2,202.7L821.0,210.5L837.2,222.8L849.5,239.0L857.3,257.8L860.0,278.0L860.0,702.0L857.3,722.2L849.5,741.0L837.2,757.2L821.0,769.5L802.2,777.3L782.0,780.0L178.0,780.0L157.8,777.3L139.0,769.5L122.8,757.2L110.5,741.0L102.7,722.2L100.0,702.0ZM345.0,340.0L345.0,640.0L595.0,490.0Z" />
+</vector>

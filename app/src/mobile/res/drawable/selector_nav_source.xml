@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- β28 批一（A 裁②：底导图标新建两态件 1 selector＋2 态，48dp／viewport 960 与其余四枚同尺；不挪用 selector_nav_local）：
+     上色仍由 activity_home.xml 的 app:itemIconTint=@color/selector_nav 统一负责（该 color 档实测只有 state_checked 两态，
+     未选中／选中色由它给 ⇒ 两枚矢量都不带 android:tint，带了也会被 itemIconTint 覆盖，画在这里等于没画）。
+     两态＝同一条轮廓的两种画法：未选中＝stroke 描边空心（画法逐字跟本仓空心先例 ic_nav_home_hollow.xml＝
+     strokeColor＝android 内置白 ＋ strokeWidth 纯浮点 64 ＋ strokeLineJoin 与 LineCap round，无根 tint、无 fillColor）；
+     选中＝fillColor 实心（跟 ic_nav_live_solid 那批的实心语义）。
+     订正留痕：本件上一版两枚都写成 fillColor、只差一个根 tint，那种两枚渲染出来一模一样（itemIconTint 会覆盖根 tint），
+     选中／未选中看不出差别＝作废，本轮改成描边与填充两种画法。
+     strokeWidth 只写纯浮点字面（β21 教训：该属性由 TypedArray.getFloat 直读，写成资源引用或带单位串 inflate 时抛 NumberFormatException）。 -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@drawable/ic_nav_source_solid" android:state_checked="true" />
+    <item android:drawable="@drawable/ic_nav_source" android:state_checked="false" />
+</selector>

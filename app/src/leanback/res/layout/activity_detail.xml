@@ -143,11 +143,11 @@
                     android:textStyle="bold"
                     tools:text="海贼王" />
 
-                <!-- ②元信息**合并一行**（β20 / T-318，09 §二/§三：★评分 · 画质 · 类型 · 年份 · 地区 · 站点）。
+                <!-- ②元信息**合并一行**（β20 / T-318，09 §二/§三：备注／更新进度 · 画质 · 类型 · 年份 · 地区 · 站点）。
                      改前是两行（score+type 一行、meta 一行，beta48 真机实测 36px＋33px＋间距 8px＝77px）；
                      本块把三个 TextView 收进同一个 horizontal 行：score/type 保持 wrap，meta 吃剩余宽并单行省略。
                      字号统一 @dimen/detail_text_meta（12.5sp，09 §三）；行内间距 12dp 与改前 type 的 marginStart 同档。
-                     注意：Vod bean **没有评分字段**（全仓 grep vod_score/douban 均 0 命中），score 位绑的仍是
+                     注意：Vod bean **没有评分字段**（Vod bean 内 score 命中 0；Episode.getScore(name,number)＝选集匹配打分（100 全等／80 集号相等／70 本集名含 remarks／60 remarks 含本集名／0 不匹配；集号解析在 Flag.java:131 的 Util.getNumber(remarks)，:133 用它打分、:134 经 Episode.Rule 取 max），不是评分字段；豆瓣图床主机名在 ImgUtil（:77 镜像主机数组／:80 后缀常量／:381 javadoc）也不在本布局），score 位绑的仍是
                      vod_remarks（"已完结"一类画质/状态串）⇒ 09 表里的"★评分"无数据源，**不造假星号**，
                      该格有 remarks 才显示、无则 GONE（绑定逻辑见 DetailActivity#bind）。
                      β22 / T-327 补值：本行容器宽 match_parent→**@dimen/detail_text_max_width**（右界 1304px），

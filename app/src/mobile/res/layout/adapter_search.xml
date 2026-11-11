@@ -15,10 +15,11 @@
         android:background="@color/black_10"
         app:shapeAppearanceOverlay="@style/Vod.Grid.Large" />
 
-    <!-- Round 38 / R3：搜索结果卡的左上角标（源名）收进左上角标统一规格：
+    <!-- Round 38 / R3 定规格；β87 第3条（A 裁）＝左上位的内容从"源名"换成"集数档"（remarks），落实甲1"手机一页一档"：
          原 12sp + @color/text_site + shape_vod_site（?attr/colorErrorContainer 底、4dp 内边距、8dp 圆角）
          → 10sp + @color/text_remark + shape_vod_remark_left（暗底、3dp/5dp、12dp 外角水平镜像）。
-         保留 maxWidth=90dp + ellipsize=end：本卡海报仅 96dp 宽，防长源名溢出压主体（R3 验收「最长文案不溢出」）。 -->
+         保留 maxWidth=90dp + ellipsize=end：本卡海报仅 96dp 宽，防长文案溢出压主体（R3 验收「最长文案不溢出」）。
+         本节点 id 仍叫 site（β87 未改名，改名会牵动 ViewBinding 引用面），实际承载＝左上角标的集数文本。 -->
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/site"
         android:layout_width="wrap_content"

@@ -17,6 +17,7 @@ import com.firefly.tv.setting.PlayerSetting;
 import com.firefly.tv.setting.Setting;
 import com.firefly.tv.ui.activity.HomeActivity;
 import com.firefly.tv.ui.base.BaseFragment;
+import com.firefly.tv.ui.custom.GlassEdgeDrawable;
 import com.firefly.tv.ui.dialog.BufferDialog;
 import com.firefly.tv.ui.dialog.MpvConfDialog;
 import com.firefly.tv.ui.dialog.UaDialog;
@@ -54,6 +55,9 @@ public class SettingPlayerFragment extends BaseFragment implements UaListener, B
 
     @Override
     protected void initEvent() {
+        // β82 第4条＋Q1＝甲：子页是真正的三级页，箭头回设置主页（位置表里的 1），
+        // 与既有分类记忆／BACK 口径同源，不动 FragmentStateManager 的位置表。
+        mBinding.toolbar.setNavigationOnClickListener(v -> ((HomeActivity) requireActivity()).change(1));
         mBinding.engine.setOnClickListener(this::setEngine);
         mBinding.decode.setOnClickListener(this::onDecode);
         mBinding.adblock.setOnClickListener(this::setAdblock);
@@ -66,6 +70,19 @@ public class SettingPlayerFragment extends BaseFragment implements UaListener, B
         mBinding.buffer.setOnClickListener(this::onBuffer);
         mBinding.preload.setOnClickListener(this::onPreload);
         mBinding.ua.setOnClickListener(this::onUa);
+        // β34 B1：二级页各选项行挂与一级同款方向性玻璃边（色对随主题翻，圆角 radius_setting_row）。
+        mBinding.engine.setForeground(new GlassEdgeDrawable(requireContext(), R.color.glass_edge_bright, R.color.glass_edge_dim, R.dimen.radius_setting_row));
+        mBinding.decode.setForeground(new GlassEdgeDrawable(requireContext(), R.color.glass_edge_bright, R.color.glass_edge_dim, R.dimen.radius_setting_row));
+        mBinding.adblock.setForeground(new GlassEdgeDrawable(requireContext(), R.color.glass_edge_bright, R.color.glass_edge_dim, R.dimen.radius_setting_row));
+        mBinding.mpvConf.setForeground(new GlassEdgeDrawable(requireContext(), R.color.glass_edge_bright, R.color.glass_edge_dim, R.dimen.radius_setting_row));
+        mBinding.mpvGpuNext.setForeground(new GlassEdgeDrawable(requireContext(), R.color.glass_edge_bright, R.color.glass_edge_dim, R.dimen.radius_setting_row));
+        mBinding.mpvVulkan.setForeground(new GlassEdgeDrawable(requireContext(), R.color.glass_edge_bright, R.color.glass_edge_dim, R.dimen.radius_setting_row));
+        mBinding.render.setForeground(new GlassEdgeDrawable(requireContext(), R.color.glass_edge_bright, R.color.glass_edge_dim, R.dimen.radius_setting_row));
+        mBinding.scale.setForeground(new GlassEdgeDrawable(requireContext(), R.color.glass_edge_bright, R.color.glass_edge_dim, R.dimen.radius_setting_row));
+        mBinding.background.setForeground(new GlassEdgeDrawable(requireContext(), R.color.glass_edge_bright, R.color.glass_edge_dim, R.dimen.radius_setting_row));
+        mBinding.buffer.setForeground(new GlassEdgeDrawable(requireContext(), R.color.glass_edge_bright, R.color.glass_edge_dim, R.dimen.radius_setting_row));
+        mBinding.preload.setForeground(new GlassEdgeDrawable(requireContext(), R.color.glass_edge_bright, R.color.glass_edge_dim, R.dimen.radius_setting_row));
+        mBinding.ua.setForeground(new GlassEdgeDrawable(requireContext(), R.color.glass_edge_bright, R.color.glass_edge_dim, R.dimen.radius_setting_row));
     }
 
     private void setVisible() {

@@ -7,8 +7,10 @@
     android:orientation="vertical">
 
     <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
+        app:navigationIcon="@drawable/ic_nav_back"
         app:title="@string/setting_display"
         app:titleTextAppearance="@style/ToolbarTextAppearance" />
 
@@ -28,9 +30,11 @@
             <androidx.appcompat.widget.LinearLayoutCompat
                 android:id="@+id/size"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="48dp"
                 android:layout_marginTop="16dp"
                 android:background="@drawable/shape_item"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp"
                 android:gravity="center_vertical"
                 android:orientation="horizontal">
 
@@ -65,9 +69,11 @@
             <androidx.appcompat.widget.LinearLayoutCompat
                 android:id="@+id/appearance"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="48dp"
                 android:layout_marginTop="16dp"
                 android:background="@drawable/shape_item"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp"
                 android:gravity="center_vertical"
                 android:orientation="horizontal">
 

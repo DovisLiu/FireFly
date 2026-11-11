@@ -14,7 +14,9 @@ import com.firefly.tv.databinding.FragmentSettingDecodeBinding;
 import com.firefly.tv.setting.DecodeSetting;
 import com.firefly.tv.setting.PlayerSetting;
 import com.firefly.tv.setting.Setting;
+import com.firefly.tv.ui.activity.HomeActivity;
 import com.firefly.tv.ui.base.BaseFragment;
+import com.firefly.tv.ui.custom.GlassEdgeDrawable;
 import com.firefly.tv.utils.ResUtil;
 
 public class SettingDecodeFragment extends BaseFragment {
@@ -38,12 +40,22 @@ public class SettingDecodeFragment extends BaseFragment {
 
     @Override
     protected void initEvent() {
+        // β82 第4条＋Q1＝甲：子页是真正的三级页，箭头回设置主页（位置表里的 1），
+        // 与既有分类记忆／BACK 口径同源，不动 FragmentStateManager 的位置表。
+        mBinding.toolbar.setNavigationOnClickListener(v -> ((HomeActivity) requireActivity()).change(1));
         mBinding.aac.setOnClickListener(this::setAAC);
         mBinding.tunnel.setOnClickListener(this::setTunnel);
         mBinding.audioPrefer.setOnClickListener(this::setAudioPrefer);
         mBinding.videoPrefer.setOnClickListener(this::setVideoPrefer);
         mBinding.dolbyVisionOutput.setOnClickListener(this::setDolbyVisionOutput);
         mBinding.audioPassThrough.setOnClickListener(this::setAudioPassThrough);
+        // β34 B1：二级页各选项行挂与一级同款方向性玻璃边。
+        mBinding.aac.setForeground(new GlassEdgeDrawable(requireContext(), R.color.glass_edge_bright, R.color.glass_edge_dim, R.dimen.radius_setting_row));
+        mBinding.tunnel.setForeground(new GlassEdgeDrawable(requireContext(), R.color.glass_edge_bright, R.color.glass_edge_dim, R.dimen.radius_setting_row));
+        mBinding.audioPrefer.setForeground(new GlassEdgeDrawable(requireContext(), R.color.glass_edge_bright, R.color.glass_edge_dim, R.dimen.radius_setting_row));
+        mBinding.videoPrefer.setForeground(new GlassEdgeDrawable(requireContext(), R.color.glass_edge_bright, R.color.glass_edge_dim, R.dimen.radius_setting_row));
+        mBinding.dolbyVisionOutput.setForeground(new GlassEdgeDrawable(requireContext(), R.color.glass_edge_bright, R.color.glass_edge_dim, R.dimen.radius_setting_row));
+        mBinding.audioPassThrough.setForeground(new GlassEdgeDrawable(requireContext(), R.color.glass_edge_bright, R.color.glass_edge_dim, R.dimen.radius_setting_row));
     }
 
     private void setVisible() {

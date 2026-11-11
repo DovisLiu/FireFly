@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- β69 / 批 2（A 派单第 6 项的 padding 那半）：手机简介全文弹层的内容视图，照 TV 同构件
+     leanback/res/layout/dialog_detail_desc.xml 建（那份是 ScrollView ＋ 全文 TextView）。
+     为什么走 setView 而不是主题：padding 8・4・8・8 四边不等，Material 主题只有一个对称的
+     dialogPreferredPadding，表达不出来；字号与行距这里也直接写死（13.5sp／1.26），与另外三处
+     走 materialAlertDialogBodyTextStyle 的 setMessage 弹层同值、不同路。宿主见 mobile DetailActivity#showDescDialog。 -->
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:overScrollMode="never"
+    android:paddingStart="8dp"
+    android:paddingTop="4dp"
+    android:paddingEnd="8dp"
+    android:paddingBottom="8dp">
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/descFull"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:lineSpacingMultiplier="1.26"
+        android:textColor="?android:attr/textColorPrimary"
+        android:textSize="@dimen/popup_text_body"
+        tools:text="简介全文简介全文简介全文简介全文简介全文" />
+</ScrollView>

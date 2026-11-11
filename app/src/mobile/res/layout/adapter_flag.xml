@@ -1,11 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- β87 第2条（A 裁）：本件是【详情页与播放页共用】的 chip 布局，间距原先挂在这里的 layout_marginEnd=8dp，
+     ⇒ 会跟着进播放页，而播放页本来就另有 SpaceItemDecoration(8)＝双承载（相邻 16dp、尾部还多 8dp，属我们未要求的连带）。
+     现由两页各自挂现成的 SpaceItemDecoration(8)：详情页＝DetailActivity.setRecyclerView，播放页＝VideoActivity 那一行（一字未动）。
+     回退＝在本根元素补回 android:layout_marginEnd="8dp" 一行，并删掉 DetailActivity 里新增的那行装饰器。 -->
 <com.google.android.material.textview.MaterialTextView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/text"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:background="@drawable/shape_item"
+    android:background="@drawable/selector_card_bg"
     android:gravity="center"
-    android:textColor="@color/selector_text"
-    android:textSize="14sp"
+    android:paddingStart="12dp"
+    android:paddingTop="8dp"
+    android:paddingEnd="12dp"
+    android:paddingBottom="8dp"
+    android:textColor="?android:attr/textColorPrimary"
+    android:textSize="13sp"
     tools:text="泥巴" />

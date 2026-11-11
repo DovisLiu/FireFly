@@ -99,7 +99,9 @@
             android:text="@string/play_across" />
 
         <!-- 末项＝「换源」（id 仍是 config，点击回调一字未动：LiveActivity#onConfig 起直播源选择窗）。
-             原名「配置」与实际功能不符（A2 改名）；`play_config` 这个 key 在 main，别处（手机同排）还在用，
+             原名「配置」与实际功能不符（A2 改名）；`play_config` 这个 key 仍在 main，但自 β68 手机批起
+             手机那一排也改引 `play_change`／`play_switch_line`，全仓对它**已无引用**（实测：arsc 里它已从手机包与 TV 包双双消失），
+             留着只是历史，
              故只换本项引用，不动资源本身。原末项「换源」（id=change，实际是切线路、与第 4 项「线路」重复）删除。 -->
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/config"

@@ -6,6 +6,7 @@ import com.firefly.tv.bean.Episode;
 import com.firefly.tv.databinding.AdapterEpisodeGridBinding;
 import com.firefly.tv.ui.adapter.EpisodeAdapter;
 import com.firefly.tv.ui.base.BaseEpisodeHolder;
+import com.firefly.tv.utils.EpisodeNameUtil;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -35,18 +36,15 @@ public class EpisodeGridHolder extends BaseEpisodeHolder {
     // 四个 Pattern 与判据原文照搬 TV（含两条实测教训）：
     //   · 不留"裸数字兜底"——`Util.getNumber` 的 replaceAll("\\D+","") 会把预告片的年份 2026 当成集号；
     //   · SP／PV 用 (?=\d) 前瞻而不是 \b——(?i) 下 "sp01" 的 p|0 两侧都是 word 字符，\b 不成立。
-    private static final Pattern EP_LABEL_SIZE = Pattern.compile("^\\[\\d+(\\.\\d+)?(GB|MB)\\]\\s*");
-    private static final Pattern EP_LABEL_EXT =
-            Pattern.compile("(?i)\\.(mkv|mp4|avi|ts|flv|rmvb|mov|wmv)$");
+    // β31 A4：大小前缀／扩展名后缀两步下沉到共享 EpisodeNameUtil.stripSizeAndExt（与 EpisodeHoriHolder 共用，扩展名表补 mp3）；
+    //          非正片判定与「第N集」提取两步仍留本件，行为不变。
     private static final Pattern EP_LABEL_NON_FEATURE = Pattern.compile(
             "(?i)(预告|花絮|特别篇|彩蛋|幕后|访谈|主题曲|片头|片尾|OST|TRAILER|SPOILER|MV|SP(?=\\d)|PV(?=\\d))");
     private static final Pattern EP_LABEL_MARK = Pattern.compile("(?i)(?:EP|第|\\bE)\\s*(\\d{1,3})");
 
     private static String episodeLabel(String name) {
         if (name == null || name.isEmpty()) return "";
-        String stripped = EP_LABEL_SIZE.matcher(name).replaceFirst("");
-        stripped = EP_LABEL_EXT.matcher(stripped).replaceFirst("");
-        stripped = stripped.trim();
+        String stripped = EpisodeNameUtil.stripSizeAndExt(name);
         if (stripped.isEmpty()) return name;                     // 剥完为空（异常集名）⇒ 回落原名，绝不显示空卡
         if (EP_LABEL_NON_FEATURE.matcher(stripped).find()) return stripped;   // 非正片⇒保留原名主体
         Matcher m = EP_LABEL_MARK.matcher(stripped);

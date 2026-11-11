@@ -2,4 +2,26 @@
 <resources>
     <color name="text_panel">#DE1B1B1B</color>
     <color name="text_panel_sub">#991B1B1B</color>
+    <!-- β79 批1（A 三裁②定参）：手机 A 档真玻璃＝恒深底宿主专用，日夜同值故只落 values 一份；
+         main 的 detail_glass_* 五串一字未动（TV 在用），本五条为 mobile 独立命名，零覆盖零冲突。 -->
+    <color name="glass_fill">#73000000</color>
+    <color name="glass_fill_pressed">#42FFFFFF</color>
+    <!-- β84 玻璃批 2：海报方向性高光的**浅档**＝黑（页面是浅底、海报压在浅底上，白边会被页面洗掉）。
+         深档在 values-night/colors.xml，两条成对＝A 压的"明暗各一套"，不许一个白色半透明打天下。 -->
+    <!-- β27 丙3（A 裁 2026-11-05）已把本档改成白系：bright＝#80FFFFFF（白 50.20%）、dim＝#1F000000（黑 12.16%），上面那句旧理由原样留着——它在本轮实测里仍然成立：白高光压 bg_card #FFFFFF（main/values/colors.xml:53）位移恰 0.0，只有压在页底 #DBE4EB（:51）的那一半显形（+13.5 灰阶），故浅档整圈的可见性由暗段承担。 -->
+    <color name="glass_edge_bright">#80FFFFFF</color>
+    <color name="glass_edge_dim">#1F000000</color>
+    <!-- β85（A 裁 2026-11-04）＝返回钮的高光描边**恒取亮色系、不跟明暗主题翻色**，深浅两档只调不透明度。
+         β85 原句已过期（自 β27 丙3）：那对浅档是黑（#1F000000／#0A000000）——丙3 后隔壁＝bright #80FFFFFF（白 50.20%）／dim #1F000000（黑 12.16%）。
+         本对仍单列的理由随之改写：宿主永远是 glass_fill 的 45% 黑圆底 ⇒ 要的是比浅档更低的白强度（32.9%／11.0%），不是"黑压黑＝零对比"。
+         浅档仍比深档略低（β87 按实算订正＝#54FFFFFF／#1CFFFFFF＝白 32.9%／11.0%；旧注释写 20%／6% 是 β85 抬档前的值）；
+         避免白底上整颗钮发晃。海报侧那两枚 token 一字未动。 -->
+    <color name="glass_edge_on_dark_bright">#54FFFFFF</color>
+    <color name="glass_edge_on_dark_dim">#1CFFFFFF</color>
+    <!-- β25 视觉批（刘先生 2026-11-04 选甲：深档纯白、浅档近黑，两档成对）：底导专用选中色，只被底导自己的 color selector 一处引用，不进其他宿主；全局 brand_primary 在 main 源集、本批一字未动。 -->
+    <color name="nav_selected">#FF1F2328</color>
+    <color name="card_selected">#C7D1DC</color>
+    <!-- β31 A6：线路/选集/换源三组圆角容器框底色（浅档）。取页底 bg_page #DBE4EB 与卡片 bg_card #FFFFFF 之间的弱对比档，
+         使框可见又不抢戏；白 chip（selector_card_bg normal=bg_card）压在框上仍可辨。mobile 独立命名，main 一字未动。 -->
+    <color name="group_container">#E9EEF2</color>
 </resources>

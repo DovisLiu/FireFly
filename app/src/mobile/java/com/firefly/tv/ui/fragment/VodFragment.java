@@ -1,6 +1,6 @@
 package com.firefly.tv.ui.fragment;
 
-import android.util.Log;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,16 +31,12 @@ import com.firefly.tv.impl.ConfigListener;
 import com.firefly.tv.impl.FilterListener;
 import com.firefly.tv.impl.SiteListener;
 import com.firefly.tv.model.SiteViewModel;
-import com.firefly.tv.ui.activity.HistoryActivity;
-import com.firefly.tv.ui.activity.KeepActivity;
-import com.firefly.tv.ui.activity.SearchActivity;
+import com.firefly.tv.ui.activity.HomeActivity;
 import com.firefly.tv.ui.adapter.TypeAdapter;
 import com.firefly.tv.ui.base.BaseFragment;
 import com.firefly.tv.ui.dialog.FilterDialog;
-import com.firefly.tv.ui.dialog.HistoryDialog;
 import com.firefly.tv.ui.dialog.LinkDialog;
 import com.firefly.tv.ui.dialog.ReceiveDialog;
-import com.firefly.tv.ui.dialog.SiteDialog;
 import com.firefly.tv.utils.Notify;
 import com.firefly.tv.utils.ResUtil;
 
@@ -55,7 +51,6 @@ public class VodFragment extends BaseFragment implements ConfigListener, SiteLis
     private FragmentVodBinding mBinding;
     private SiteViewModel mViewModel;
     private TypeAdapter mAdapter;
-    private Result mResult;
 
     public static VodFragment newInstance() {
         return new VodFragment();
@@ -84,17 +79,16 @@ public class VodFragment extends BaseFragment implements ConfigListener, SiteLis
         setRecyclerView();
         setViewModel();
         showProgress();
+        bootstrap();
     }
 
     @Override
     protected void initEvent() {
         mBinding.top.setOnClickListener(this::onTop);
-        // LOGO=历史弹窗（等同设置页点播行的时钟图标）；切换源图标=换站点（等同房子图标）
-        mBinding.logo.setOnClickListener(this::onLogo);
-        mBinding.search.setOnClickListener(v -> SearchActivity.start(requireActivity()));
-        mBinding.keep.setOnClickListener(v -> KeepActivity.start(requireActivity()));
-        mBinding.history.setOnClickListener(v -> HistoryActivity.start(requireActivity()));
-        mBinding.site.setOnClickListener(this::onSite);
+        // β82 第3条＋Q1＝甲：旧顶栏四钮整条退场——搜索只在首页；收藏／历史走首页 header；
+        // 换站点仍有三处入口（首页 header 换源钮、设置页 vodHome 行＝SettingFragment:128 接线／:207 弹窗体、详情页换源钮）。
+        // 箭头＝切到首页 tab（与一级页 BACK 一律回首页同口径），不新开第二套返回语义。
+        mBinding.toolbar.setNavigationOnClickListener(v -> ((HomeActivity) requireActivity()).change(7));
         mBinding.filter.setOnClickListener(this::onFilter);
         mBinding.filter.setOnLongClickListener(this::onLink);
         mBinding.appBar.addOnOffsetChangedListener((appBarLayout, verticalOffset) -> {
@@ -126,7 +120,8 @@ public class VodFragment extends BaseFragment implements ConfigListener, SiteLis
     }
 
     private void setAdapter(Result result) {
-        mAdapter.addAll(mResult = result);
+        android.util.Log.d("FireFlyHome", "vod result page=vod count=" + result.getList().size());
+        mAdapter.addAll(result);
         mBinding.pager.getAdapter().notifyDataSetChanged();
         setFabVisible(0);
         hideProgress();
@@ -158,17 +153,6 @@ public class VodFragment extends BaseFragment implements ConfigListener, SiteLis
         return true;
     }
 
-    private void onLogo(View view) {
-        // T-211 扩围（全站 LOGO 一致）：手机端本来就是「点播历史（仓库）列表」，行为不改，
-        // 只补与 TV 同格式的留痕，便于 C 双端同一口径逐页判定。
-        Log.d("FireFlyHome", "logo click host=VodFragment action=history");
-        HistoryDialog.create().vod().readOnly().show(this);
-    }
-
-    private void onSite(View view) {
-        SiteDialog.create().change().show(this);
-    }
-
     private void onFilter(View view) {
         if (mAdapter.getItemCount() > 0) FilterDialog.create().filter(mAdapter.get(mBinding.pager.getCurrentItem()).getFilters()).show(this);
     }
@@ -191,7 +175,25 @@ public class VodFragment extends BaseFragment implements ConfigListener, SiteLis
         mBinding.pager.setVisibility(View.VISIBLE);
     }
 
+    /**
+     * β28 批一收尾②（刘先生＝冷启动进点播页首屏刷不出，五次全中＝必然路径；A 单定档＝照首页 HomeFragment.initView:141-143 那条先例补「建页自取一次」）：
+     * 现文事实＝本页取数口只有 homeContent()，它的调用面只有 RefreshEvent 的 HOME／SIZE 两支，而事件非 sticky（b29 r5 件〔2〕〔4〕甲档）
+     * ⇒ 冷启配置加载完成那次 post 发出时本页尚未创建（本页只由 factory 的 position 0 新建），之后进页就只剩 progress。
+     * 就绪前置只用现文可读表达式、不新增状态位：sites 非空＝getSites() 非空（这条正是 VodConfig.isLoaded() 本体的表达式，
+     * 但它是 protected、Fragment 侧不可见 ⇒ 就地读同一条表达式）；主源 key 非空＝getHome() 在 home 为 null 时返回 new Site()，故必须自己判 key，用 TextUtils.isEmpty 兜住 null。
+     * 不就绪只留痕、不发请求：空 Site 发出去会走 error 分支，观感从转圈变空白，比现在更糟（A 单要求把这句理由写进注释）。
+     */
+    private void bootstrap() {
+        int sites = VodConfig.get().getSites().size();
+        String homeKey = getHome().getKey();
+        boolean ready = sites > 0 && !TextUtils.isEmpty(homeKey);
+        String reason = sites == 0 ? "sites_empty" : TextUtils.isEmpty(homeKey) ? "home_empty" : "ready";
+        android.util.Log.d("FireFlyHome", "vod bootstrap page=vod sites=" + sites + " homeKey=" + (TextUtils.isEmpty(homeKey) ? "empty" : homeKey) + " fetch=" + ready + " reason=" + reason);
+        if (ready) homeContent();
+    }
+
     private void homeContent() {
+        android.util.Log.d("FireFlyHome", "vod fetch page=vod enter");
         showProgress();
         setFabVisible(0);
         mAdapter.clear();
@@ -199,14 +201,9 @@ public class VodFragment extends BaseFragment implements ConfigListener, SiteLis
         mBinding.pager.setAdapter(new PageAdapter(getChildFragmentManager()));
     }
 
-    public Result getResult() {
-        return mResult == null ? new Result() : mResult;
-    }
-
-    // LOGO 固定为 App 品牌图标（布局中写死 @drawable/ic_logo），不再跟随点播源配置切换
-
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onRefreshEvent(RefreshEvent event) {
+        android.util.Log.d("FireFlyHome", "vod event page=vod type=" + event.getType());
         switch (event.getType()) {
             case HOME:
             case SIZE:

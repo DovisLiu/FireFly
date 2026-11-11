@@ -1,6 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 详情页圆形按钮底（收藏/换源） -->
-<shape xmlns:android="http://schemas.android.com/apk/res/android"
-    android:shape="oval">
-    <solid android:color="#33FFFFFF" />
-</shape>
+<!-- β79 批1（A 三裁②后落码）：详情页收藏/换源圆钮玻璃化（原＝硬编码 #33FFFFFF 实底、无描边、无按下反馈）。
+     β26 玻璃扩面（A 2026-11-05 定档）＝三颗均撑销旧层、同走「短边一半」的环分枝（预览 C 案）；
+     焦点档两圈是否并存＝裁②，待刘先生回字后按 B26_FOCUS 落，本件不留半成品开关。
+     β85 裁定二（A 改判，**已被 2026-11-05 玻璃批推翻**）＝三颗圆钮也吃方向性高光：本文件默认档补成与 shape_btn_play 同一套的三层
+     （glass_fill 底 → glass_top→glass_bottom 竖向渐变带 → glass_stroke 描边），β79 那句
+     「圆钮不吃渐变带（Ø40 面积小、竖弧上渐变带不显，加了反而糊）」的前提已作废，不再作为不改的理由；
+     焦点档与按下档一字未动（仍 glass_fill_pressed＋各自描边）＝只补默认档，净新增 0 件；
+     图标白化在布局侧（android:tint=@color/detail_glass_text，压 main 矢量内随主题的 icon_primary/colorControlNormal——
+     实测浅色档旧图标是深字压深底＝beta10 存量问题，本批随玻璃顺带修正，交件单列）。
+     按下反馈同 shape_btn_play 口径＝只有本 ripple 一层（三钮运行时无代码 setBackground 覆写，DetailActivity 实测只有 desc/credits 两处）。 -->
+<ripple xmlns:android="http://schemas.android.com/apk/res/android"
+    android:color="?attr/colorControlHighlight">
+
+    <item android:id="@android:id/mask">
+        <shape android:shape="oval">
+            <solid android:color="@android:color/white" />
+        </shape>
+    </item>
+
+    <item>
+        <selector>
+            <item android:state_focused="true">
+                <shape android:shape="oval">
+                    <solid android:color="@color/glass_fill_pressed" />
+                    <stroke
+                        android:width="@dimen/state_stroke_focus"
+                        android:color="@color/on_dark_focus_stroke" />
+                </shape>
+            </item>
+            <item android:state_pressed="true">
+                <shape android:shape="oval">
+                    <solid android:color="@color/glass_fill_pressed" />
+                </shape>
+            </item>
+            <item>
+                <shape android:shape="oval">
+                    <solid android:color="@color/glass_fill" />
+                </shape>
+            </item>
+        </selector>
+    </item>
+
+</ripple>

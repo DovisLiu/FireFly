@@ -12,7 +12,6 @@
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         app:menu="@menu/menu_keep"
-        app:navigationIconTint="?attr/colorOnSurface"
         app:title="@string/app_keep"
         app:titleTextAppearance="@style/ToolbarTextAppearance" />
 

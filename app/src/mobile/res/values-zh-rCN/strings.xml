@@ -5,11 +5,20 @@
     <string name="app_history">最近观看</string>
 
     <!-- Nav -->
+    <string name="nav_home">首页</string>
     <string name="nav_vod">点播</string>
     <string name="nav_live">直播</string>
     <string name="nav_local">本地</string>
+    <string name="nav_source">片源</string>
     <string name="nav_history">历史</string>
     <string name="nav_setting">设置</string>
+
+    <!-- Home -->
+    <string name="home_history">继续观看</string>
+    <string name="home_keep">我的收藏</string>
+    <string name="home_recommend">站点推荐</string>
+    <string name="home_more">更多</string>
+    <string name="home_empty">暂无内容，去点播看看</string>
 
     <!-- Menu -->
     <string name="menu_sync">同步</string>
@@ -33,6 +42,8 @@
     <string name="detail_error">详情加载失败</string>
     <string name="detail_quality">画质</string>
     <string name="detail_content">简介</string>
+    <string name="detail_desc_full">查看完整简介与演职员</string>
+    <string name="detail_credits_full">查看完整演职员信息</string>
     <string name="detail_search">快搜“<xliff:g name="name">%s</xliff:g>”</string>
 
     <!-- Device -->
@@ -68,4 +79,8 @@
         <item>画中画</item>
     </string-array>
 
+    <string name="play_switch_line">换线路</string>
+    <string name="detail_intro">简介›</string>
+    <string name="detail_back">返回</string>
+    <string name="detail_episode_total">共%1$d集›</string>
 </resources>

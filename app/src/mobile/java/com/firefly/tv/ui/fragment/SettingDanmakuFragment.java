@@ -14,7 +14,9 @@ import com.firefly.tv.databinding.FragmentSettingDanmakuBinding;
 import com.firefly.tv.impl.DanmakuListener;
 import com.firefly.tv.setting.DanmakuSetting;
 import com.firefly.tv.setting.Setting;
+import com.firefly.tv.ui.activity.HomeActivity;
 import com.firefly.tv.ui.base.BaseFragment;
+import com.firefly.tv.ui.custom.GlassEdgeDrawable;
 import com.firefly.tv.ui.dialog.DanmakuApiDialog;
 
 public class SettingDanmakuFragment extends BaseFragment implements DanmakuListener {
@@ -45,10 +47,18 @@ public class SettingDanmakuFragment extends BaseFragment implements DanmakuListe
 
     @Override
     protected void initEvent() {
+        // β82 第4条＋Q1＝甲：子页是真正的三级页，箭头回设置主页（位置表里的 1），
+        // 与既有分类记忆／BACK 口径同源，不动 FragmentStateManager 的位置表。
+        mBinding.toolbar.setNavigationOnClickListener(v -> ((HomeActivity) requireActivity()).change(1));
         mBinding.danmakuApi.setOnClickListener(this::onDanmakuApi);
         mBinding.danmakuAuto.setOnClickListener(this::setDanmakuAuto);
         mBinding.danmakuLoad.setOnClickListener(this::setDanmakuLoad);
         mBinding.danmakuSpider.setOnClickListener(this::setDanmakuSpider);
+        // β34 B1：二级页各选项行挂与一级同款方向性玻璃边。
+        mBinding.danmakuApi.setForeground(new GlassEdgeDrawable(requireContext(), R.color.glass_edge_bright, R.color.glass_edge_dim, R.dimen.radius_setting_row));
+        mBinding.danmakuAuto.setForeground(new GlassEdgeDrawable(requireContext(), R.color.glass_edge_bright, R.color.glass_edge_dim, R.dimen.radius_setting_row));
+        mBinding.danmakuLoad.setForeground(new GlassEdgeDrawable(requireContext(), R.color.glass_edge_bright, R.color.glass_edge_dim, R.dimen.radius_setting_row));
+        mBinding.danmakuSpider.setForeground(new GlassEdgeDrawable(requireContext(), R.color.glass_edge_bright, R.color.glass_edge_dim, R.dimen.radius_setting_row));
     }
 
     private void setDanmakuLoad(View view) {

@@ -6,11 +6,9 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.firefly.tv.R;
 import com.firefly.tv.bean.Class;
 import com.firefly.tv.bean.Result;
 import com.firefly.tv.databinding.AdapterTypeBinding;
-import com.firefly.tv.utils.ResUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,21 +28,16 @@ public class TypeAdapter extends RecyclerView.Adapter<TypeAdapter.ViewHolder> {
         void onItemClick(int position, Class item);
     }
 
-    private Class home() {
-        Class type = new Class();
-        type.setTypeName(ResUtil.getString(R.string.vod_home));
-        type.setTypeId("home");
-        return type;
-    }
-
     public void clear() {
         mItems.clear();
         notifyDataSetChanged();
     }
 
     public void addAll(Result result) {
+        // β82 第1条（A 裁 Q6＝随导航批）：不再往分类条首位塞「推荐」伪项——它与手机首页的站点推荐行重合。
+        // 伪项构造方法本体、它取的那条文案与随之失效的两个 import 一并删净；该文案在三档语言文件里
+        // 变零引用（shrinkResources 会从包里物理删名），源文件留着不删＝保留回滚点。
         mItems.addAll(result.getTypes());
-        if (!result.getList().isEmpty()) mItems.add(0, home());
         if (!mItems.isEmpty()) mItems.get(0).setSelected(true);
         notifyDataSetChanged();
     }

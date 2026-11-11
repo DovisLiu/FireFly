@@ -16,7 +16,7 @@
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/config"
             style="@style/Control"
-            android:text="@string/play_config" />
+            android:text="@string/play_change" />
 
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/home"
@@ -89,7 +89,7 @@
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/change"
             style="@style/Control"
-            android:text="@string/play_change" />
+            android:text="@string/play_switch_line" />
 
     </androidx.appcompat.widget.LinearLayoutCompat>
 </HorizontalScrollView>

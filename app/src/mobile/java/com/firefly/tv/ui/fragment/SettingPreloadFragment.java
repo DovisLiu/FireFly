@@ -13,7 +13,9 @@ import com.firefly.tv.databinding.FragmentSettingPreloadBinding;
 import com.firefly.tv.setting.PlayerSetting;
 import com.firefly.tv.setting.PreloadSetting;
 import com.firefly.tv.setting.Setting;
+import com.firefly.tv.ui.activity.HomeActivity;
 import com.firefly.tv.ui.base.BaseFragment;
+import com.firefly.tv.ui.custom.GlassEdgeDrawable;
 import com.firefly.tv.ui.dialog.PreloadDialog;
 import com.firefly.tv.utils.FileUtil;
 
@@ -37,11 +39,20 @@ public class SettingPreloadFragment extends BaseFragment {
 
     @Override
     protected void initEvent() {
+        // β82 第4条＋Q1＝甲：子页是真正的三级页，箭头回设置主页（位置表里的 1），
+        // 与既有分类记忆／BACK 口径同源，不动 FragmentStateManager 的位置表。
+        mBinding.toolbar.setNavigationOnClickListener(v -> ((HomeActivity) requireActivity()).change(1));
         mBinding.preload.setOnClickListener(this::setPreload);
         mBinding.preloadNext.setOnClickListener(this::setPreloadNext);
         mBinding.preloadSize.setOnClickListener(view -> PreloadDialog.show(this, PreloadDialog.SIZE));
         mBinding.preloadTime.setOnClickListener(view -> PreloadDialog.show(this, PreloadDialog.TIME));
         mBinding.preloadThread.setOnClickListener(view -> PreloadDialog.show(this, PreloadDialog.THREADS));
+        // β34 B1：二级页各选项行挂与一级同款方向性玻璃边。
+        mBinding.preload.setForeground(new GlassEdgeDrawable(requireContext(), R.color.glass_edge_bright, R.color.glass_edge_dim, R.dimen.radius_setting_row));
+        mBinding.preloadNext.setForeground(new GlassEdgeDrawable(requireContext(), R.color.glass_edge_bright, R.color.glass_edge_dim, R.dimen.radius_setting_row));
+        mBinding.preloadSize.setForeground(new GlassEdgeDrawable(requireContext(), R.color.glass_edge_bright, R.color.glass_edge_dim, R.dimen.radius_setting_row));
+        mBinding.preloadTime.setForeground(new GlassEdgeDrawable(requireContext(), R.color.glass_edge_bright, R.color.glass_edge_dim, R.dimen.radius_setting_row));
+        mBinding.preloadThread.setForeground(new GlassEdgeDrawable(requireContext(), R.color.glass_edge_bright, R.color.glass_edge_dim, R.dimen.radius_setting_row));
     }
 
     private void refresh() {

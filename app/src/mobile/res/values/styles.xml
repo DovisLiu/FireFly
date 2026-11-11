@@ -1,6 +1,10 @@
 <resources>
 
     <style name="Theme.Base" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- β82 Q4＝乙（刘先生「现有的返回箭头太丑，需要换一个图标」）：顶栏返回箭头在此一处收口。
+             此前全仓无该项覆盖（实测 0 命中）⇒ 现 7 处 setDisplayHomeAsUpEnabled 的页都吃默认形；
+             指到新建矢量后那 8 页与新增的 6 个工具条同形。**换款只换那一个矢量文件，theme 与各页都不动。** -->
+        <item name="homeAsUpIndicator">@drawable/ic_nav_back</item>
         <item name="colorPrimary">@color/brand_primary</item>
         <item name="colorOnPrimary">@color/brand_on_primary</item>
         <item name="colorPrimaryContainer">@color/brand_primary_container</item>
@@ -28,8 +32,9 @@
              做法照 leanback/res/values/styles.xml:24 的同一套——**只覆盖 materialAlertDialogTheme**，
              不动全局 shapeAppearanceCornerExtraLarge（手机 FAB 在用那个属性，全局改会变形）。
              上一轮盘点的实测依据：全仓 `new MaterialAlertDialogBuilder(...)` 全是单参、没有一处传
-             themeResId（mobile 8／leanback 6／main 2 处），所以容器圆角只由主题的这一个属性决定；
-             改这一处即覆盖 27 个 dialog_*.xml 与 activity/fragment 里那 8 处直接建 builder 的弹窗。
+             themeResId（β39 批 1 测得 mobile 8／leanback 6／main 2；**β70 批 3 重测＝mobile 10／leanback 8／main 2**，
+             正则含 `new com.google...MaterialAlertDialogBuilder(` 这种全限定写法），所以容器圆角只由主题的这一个属性决定；
+             改这一处即覆盖 dialog_*.xml（现为 28 个，β39 时 27 个，差在批 2 新建的 dialog_desc）与直接建 builder 的那批弹窗。
              同名 style 在 mobile 源集自己建一份（flavor 资源不与 leanback 合并，不存在"引不到"，
              β19 那条注释的说法本轮已按实测订正在上方，原文保留不改）。 -->
         <item name="materialAlertDialogTheme">@style/Theme.App.Popup</item>
@@ -64,6 +69,17 @@
          这里只换弹窗容器的四角形状，其余一概不动。 -->
     <style name="Theme.App.Popup" parent="ThemeOverlay.Material3.MaterialAlertDialog">
         <item name="shapeAppearanceCornerExtraLarge">@style/Shape.App.Dialog</item>
+        <!-- β69 / 批 2（A 派单第 6 项，甲段）：弹窗正文走 Material3 默认的那批改由本 overlay 定档 13.5sp／行距 1.26。
+             β69 当时写「全 mobile 4 处 setMessage」「27 个 setView(dialog_*.xml)」——**β70 批 3 按实测订正，旧口径留此不抹**：
+             setMessage 现为 3 处（DetailActivity 那处已在批 2 改成 setView，现为 HistoryActivity:77、KeepActivity:80、
+             SettingFragment:235）；`dialog_*.xml` 现为 28 个（含批 2 新建的 dialog_desc）、`.setView(` 调用点 15 处
+             （三源集＝mobile 15／leanback 16／main 2；行号须在该文件最后一次编辑后重读，β82 之后已漂移）。自定义弹窗不吃这个属性（内容字号在各自布局里写死）。 -->
+        <item name="materialAlertDialogBodyTextStyle">@style/Text.App.Popup.Body</item>
+    </style>
+
+    <style name="Text.App.Popup.Body" parent="TextAppearance.Material3.BodyMedium">
+        <item name="android:textSize">@dimen/popup_text_body</item>
+        <item name="android:lineSpacingMultiplier">1.26</item>
     </style>
 
     <!-- 弹窗容器＝四角等值 16dp（@dimen/radius_sheet），禁 pill（同 β21/T-331 的裁定）。 -->

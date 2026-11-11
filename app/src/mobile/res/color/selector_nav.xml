@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:color="?attr/colorPrimary" android:state_checked="true" />
+    <!-- β28 批一（A 第三十五封 ④＝丙的可见态）：补 state_enabled=false 这一档，且必须排在 state_checked 之前
+         （ColorStateList 取第一条匹配项，排在后面就永远不会命中）。颜色取现仓"禁用／描边弱化"两档先例同族＝
+         selector_control.xml:4 与 selector_stroke.xml:4 都用的是 attr 而非新色值 ⇒ 本批零新增颜色资源。
+         本批没有任何一处 setEnabled(false)，所以这一档落下去视觉零变化；置灰何时启用＝批二第 6 条，未裁。 -->
+    <item android:color="?attr/colorOutlineVariant" android:state_enabled="false" />
+    <item android:color="@color/nav_selected" android:state_checked="true" />
     <item android:color="?attr/colorOnSurfaceVariant" android:state_checked="false" />
 </selector>

@@ -14,8 +14,8 @@ rootProject.file('local.properties').withInputStream {
 ext {
     tvVersionName = '2.0.0'
     tvVersionCode = 200
-    phoneVersionName = '1.3.0-phone-beta01'
-    phoneVersionCode = 120
+    phoneVersionName = '2.0.0'
+    phoneVersionCode = 200
 }
 
 android {

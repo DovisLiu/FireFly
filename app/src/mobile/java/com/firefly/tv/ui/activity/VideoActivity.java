@@ -16,9 +16,11 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.DecelerateInterpolator;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.firefly.tv.ui.custom.GlassEdgeDrawable;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.view.ViewCompat;
@@ -39,6 +41,11 @@ import androidx.transition.TransitionManager;
 import androidx.core.view.WindowCompat;
 import androidx.viewbinding.ViewBinding;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.DataSource;
+import com.bumptech.glide.load.engine.GlideException;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.Target;
 import com.bumptech.glide.request.transition.Transition;
 import com.firefly.tv.App;
 import com.firefly.tv.Constant;
@@ -47,6 +54,7 @@ import com.firefly.tv.api.DanmakuApi;
 import com.firefly.tv.api.SiteApi;
 import com.firefly.tv.api.config.VodConfig;
 import com.firefly.tv.bean.Danmaku;
+import com.firefly.tv.bean.DetailBg;
 import com.firefly.tv.bean.DetailLog;
 import com.firefly.tv.bean.Episode;
 import com.firefly.tv.bean.Flag;
@@ -58,6 +66,7 @@ import com.firefly.tv.bean.Site;
 import com.firefly.tv.bean.Sub;
 import com.firefly.tv.bean.Vod;
 import com.firefly.tv.databinding.ActivityVideoBinding;
+import com.firefly.tv.databinding.DialogDescBinding;
 import com.firefly.tv.db.AppDatabase;
 import com.firefly.tv.event.CastEvent;
 import com.firefly.tv.event.RefreshEvent;
@@ -78,6 +87,7 @@ import com.firefly.tv.service.PlaybackService;
 import com.firefly.tv.setting.DanmakuSetting;
 import com.firefly.tv.setting.PlayerSetting;
 import com.firefly.tv.setting.SpeedSetting;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.firefly.tv.ui.adapter.EpisodeAdapter;
 import com.firefly.tv.ui.adapter.FlagAdapter;
 import com.firefly.tv.ui.adapter.QualityAdapter;
@@ -114,8 +124,11 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 public class VideoActivity extends PlaybackActivity implements Clock.Callback, CustomKeyDown.Listener, ControlDialog.Listener, ParseDialog.Listener, VodPlaybackHost, FlagAdapter.OnClickListener, EpisodeAdapter.OnClickListener, QualityAdapter.OnClickListener, QuickAdapter.OnClickListener, CastDialog.Listener, InfoDialog.Listener {
 
@@ -124,6 +137,9 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
     private VodPlaybackController mVod;
     private FlagAdapter mFlagAdapter;
     private boolean sourceMode;
+    private boolean mAutoSource;
+    private Vod mVodDetail;
+    private final Set<String> mSourceKeys = new HashSet<>();
     private EpisodeAdapter mEpisodeAdapter;
     private QualityAdapter mQualityAdapter;
     private QuickAdapter mQuickAdapter;
@@ -179,6 +195,19 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
 
     public static void start(Activity activity, String key, String id, String name, String pic, String mark, boolean collect) {
         Intent intent = new Intent(activity, VideoActivity.class);
+        intent.putExtra("collect", collect);
+        intent.putExtra("mark", mark);
+        intent.putExtra("name", name);
+        intent.putExtra("pic", pic);
+        intent.putExtra("key", key);
+        intent.putExtra("id", id);
+        activity.startActivity(intent);
+    }
+
+    /** β91 结构批（A 裁路线一）：本重载承接原详情页 source() 那条入口＝进页即进换源态（键 autoSource） */
+    public static void start(Activity activity, String key, String id, String name, String pic, String mark, boolean collect, boolean autoSource) {
+        Intent intent = new Intent(activity, VideoActivity.class);
+        intent.putExtra("autoSource", autoSource);
         intent.putExtra("collect", collect);
         intent.putExtra("mark", mark);
         intent.putExtra("name", name);
@@ -255,6 +284,23 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
         return mBinding = ActivityVideoBinding.inflate(getLayoutInflater());
     }
 
+    /** β91 结构批（A 裁 Q11 甲）：合并页留常驻返回条＝把工具条挂成 action bar，标题留空＝片名仍只在原位出现一次 */
+    @Override
+    public void setSupportActionBar(@Nullable androidx.appcompat.widget.Toolbar toolbar) {
+        super.setSupportActionBar(toolbar);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayShowTitleEnabled(false);
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
+    }
+
+    /** Up＝finish（合并页仍是从来源页进来的二级页；BACK 的首页兜底见 onBackInvoked，两者不互相覆盖） */
+    @Override
+    public boolean onSupportNavigateUp() {
+        finish();
+        return true;
+    }
+
     @Override
     protected PlaybackService.NavigationCallback getNavigationCallback() {
         return mNavigationCallback;
@@ -283,6 +329,7 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
         mBinding.swipeLayout.setRefreshing(true);
         saveHistory(true);
         mVod.reset();
+        mSourceKeys.clear();
         setIntent(intent);
         updateNavigationKey();
         checkControl();
@@ -296,6 +343,7 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
         ViewCompat.setOnApplyWindowInsetsListener(mBinding.getRoot(), (v, insets) -> setStatusBar(insets));
         mKeyDown = CustomKeyDown.create(this, mBinding.player);
         mFrameParams = mBinding.video.getLayoutParams();
+        mAutoSource = getIntent().getBooleanExtra("autoSource", false);
         mBinding.progressLayout.showProgress();
         mBinding.swipeLayout.setEnabled(false);
         mClock = Clock.create();
@@ -311,19 +359,29 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
         showProgress();
         setAnimator();
         checkId();
+        if (mAutoSource) enterSourceMode();
     }
 
     @Override
     @SuppressLint("ClickableViewAccessibility")
     protected void initEvent() {
         mBinding.name.setOnClickListener(view -> onName());
-        mBinding.more.setOnClickListener(view -> onMore());
-        mBinding.actor.setOnClickListener(view -> onActor());
-        mBinding.content.setOnClickListener(view -> onContent());
+        mBinding.detailKeep.setOnClickListener(view -> onKeep());
+        mBinding.detailPlay.setOnClickListener(view -> playCurrent());
+        mBinding.source.setOnClickListener(view -> enterSourceMode());
+        // β30 A5：简介›入口弹窗（演员表＋简介）；正文区不弹窗（desc 不再挂点击）
+        mBinding.descEntry.setOnClickListener(view -> showDescDialog());
+        mBinding.episodeCount.setOnClickListener(view -> onMore());
+        // β30 A2：端口态常驻返回（复用 control.back 语义）
+        mBinding.videoBack.setOnClickListener(view -> onBack());
+        // β26 玻璃扩面：详情页三颗（恒深底 glass_fill）走方向性环，色对＝on_dark 那对，环半径＝短边一半（A 裁甲）
+        mBinding.detailPlay.setForeground(new GlassEdgeDrawable(this, R.color.glass_edge_on_dark_bright, R.color.glass_edge_on_dark_dim));
+        mBinding.detailKeep.setForeground(new GlassEdgeDrawable(this, R.color.glass_edge_on_dark_bright, R.color.glass_edge_on_dark_dim));
+        mBinding.source.setForeground(new GlassEdgeDrawable(this, R.color.glass_edge_on_dark_bright, R.color.glass_edge_on_dark_dim));
+        mBinding.credits.setOnClickListener(view -> showDescDialog());
         mBinding.reverse.setOnClickListener(view -> onReverse());
-        mBinding.director.setOnClickListener(view -> onDirector());
+        mBinding.desc.setOnLongClickListener(view -> onCopy());
         mBinding.name.setOnLongClickListener(view -> onChange());
-        mBinding.content.setOnLongClickListener(view -> onCopy());
         mBinding.control.back.setOnClickListener(view -> onBack());
         mBinding.control.cast.setOnClickListener(view -> onCast());
         mBinding.control.info.setOnClickListener(view -> onInfo());
@@ -366,7 +424,8 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
         ViewGroup.LayoutParams lp = mBinding.statusBar.getLayoutParams();
         lp.height = top;
         mBinding.statusBar.setLayoutParams(lp);
-        // 状态栏悬浮在黑色视频区上，图标强制白色
+        // β30 A1：状态栏黑底白字（黑底 draws under status bar，图标强制白）
+        getWindow().setStatusBarColor(Color.BLACK);
         WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView()).setAppearanceLightStatusBars(false);
         return insets;
     }
@@ -378,7 +437,6 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
         mBinding.flag.setAdapter(mFlagAdapter = new FlagAdapter(this));
         mBinding.quick.setAdapter(mQuickAdapter = new QuickAdapter(this));
         // 换源态入口（§3.9 手机同步：确认态⇄换源态）
-        mBinding.changeSource.setOnClickListener(v -> enterSourceMode());
         mBinding.episode.setHasFixedSize(true);
         mBinding.episode.setItemAnimator(null);
         mBinding.episode.addItemDecoration(new SpaceItemDecoration(8));
@@ -390,6 +448,12 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
     }
 
     private void setVideoView() {
+        // β32 C1：预览容器恒 16:9（高＝屏宽*9/16），布局时落到 #video 并 requestLayout 强制生效；
+        // mFrameParams 供全屏/PiP 恢复复用。内容在固定容器内由 PlayerView resizeMode 适配（letterbox），不随内容伸缩。
+        // 覆盖源 changeHeight()（按视频实际比例动画改高）已置 no-op ⇒ 16:9 不再被动画推翻。
+        mFrameParams.height = ResUtil.getScreenWidth() * 9 / 16;
+        mBinding.video.setLayoutParams(mFrameParams);
+        mBinding.video.requestLayout();
         PlayerEngineDialog.setText(mBinding.control.action.player);
         mBinding.control.action.danmaku.setVisibility(DanmakuSetting.isLoad() ? View.VISIBLE : View.GONE);
         mBinding.video.addOnLayoutChangeListener((view, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> mPiP.update(this, view));
@@ -442,7 +506,17 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
     }
 
     private void onSearchObserved(Result result) {
+        // β91 结构批（装机单第 21 条保住的那一层）＝去重在页侧拦一次再交给播放控制器：
+        // main 层 state.setSources 拿到的就是去重后的列表 ⇒ 页侧源行（renderSources）与自动兜底链（nextSource 会 removeFirstSource 再渲染）吃同一份。
+        // 片名筛不在这里重复实现（main 的 VodFallbackPolicy#mismatch 已在做，两者口径不同＝它单向 contains、原详情页双向），落码只加站点键。
+        if (result != null) dedupeBySiteKey(result);
         mVod.onSearchResult(result);
+    }
+
+    private void dedupeBySiteKey(Result result) {
+        List<Vod> items = new ArrayList<>(result.getList());
+        items.removeIf(vod -> vod.getSite() == null || vod.getId() == null || !mSourceKeys.add(vod.getSite().getKey()));
+        result.setList(items);
     }
 
     @Override
@@ -647,7 +721,9 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
 
     @Override
     public void renderFlags(List<Flag> items) {
-        mBinding.flag.setVisibility(items.isEmpty() ? View.GONE : View.VISIBLE);
+        // β31 A6/A9：线路≥2 才显示，<2 隐藏整组容器（title＋卡随框一起隐）
+        boolean show = items.size() >= 2;
+        mBinding.flagGroup.setVisibility(show ? View.VISIBLE : View.GONE);
         mFlagAdapter.addAll(items);
     }
 
@@ -692,7 +768,7 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
         mQuickAdapter.addAll(items);
         if (!sourceMode) {
             sourceMode = true;
-            mBinding.sourceTitle.setVisibility(View.VISIBLE);
+            mBinding.sourceGroup.setVisibility(View.VISIBLE);
         }
         mBinding.quick.setVisibility(mQuickAdapter.isEmpty() ? View.GONE : View.VISIBLE);
     }
@@ -709,7 +785,8 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
             return;
         }
         sourceMode = true;
-        mBinding.sourceTitle.setVisibility(View.VISIBLE);
+        mBinding.sourceGroup.setVisibility(View.VISIBLE);
+        mSourceKeys.clear();
         mQuickAdapter.clear();
         mBinding.quick.setVisibility(View.VISIBLE);
         requestSearch(sites, name);
@@ -718,7 +795,7 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
     /** 返回确认态：收起源选择行（锁定当前源） */
     private void exitSourceMode() {
         sourceMode = false;
-        mBinding.sourceTitle.setVisibility(View.GONE);
+        mBinding.sourceGroup.setVisibility(View.GONE);
         mBinding.quick.setVisibility(View.GONE);
         mViewModel.stopSearch();
     }
@@ -745,7 +822,9 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
 
     @Override
     public void renderDescription(String desc) {
-        setText(mBinding.content, 0, desc);
+        // β91：原写法落点是 #content（合并页已废止）。改成"简介为空才顶上"＝不让源侧串顶掉 Vod 简介。
+        // β33 A1：同走纯文本路径（不带 span ⇒ ellipsize 生效）。
+        if (mBinding.desc.getText().length() == 0) setPlainText(mBinding.desc, desc);
     }
 
     @Override
@@ -824,25 +903,65 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
     }
 
     private void setText(Vod item) {
-        setText(mBinding.site, R.string.detail_site, getSite().getName());
-        setText(mBinding.director, R.string.detail_director, item.getDirector());
-        setText(mBinding.actor, R.string.detail_actor, item.getActor());
-        setText(mBinding.content, 0, item.getContent());
-        setText(mBinding.remark, 0, item.getRemarks());
-        setOther(mBinding.other, item);
+        mVodDetail = item;
+        // β31 A2/A5：元信息一行＝年·地区·类型·状态（remarks 并入尾部，主色不再红）；原 #score 红字视图已撤。整行全空不占位。
+        StringBuilder meta = new StringBuilder();
+        if (!item.getYear().isEmpty()) meta.append(item.getYear());
+        if (!item.getArea().isEmpty()) {
+            if (meta.length() > 0) meta.append(" · ");
+            meta.append(item.getArea());
+        }
+        if (!item.getTypeName().isEmpty()) {
+            if (meta.length() > 0) meta.append(" · ");
+            meta.append(item.getTypeName());
+        }
+        if (!item.getRemarks().isEmpty()) {
+            if (meta.length() > 0) meta.append(" · ");
+            meta.append(item.getRemarks());
+        }
+        setText(mBinding.meta, 0, meta.toString());
+        // 人员行（导演＋演员合并单行，完整名单进简介弹层）；串走 main 那对带参资源，不照抄 leanback 的无参覆盖版
+        StringBuilder credits = new StringBuilder();
+        if (!item.getDirector().isEmpty()) credits.append(getString(R.string.detail_director, item.getDirector()));
+        if (!item.getActor().isEmpty()) {
+            if (credits.length() > 0) credits.append(" · ");
+            credits.append(getString(R.string.detail_actor, item.getActor()));
+        }
+        setText(mBinding.credits, 0, credits.toString());
+        // 简介（T-180 口径：字面量 &nbsp; 换空格，不引 HTML 解析）。
+        // β33 A1：inline desc 改纯文本（setPlainText，不带 ClickableSpan/MovementMethod）⇒ ellipsize=end＋maxLines3 真渲染省略号；
+        // 带 span 文本会令 ellipsize 失效（β33 A0 根因）。链接嗅探/复制保留在长按 onCopy 与简介›弹窗（showDescDialog 独立 setText）。
+        String content = item.getContent().replace("&nbsp;", " ");
+        setPlainText(mBinding.desc, content);
+        // 可点态／描述／水波全部动态挂：TalkBack 会用 contentDescription 顶掉文本本身 ⇒ 描述必须＝可见文本＋入口提示
+        boolean hasDesc = !item.getContent().isEmpty();
+        // β30 A5：简介正文区不弹窗（入口统一到 descEntry／credits），故不挂点击/水波
+        mBinding.desc.setClickable(false);
+        mBinding.desc.setBackground(null);
+        boolean creditsEntry = !hasDesc && credits.length() > 0;
+        mBinding.credits.setClickable(creditsEntry);
+        mBinding.credits.setContentDescription(creditsEntry ? credits + "，" + getString(R.string.detail_credits_full) : null);
+        mBinding.credits.setBackground(creditsEntry ? pressFeedback() : null);
+        android.util.Log.d(DetailLog.TAG, "desc entry=" + (hasDesc ? "desc" : (creditsEntry ? "credits" : "none"))
+                + " descLen=" + content.length() + " creditsLen=" + credits.length());
+        // β30 A1：去底图（#bg/#bgFill 已删），背景三级链随之下线；预览区恒黑底。
     }
 
     private void setText(TextView view, int resId, String text) {
         if (TextUtils.isEmpty(text) && !TextUtils.isEmpty(view.getText())) return;
         view.setText(Sniffer.buildClickable(resId > 0 ? getString(resId, text) : text, this::clickableSpan), TextView.BufferType.SPANNABLE);
         view.setVisibility(text.isEmpty() ? View.GONE : View.VISIBLE);
-        if (view == mBinding.content) setContentVisible();
         view.setLinkTextColor(Color.WHITE);
         CustomMovement.bind(view);
     }
 
-    private void setContentVisible() {
-        mBinding.contentLayout.setVisibility(mBinding.content.getVisibility());
+    /** β33 A1：inline 简介专用纯文本路径——不带 ClickableSpan、清 MovementMethod，使 ellipsize=end＋maxLines 渲染省略号。
+     *  链接嗅探/复制不在此处（留长按 onCopy 与简介›弹窗 showDescDialog）。meta/credits 仍走上面带 span 的 setText。 */
+    private void setPlainText(TextView view, String text) {
+        if (TextUtils.isEmpty(text) && !TextUtils.isEmpty(view.getText())) return;
+        view.setText(text);
+        view.setMovementMethod(null);
+        view.setVisibility(text.isEmpty() ? View.GONE : View.VISIBLE);
     }
 
     private ClickableSpan clickableSpan(Result result) {
@@ -885,6 +1004,7 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
 
     @Override
     public void onItemClick(Vod item) {
+        mSourceKeys.clear();
         mVod.selectSource(item);
     }
 
@@ -893,8 +1013,12 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
         mBinding.control.next.setVisibility(items.size() < 2 ? View.GONE : View.VISIBLE);
         mBinding.control.prev.setVisibility(items.size() < 2 ? View.GONE : View.VISIBLE);
         mBinding.reverse.setVisibility(items.size() < 2 ? View.GONE : View.VISIBLE);
-        mBinding.episode.setVisibility(items.isEmpty() ? View.GONE : View.VISIBLE);
-        mBinding.more.setVisibility(items.size() < 10 ? View.GONE : View.VISIBLE);
+        // β31 A9：选集整组容器 <2 集隐藏（同线路 renderFlags 口径）
+        mBinding.episodeGroup.setVisibility(items.size() < 2 ? View.GONE : View.VISIBLE);
+        // β30 A7：共N集›仅>5 显示（阈值由≥10 改>5），点击弹 EpisodeGridDialog；独立 more 钮已撤
+        boolean many = items.size() > 5;
+        mBinding.episodeCount.setVisibility(many ? View.VISIBLE : View.GONE);
+        if (many) mBinding.episodeCount.setText(getString(R.string.detail_episode_total, items.size()));
         mEpisodeAdapter.addAll(items);
     }
 
@@ -913,16 +1037,38 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
         EpisodeGridDialog.create().reverse(mHistory.isRevSort()).episodes(mEpisodeAdapter.getItems()).show(this);
     }
 
-    private void onActor() {
-        mBinding.actor.setMaxLines(mBinding.actor.getMaxLines() == 1 ? Integer.MAX_VALUE : 1);
+    /** 三钮里那颗"播放"＝播当前选中集（沿用原详情页 playCurrent 语义；空列表早退，不碰播放控制器） */
+    private void playCurrent() {
+        if (mEpisodeAdapter.isEmpty()) return;
+        onItemClick(mEpisodeAdapter.getItems().get(mEpisodeAdapter.getPosition()));
     }
 
-    private void onDirector() {
-        mBinding.director.setMaxLines(mBinding.director.getMaxLines() == 1 ? Integer.MAX_VALUE : 1);
+    /** 简介弹层（原详情页搬入）＝人员全文＋简介全文，人员段在前、空一行；两者皆空直接早退。β30 A5＝简介›入口复用此弹层（含演员表）。 */
+    private void showDescDialog() {
+        if (mVodDetail == null) return;
+        String content = mVodDetail.getContent().replace("&nbsp;", " ");
+        StringBuilder head = new StringBuilder();
+        if (!mVodDetail.getDirector().isEmpty()) head.append(getString(R.string.detail_director, mVodDetail.getDirector()));
+        if (!mVodDetail.getActor().isEmpty()) {
+            if (head.length() > 0) head.append(" · ");
+            head.append(getString(R.string.detail_actor, mVodDetail.getActor()));
+        }
+        if (content.isEmpty() && head.length() == 0) return;
+        String full;
+        if (head.length() == 0) full = content;
+        else if (content.isEmpty()) full = head.toString();
+        else full = head + "\n\n" + content;
+        DialogDescBinding vb = DialogDescBinding.inflate(getLayoutInflater());
+        vb.descFull.setText(full);
+        new MaterialAlertDialogBuilder(this).setTitle(mBinding.name.getText()).setView(vb.getRoot())
+                .setPositiveButton(R.string.dialog_positive, null).show();
     }
 
-    private void onContent() {
-        mBinding.content.setMaxLines(mBinding.content.getMaxLines() == 3 ? Integer.MAX_VALUE : 3);
+    /** 按压水波＝主题 selectableItemBackground；resolveAttribute 未命中时 outValue.resourceId 仍是 0 ⇒ 判返回值，未命中返回 null（＝没有水波，不崩） */
+    private android.graphics.drawable.Drawable pressFeedback() {
+        android.util.TypedValue tv = new android.util.TypedValue();
+        if (!getTheme().resolveAttribute(android.R.attr.selectableItemBackground, tv, true)) return null;
+        return getDrawable(tv.resourceId);
     }
 
     private void onReverse() {
@@ -936,7 +1082,7 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
     }
 
     private boolean onCopy() {
-        Util.copy(mBinding.content.getText().toString());
+        Util.copy(mBinding.desc.getText().toString());
         return true;
     }
 
@@ -1236,6 +1382,10 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
         mBinding.control.center.setVisibility(isLock() ? View.GONE : View.VISIBLE);
         mBinding.control.bottom.setVisibility(isLock() ? View.GONE : View.VISIBLE);
         mBinding.control.back.setVisibility(isLock() ? View.GONE : View.VISIBLE);
+        // β30 A2：端口非全屏＝常驻 videoBack 承担返回，控制层 back 隐藏避免双返回；全屏/横屏＝control.back 承担
+        boolean portBack = isPort() && !isFullscreen();
+        mBinding.videoBack.setVisibility(portBack && !isLock() ? View.VISIBLE : View.GONE);
+        if (portBack) mBinding.control.back.setVisibility(View.GONE);
         mBinding.control.top.setVisibility(isLock() ? View.GONE : View.VISIBLE);
         mBinding.control.getRoot().setVisibility(View.VISIBLE);
         setR1Callback();
@@ -1243,6 +1393,8 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
 
     private void hideControl() {
         mBinding.control.getRoot().setVisibility(View.GONE);
+        // β30 A2：控制层收起时端口态返回仍常驻
+        mBinding.videoBack.setVisibility(isPort() && !isFullscreen() && !isLock() ? View.VISIBLE : View.GONE);
         App.removeCallbacks(mR1);
     }
 
@@ -1315,7 +1467,9 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
     }
 
     private void checkKeepImg() {
-        mBinding.control.keep.setImageResource(Keep.find(getHistoryKey()) == null ? R.drawable.ic_control_keep_off : R.drawable.ic_control_keep_on);
+        int res = Keep.find(getHistoryKey()) == null ? R.drawable.ic_control_keep_off : R.drawable.ic_control_keep_on;
+        mBinding.control.keep.setImageResource(res);
+        mBinding.detailKeep.setImageResource(res);
     }
 
     private void checkLockImg() {
@@ -1496,20 +1650,11 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
     }
 
     private void changeHeight() {
-        if (isLand() || isFullscreen() || isInPictureInPictureMode()) return;
-        int videoWidth = player().getVideoWidth();
-        int videoHeight = player().getVideoHeight();
-        if (videoWidth == 0 || videoHeight == 0) return;
-        int viewWidth = ResUtil.getScreenWidth();
-        int minHeight = ResUtil.dp2px(150);
-        int maxHeight = ResUtil.getScreenHeight() / 2;
-        int calculated = (int) (viewWidth * ((float) videoHeight / videoWidth));
-        int finalHeight = Math.clamp(calculated, minHeight, Math.max(minHeight, maxHeight));
-        if (finalHeight == mBinding.video.getHeight()) return;
-        if (mAnimator.isRunning()) mAnimator.cancel();
-        mAnimator.setIntValues(mBinding.video.getHeight(), finalHeight);
-        mAnimator.setDuration(300);
-        mAnimator.start();
+        // β32 C1：预览容器恒 16:9（setVideoView 已落 屏宽*9/16＋requestLayout），不再按视频实际比例动画改高。
+        // 改前此处用 ValueAnimator 把 mFrameParams.height 动画到 videoHeight/videoWidth 比例（clamp 150dp~屏高/2），
+        // 正是它把 setVideoView 的 16:9 推翻成≈视频原始比例（刘先生实测≈2.4:1）。现置 no-op：内容在固定 16:9 容器内由
+        // PlayerView resizeMode 适配（letterbox），占位不随内容伸缩。全屏/PiP 仍走 setVideoView(boolean)/enterFullscreen/exitFullscreen。
+        // 配套 ValueAnimator（setAnimator/mAnimator）随本行为休眠（不再 start）；如需清死码另开收尾批。回滚＝恢复本方法体（git 2d7910b）。
     }
 
     private void setTrackVisible() {
@@ -1644,15 +1789,9 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
     @Override
     public void onDoubleTap() {
         if (isLock()) return;
-        if (!isFullscreen()) {
-            enterFullscreen();
-        } else if (player().isPlaying()) {
-            showControl();
-            onPaused();
-        } else {
-            hideControl();
-            onPlay();
-        }
+        // β30 A4：双击进全屏／全屏态双击返回播放页（补「双击全屏不能回」）
+        if (!isFullscreen()) enterFullscreen();
+        else exitFullscreen();
     }
 
     @Override

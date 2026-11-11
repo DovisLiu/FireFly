@@ -2,32 +2,45 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
+        android:id="@+id/home"
+        android:icon="@drawable/selector_nav_home"
+        android:title="@string/nav_home"
+        android:visible="false" />
+
+    <item
         android:id="@+id/vod"
-        android:icon="@drawable/ic_nav_vod"
+        android:icon="@drawable/selector_nav_vod"
         android:title="@string/nav_vod"
         android:visible="false" />
 
     <item
         android:id="@+id/live"
-        android:icon="@drawable/ic_nav_live"
+        android:icon="@drawable/selector_nav_live"
         android:title="@string/nav_live"
         android:visible="false" />
 
+    <!-- β82 第2条（刘先生「底导的历史都移到首页了，可以去掉；但底导原来的本地没有了，需要补回来」）：
+         底导五项＝首页／点播／直播／本地／设置。history 位换成 local，图标与文案都复用现成资产
+         （设置页那行一直在用的两个名字）⇒ 本条净新增资源 0；位置顺序不变（仍在直播与设置之间）。 -->
+    <!-- β28 批一（刘先生「底导新增那枚点下去＝弹层，与首页左上角那枚换源功能一样，只移入口」）：
+         上面那条 β82 里「history 位换成 local」这半句作废（旧句保留在上一段注释里不抹）——
+         本项由 local 换成 source＝片源弹层入口；本地入口移到首页左上角（读法一＝仍走系统选择器，本地页不做 App 内页）。
+         同一句里"底导五项＝首页／点播／直播／本地／设置"这份清单自本批起第五项＝片源（顺序与位置不变，仍在直播与设置之间）。
+         资源口径：nav_local 与 selector_nav_local 本批都不删（前者被 fragment_setting.xml:351 的 drawable 引用（android:src）
+         与 :358 的文本（android:text）在用，另有 :336 那一项的 id 名 local；后者改完 menu 后自身引用归 0，但删除与 ic_nav_local_solid
+         一起归批二单独记一笔）；本批净新增资源 4 件＝selector_nav_source／ic_nav_source／ic_nav_source_solid／ic_action_local。 -->
+<!--         〔本遍订正，C 的 02 单第 10 条定谳＋A 复核〕原第一行把 :351 说成「文本」是行号归属错：实测 :351＝android:src="@drawable/ic_nav_local"、
+         :358＝android:text="@string/nav_local"、:336＝android:id="@+id/local"（A 给的三个号本次逐字对上，无需订正他）。
+         结论不变＝nav_local 与 selector_nav_local 都不删；本条只改「哪个行号对应哪件事」，不改资源判定。 -->
     <item
-        android:id="@+id/history"
-        android:icon="@drawable/ic_nav_history"
-        android:title="@string/nav_history"
-        android:visible="false" />
-
-    <item
-        android:id="@+id/local"
-        android:icon="@drawable/ic_nav_local"
-        android:title="@string/nav_local"
+        android:id="@+id/source"
+        android:icon="@drawable/selector_nav_source"
+        android:title="@string/nav_source"
         android:visible="false" />
 
     <item
         android:id="@+id/setting"
-        android:icon="@drawable/ic_nav_setting"
+        android:icon="@drawable/selector_nav_setting"
         android:title="@string/nav_setting"
         android:visible="false" />
 

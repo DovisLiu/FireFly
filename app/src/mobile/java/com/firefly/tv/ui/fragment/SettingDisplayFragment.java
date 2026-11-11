@@ -13,7 +13,9 @@ import com.firefly.tv.R;
 import com.firefly.tv.databinding.FragmentSettingDisplayBinding;
 import com.firefly.tv.setting.PlayerSetting;
 import com.firefly.tv.setting.Setting;
+import com.firefly.tv.ui.activity.HomeActivity;
 import com.firefly.tv.ui.base.BaseFragment;
+import com.firefly.tv.ui.custom.GlassEdgeDrawable;
 import com.firefly.tv.event.RefreshEvent;
 import com.firefly.tv.utils.ResUtil;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -40,8 +42,14 @@ public class SettingDisplayFragment extends BaseFragment {
 
     @Override
     protected void initEvent() {
+        // β82 第4条＋Q1＝甲：子页是真正的三级页，箭头回设置主页（位置表里的 1），
+        // 与既有分类记忆／BACK 口径同源，不动 FragmentStateManager 的位置表。
+        mBinding.toolbar.setNavigationOnClickListener(v -> ((HomeActivity) requireActivity()).change(1));
         mBinding.size.setOnClickListener(this::setSize);
         mBinding.appearance.setOnClickListener(this::onAppearance);
+        // β34 B1：二级页各选项行挂与一级同款方向性玻璃边。
+        mBinding.size.setForeground(new GlassEdgeDrawable(requireContext(), R.color.glass_edge_bright, R.color.glass_edge_dim, R.dimen.radius_setting_row));
+        mBinding.appearance.setForeground(new GlassEdgeDrawable(requireContext(), R.color.glass_edge_bright, R.color.glass_edge_dim, R.dimen.radius_setting_row));
     }
 
     private void setSize(View view) {

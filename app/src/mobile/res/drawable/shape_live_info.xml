@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- β79 批1（A 三裁①）：摘掉 β71 批4 加的玻璃描边层，退回**原单层横向渐变**（四值与 β71 前逐字同：angle 0／
+     black_90→black_50）——刘先生口径「而不是直播信息条」，留一条"没看出来"的描边只会加重困惑；
+     玻璃重做落点见 shape_btn_play／shape_detail_circle（批1）与 shape_glass_edge（批2 海报边）。
+     回滚点＝恢复 p19 备份（Test/evidence/round3-v200/backup-pre/p19-mobile-shape_live_info.xml，layer-list 双层原样）。 -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
-
     <gradient
         android:angle="0"
         android:endColor="@color/black_50"
         android:startColor="@color/black_90"
         android:type="linear" />
-
 </shape>

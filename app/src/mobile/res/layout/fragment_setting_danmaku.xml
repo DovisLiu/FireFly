@@ -7,9 +7,10 @@
     android:orientation="vertical">
 
     <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        app:navigationIconTint="?attr/colorOnSurface"
+        app:navigationIcon="@drawable/ic_nav_back"
         app:title="@string/setting_danmaku"
         app:titleTextAppearance="@style/ToolbarTextAppearance" />
 
@@ -31,8 +32,11 @@
             <androidx.appcompat.widget.LinearLayoutCompat
                 android:id="@+id/danmakuLoad"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="48dp"
                 android:background="@drawable/shape_item"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp"
+                android:gravity="center_vertical"
                 android:orientation="horizontal">
 
                 <com.google.android.material.textview.MaterialTextView
@@ -57,9 +61,12 @@
             <androidx.appcompat.widget.LinearLayoutCompat
                 android:id="@+id/danmakuApi"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="48dp"
                 android:layout_marginTop="16dp"
                 android:background="@drawable/shape_item"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp"
+                android:gravity="center_vertical"
                 android:orientation="horizontal"
                 android:visibility="gone"
                 tools:visibility="visible">
@@ -88,9 +95,12 @@
             <androidx.appcompat.widget.LinearLayoutCompat
                 android:id="@+id/danmakuAuto"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="48dp"
                 android:layout_marginTop="16dp"
                 android:background="@drawable/shape_item"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp"
+                android:gravity="center_vertical"
                 android:orientation="horizontal"
                 android:visibility="gone"
                 tools:visibility="visible">
@@ -117,9 +127,12 @@
             <androidx.appcompat.widget.LinearLayoutCompat
                 android:id="@+id/danmakuSpider"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="48dp"
                 android:layout_marginTop="16dp"
                 android:background="@drawable/shape_item"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp"
+                android:gravity="center_vertical"
                 android:orientation="horizontal"
                 android:visibility="gone"
                 tools:visibility="visible">

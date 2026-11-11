@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- β25 视觉批（底导双态图标，A 裁「底导案一」）：state_checked 两档各指一枚矢量，
+     上色仍由 activity_home.xml 的 app:itemIconTint=@color/selector_nav 统一负责（tint 会覆盖矢量根 tint，
+     机制取证见 p60-icon-tint-evidence.md；容器换档补投 tint 已定谳，见 p55 第九节）。
+     首页与其他四枚方向相反：首页未选中＝新空心件、选中＝现有实心件；其余四枚未选中＝现有件、选中＝新实心件。 -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@drawable/ic_nav_setting_solid" android:state_checked="true" />
+    <item android:drawable="@drawable/ic_nav_setting" android:state_checked="false" />
+</selector>

@@ -14,71 +14,18 @@
         app:elevation="0dp"
         app:liftOnScrollColor="@color/transparent">
 
-        <androidx.appcompat.widget.LinearLayoutCompat
+        <!-- β82 第3条（A 裁 Q1＝甲，刘先生「点播页不再需要顶导了，可换成和直播页一样的返回箭头+点播」）：
+             整条旧顶栏换成与选台页同形的工具条（← ＋「点播」）；高度随齐直播页改走 ?attr/actionBarSize
+             ＝有意改版面，不是回归。搜索／收藏／历史／换源四钮退场，去向见 VodFragment.initEvent 的注释；
+             toolbar 这个 id 在 mobile 已有 7 个布局在用 ⇒ 本条净新增资源 id 0。 -->
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/toolbar"
             android:layout_width="match_parent"
-            android:layout_height="64dp"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            app:layout_scrollFlags="scroll|enterAlways">
-
-            <!-- 横版品牌 LOGO（图标+中英文整图资产），点击=历史弹窗 -->
-            <androidx.appcompat.widget.AppCompatImageView
-                android:id="@+id/logo"
-                android:layout_width="wrap_content"
-                android:layout_height="44dp"
-                android:layout_marginStart="10dp"
-                android:adjustViewBounds="true"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:padding="2dp"
-                android:src="@drawable/logo_lockup" />
-
-            <androidx.appcompat.widget.AppCompatTextView
-                android:id="@+id/search"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="10dp"
-                android:layout_marginEnd="10dp"
-                android:layout_weight="1"
-                android:background="@drawable/shape_search"
-                android:drawableStart="@drawable/ic_action_search"
-                android:drawableTint="?attr/colorOnSurfaceVariant"
-                android:drawablePadding="10dp"
-                android:ellipsize="none"
-                android:gravity="center_vertical"
-                android:maxLines="1"
-                android:text="@string/menu_search"
-                android:textColor="?attr/colorOnSurfaceVariant"
-                android:textSize="14sp" />
-
-            <androidx.appcompat.widget.AppCompatImageView
-                android:id="@+id/keep"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:layout_marginStart="10dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:src="@drawable/ic_action_keep"
-                app:tint="?attr/colorOnSurface" />
-
-            <androidx.appcompat.widget.AppCompatImageView
-                android:id="@+id/history"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:layout_marginStart="10dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:src="@drawable/ic_action_history"
-                app:tint="?attr/colorOnSurface" />
-
-            <androidx.appcompat.widget.AppCompatImageView
-                android:id="@+id/site"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:layout_marginStart="10dp"
-                android:layout_marginEnd="10dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:src="@drawable/ic_site_change"
-                app:tint="?attr/colorOnSurface" />
-
-        </androidx.appcompat.widget.LinearLayoutCompat>
+            android:layout_height="?attr/actionBarSize"
+            app:layout_scrollFlags="scroll|enterAlways"
+            app:navigationIcon="@drawable/ic_nav_back"
+            app:title="@string/nav_vod"
+            app:titleTextAppearance="@style/ToolbarTextAppearance" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/type"

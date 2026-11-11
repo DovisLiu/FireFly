@@ -89,24 +89,27 @@
 
         <activity
             android:name=".ui.activity.SearchActivity"
-            android:configChanges="screenSize|smallestScreenSize|screenLayout"
+            android:configChanges="screenSize|smallestScreenSize|screenLayout|uiMode"
             android:windowSoftInputMode="adjustPan" />
 
         <activity
             android:name=".ui.activity.FileActivity"
-            android:configChanges="screenSize|smallestScreenSize|screenLayout" />
+            android:configChanges="screenSize|smallestScreenSize|screenLayout|uiMode" />
 
         <activity
             android:name=".ui.activity.FolderActivity"
-            android:configChanges="screenSize|smallestScreenSize|screenLayout" />
+            android:configChanges="screenSize|smallestScreenSize|screenLayout|uiMode" />
 
         <activity
             android:name=".ui.activity.HistoryActivity"
-            android:configChanges="screenSize|smallestScreenSize|screenLayout" />
+            android:configChanges="screenSize|smallestScreenSize|screenLayout|uiMode" />
 
         <activity
             android:name=".ui.activity.KeepActivity"
-            android:configChanges="screenSize|smallestScreenSize|screenLayout" />
+            android:configChanges="screenSize|smallestScreenSize|screenLayout|uiMode" />
+
+        <!-- β29 批二（A 落码单裁①）：LiveSelectActivity 已收编为 HomeActivity container 的 Fragment（position 8），
+             本声明随旧件整块删除；mobile manifest 里 LiveSelectActivity 的属性引用归 0（注释面自身含该字样 2 处；TV leanback 那份保留，红线另数）。 -->
 
         <activity
             android:name=".ui.activity.LiveActivity"
@@ -119,7 +122,7 @@
 
         <activity
             android:name=".ui.activity.ScanActivity"
-            android:configChanges="screenSize|smallestScreenSize|screenLayout" />
+            android:configChanges="screenSize|smallestScreenSize|screenLayout|uiMode" />
 
         <activity
             android:name=".ui.activity.VideoActivity"
@@ -128,11 +131,6 @@
             android:theme="@style/Theme.App"
             android:parentActivityName=".ui.activity.HomeActivity"
             android:supportsPictureInPicture="true" />
-
-        <activity
-            android:name=".ui.activity.DetailActivity"
-            android:configChanges="screenSize|smallestScreenSize|screenLayout|uiMode|orientation"
-            android:theme="@style/Theme.App" />
 
         <receiver
             android:name=".receiver.ShortcutReceiver"

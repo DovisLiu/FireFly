@@ -19,6 +19,7 @@ import com.firefly.tv.api.config.VodConfig;
 import com.firefly.tv.bean.Config;
 import com.firefly.tv.bean.Live;
 import com.firefly.tv.bean.Site;
+import androidx.appcompat.widget.LinearLayoutCompat;
 import com.firefly.tv.databinding.FragmentSettingBinding;
 import com.firefly.tv.db.AppDatabase;
 import androidx.appcompat.app.AppCompatDelegate;
@@ -32,6 +33,8 @@ import com.firefly.tv.impl.SiteListener;
 import com.firefly.tv.setting.PlayerSetting;
 import com.firefly.tv.setting.Setting;
 import com.firefly.tv.ui.activity.HomeActivity;
+import com.firefly.tv.ui.custom.GlassEdgeDrawable;
+import android.util.Log;
 import com.firefly.tv.ui.base.BaseFragment;
 import com.firefly.tv.ui.dialog.ConfigDialog;
 import com.firefly.tv.ui.dialog.HistoryDialog;
@@ -110,6 +113,8 @@ public class SettingFragment extends BaseFragment implements ConfigListener, Sit
 
     @Override
     protected void initEvent() {
+        // β82 第4条＋Q1＝甲：设置主页是一级 tab，箭头＝切到首页 tab（与一级页 BACK 同口径，不另开语义）。
+        mBinding.toolbar.setNavigationOnClickListener(v -> getRoot().change(7));
         mBinding.vod.setOnClickListener(this::onVod);
         mBinding.doh.setOnClickListener(this::setDoh);
         mBinding.live.setOnClickListener(this::onLive);
@@ -129,6 +134,36 @@ public class SettingFragment extends BaseFragment implements ConfigListener, Sit
         mBinding.incognito.setOnClickListener(this::setIncognito);
         mBinding.vodHistory.setOnClickListener(this::onVodHistory);
         mBinding.liveHistory.setOnClickListener(this::onLiveHistory);
+        // β33 D1：设置页「本地」行已删（mBinding.local.setOnClickListener(this::onLocal) 一并移除）；首页左上角本地入口不受影响。
+        // β26 玻璃扩面：设置页 12 处真容器（background=shape_item，corners 实测 14dp）挂方向性环，色对随主题翻；
+        // β27 第 4b 条另一半（A 裁＝四处图标块挂环、但不并入 48dp 高度档）⇒ 本段共 16 行 setForeground＝12 行容器＋4 枚图标块
+        mBinding.vod.setForeground(new GlassEdgeDrawable(requireContext(), R.color.glass_edge_bright, R.color.glass_edge_dim, R.dimen.radius_setting_row));
+        mBinding.live.setForeground(new GlassEdgeDrawable(requireContext(), R.color.glass_edge_bright, R.color.glass_edge_dim, R.dimen.radius_setting_row));
+        mBinding.player.setForeground(new GlassEdgeDrawable(requireContext(), R.color.glass_edge_bright, R.color.glass_edge_dim, R.dimen.radius_setting_row));
+        mBinding.display.setForeground(new GlassEdgeDrawable(requireContext(), R.color.glass_edge_bright, R.color.glass_edge_dim, R.dimen.radius_setting_row));
+        mBinding.danmaku.setForeground(new GlassEdgeDrawable(requireContext(), R.color.glass_edge_bright, R.color.glass_edge_dim, R.dimen.radius_setting_row));
+        mBinding.incognito.setForeground(new GlassEdgeDrawable(requireContext(), R.color.glass_edge_bright, R.color.glass_edge_dim, R.dimen.radius_setting_row));
+        mBinding.doh.setForeground(new GlassEdgeDrawable(requireContext(), R.color.glass_edge_bright, R.color.glass_edge_dim, R.dimen.radius_setting_row));
+        mBinding.cache.setForeground(new GlassEdgeDrawable(requireContext(), R.color.glass_edge_bright, R.color.glass_edge_dim, R.dimen.radius_setting_row));
+        mBinding.version.setForeground(new GlassEdgeDrawable(requireContext(), R.color.glass_edge_bright, R.color.glass_edge_dim, R.dimen.radius_setting_row));
+        mBinding.about.setForeground(new GlassEdgeDrawable(requireContext(), R.color.glass_edge_bright, R.color.glass_edge_dim, R.dimen.radius_setting_row));
+        // 第 12 处（fragment_setting.xml:467，自身无 id）：实测 backup 是 :475 的 MaterialTextView，
+        // 所以 §68 写的 mBinding.backup.getRoot() 取不到——ViewBinding 对普通 View 不生成 getRoot()；正确取法＝父 View，并按 A 令加恒等断言
+        View backupRow = (View) mBinding.backup.getParent();
+        if (!(backupRow instanceof LinearLayoutCompat)) {
+            Log.w("FireFlyGlass", "backup row is not LinearLayoutCompat=" + backupRow.getClass().getName());
+        } else {
+            backupRow.setForeground(new GlassEdgeDrawable(requireContext(), R.color.glass_edge_bright, R.color.glass_edge_dim, R.dimen.radius_setting_row));
+        }
+        // β27 第 4b 条：四枚图标块 vodHome(:79)／vodHistory(:89)／liveHome(:148)／liveHistory(:158)
+        // 背景同样是 @drawable/shape_item（corners 实测 14dp），所以环仍取 radius_setting_row＝14dp，与它们自己的底同半径。
+        // 半径理由（A 要我写明）：每枚＝24dp 图标＋7dp 内边距＝38dp 见方；AOSP GradientDrawable 把 corners 钳到短边一半＝19dp，
+        // 14dp < 19dp ⇒ 不钳，不会出现「环比底更圆」。构造选四参那一条（色对随主题翻，与上面 12 行同一支）。
+        // 不并入 48dp 高度档＝按 A 裁：minHeight 只给点播／直播两个入口行（a02 已落 :41／:110）。
+        mBinding.vodHome.setForeground(new GlassEdgeDrawable(requireContext(), R.color.glass_edge_bright, R.color.glass_edge_dim, R.dimen.radius_setting_row));
+        mBinding.vodHistory.setForeground(new GlassEdgeDrawable(requireContext(), R.color.glass_edge_bright, R.color.glass_edge_dim, R.dimen.radius_setting_row));
+        mBinding.liveHome.setForeground(new GlassEdgeDrawable(requireContext(), R.color.glass_edge_bright, R.color.glass_edge_dim, R.dimen.radius_setting_row));
+        mBinding.liveHistory.setForeground(new GlassEdgeDrawable(requireContext(), R.color.glass_edge_bright, R.color.glass_edge_dim, R.dimen.radius_setting_row));
     }
 
     @Override
@@ -277,6 +312,8 @@ public class SettingFragment extends BaseFragment implements ConfigListener, Sit
         Setting.putDoh(doh.toString());
         mBinding.dohText.setText(doh.getName());
     }
+
+    // β33 D1：onLocal 包装方法随设置页「本地」行删除（仅此处引用）；HomeActivity.openLocal 仍由首页左上角入口用，保留。
 
     private void onCache(View view) {
         FileUtil.clearCache(new Callback() {

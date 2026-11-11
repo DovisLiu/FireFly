@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- β77 选台页返工（刘先生「下方选台没有卡片化…一行 4 个，多列也行」）：频道卡片 item。
+     根宽 match_parent＝交给 Grid 等分单元（β80 项4 起 3 列：360dp 屏格≈109dp、卡背≈101dp、名宽≈77dp≈5.5 字；
+     β77 的 4 列档＝76/74/50dp≈3.5 字，台名截得狠，刘先生令收列）；
+     台标槽固定高 40dp（A 裁 vod=true：空/坏台标落首字母色块，绝不 GONE 塌陷，异形台标 centerCrop 裁边为已接受的代价）；
+     台名 14sp 单行 ellipsize=end（3 列档约 5.5 字，4 列档 3.3~4.4 字；完整台名进播放页可见——A 已接受"不为此拉高整行"）。
+     卡片底色沿用 shape_live（水波＋选中色 selector_live＋4dp 圆角＋8/12dp 内边距），与播放页浮层同族。 -->
+<androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="4dp"
+    android:background="@drawable/shape_live"
+    android:gravity="center_horizontal"
+    android:orientation="vertical">
+
+    <ImageView
+        android:id="@+id/logo"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:contentDescription="@null"
+        tools:src="@tools:sample/avatars" />
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:duplicateParentState="true"
+        android:ellipsize="end"
+        android:singleLine="true"
+        android:textColor="@color/selector_text"
+        android:textSize="14sp"
+        tools:text="CCTV1" />
+
+</androidx.appcompat.widget.LinearLayoutCompat>

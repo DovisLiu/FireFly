@@ -8,5 +8,31 @@
     <dimen name="radius_card">12dp</dimen>
     <dimen name="radius_control">10dp</dimen>
     <dimen name="radius_tag">8dp</dimen>
+    <!-- β26 玻璃扩面两档：实据＝shape_live.xml corners=4dp、shape_item.xml corners=14dp（逐件现测于 p122）。 -->
+    <dimen name="radius_channel_card">4dp</dimen>
+    <dimen name="radius_setting_row">14dp</dimen>
+
+    <!-- β69 / 批 2（A 派单第 6 项）：手机弹层正文规格。不复用 main 的 detail_text_desc——
+         实测那 5 个字号 token 的引用全在 leanback（mobile 0 处），改它们会连带 TV 包。 -->
+    <dimen name="popup_text_body">13.5sp</dimen>
+
+    <!-- β79 批1：玻璃描边宽度单点＝1.5dp（density 2.0⇒3 物理像素；旧 main 0.5dp＝1px、圆角断线，是"看不出来"四条真因之一）。 -->
+
+    <!-- β84 玻璃批 2：海报高光边宽。取 1.5dp＝density 2.0 下 3 物理像素；β80 方案原写 1dp（2px），
+         这里放大半档并单列：0.5dp＝1px 且圆角断线是上轮"完全看不出来"的第①条实测成因。
+         退回 1dp＝改本行一处，零连带。停靠点＝主对角线的暗档位置（百分数）：50＝两个暗角落在右上与左下。
+         圆角不新增 token，复用 β70 的 radius_card（12dp，与 main 的 Vod.Grid cornerSize 同档）。 -->
+    <dimen name="glass_edge_width">1.5dp</dimen>
+    <!-- 停靠点用 integer 百分比而不是 float 型 dimen：getInteger 读数无歧义、包内 aapt2 dump 可直读复核。 -->
+    <integer name="glass_edge_stop_mid">50</integer>
+
+    <!-- β87（A 裁＝箭头与高光环必须两个 token，β85 让我共用 glass_edge_width 是约束过头）：
+         环保持 1.5dp＝要细才像发光边；箭头回 2.5dp＝要够重才压得住海报，且刘先生这轮同时要"整体提亮"，
+         把箭头降到 1.5 属反向操作。
+         回退＝把 ic_nav_back.xml 那两行的数字分别改回 2.5（箭头）与 1.5（环），【不得改回 @dimen 引用】：
+         strokeWidth 属 float 属性，@dimen 解析成 1.5dip 会当场抛 NumberFormatException（P0 现场二＝装机阻断那条，详见该文件文末 ⚠）。 -->
+    <!-- 本 token 与 glass_edge_width 都属 dimension 型：只给代码侧 getDimension 用（GlassEdgeDrawable 在用 glass_edge_width），
+         矢量图的笔画属性不收它。P0 修复后 glass_arrow_width 的包内引用数＝0，保留只为留着这两档宽度对照。 -->
+    <dimen name="glass_arrow_width">2.5dp</dimen>
 
 </resources>

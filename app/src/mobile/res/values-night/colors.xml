@@ -2,4 +2,19 @@
 <resources>
     <color name="text_panel">#FFFFFFFF</color>
     <color name="text_panel_sub">#99FFFFFF</color>
+    <!-- β84 玻璃批 2：海报方向性高光的**深档**＝白（与 values/colors.xml 的浅档黑成对）。
+         本批是这个仓里第一次真给玻璃色开 values-night 配对——批 1 的五串日夜同值只落 values 一份，
+         而"玻璃完全看不出来"的第④条实测成因就是 main 那五串没有 night 档。 -->
+    <color name="glass_edge_bright">#66FFFFFF</color>
+    <color name="glass_edge_dim">#1AFFFFFF</color>
+    <!-- β85（A 裁 2026-11-04）＝按钮专用的高光描边对；β87 按实算订正读数＝#A6FFFFFF／#38FFFFFF＝白 65.1%／22.0%
+         （旧注释写 40%／10% 是抬档前的值，与实 hex 不符；隔壁海报那对 glass_edge_* 的 night 值仍是 40%／10%，两对不同档），
+         A 只改"浅档不许是黑"这条语义；深档读数在 β85 那次"整体提亮"里抬过一档，本批只订正注释、值未动）。 -->
+    <color name="glass_edge_on_dark_bright">#A6FFFFFF</color>
+    <color name="glass_edge_on_dark_dim">#38FFFFFF</color>
+    <!-- β25 视觉批（刘先生 2026-11-04 选甲：深档纯白、浅档近黑，两档成对）：底导专用选中色，只被底导自己的 color selector 一处引用，不进其他宿主；全局 brand_primary 在 main 源集、本批一字未动。 -->
+    <color name="nav_selected">#FFFFFFFF</color>
+    <color name="card_selected">#4A525C</color>
+    <!-- β31 A6：三组容器框底色（夜档）。比页底 bg_page #14161A 亮、比 chip bg_card #1E2126 也略亮 ⇒ 框对页底可见、深色 chip 压框上仍可辨。 -->
+    <color name="group_container">#232830</color>
 </resources>

@@ -95,6 +95,18 @@ public class ConfigDialog extends BaseAlertDialog {
         };
     }
 
+    /**
+     * P0 现场一同型强转（A 2026-11-04 裁＝与 HistoryDialog 一并入清单，不另开一批）。
+     * 原两处都写 ((ConfigListener) requireParentFragment())＝无条件强转；本页四个调用点宿主是 SettingFragment
+     * （它 implements ConfigListener ⇒ 现在仍走通），但强转本身是同一颗雷，按同口径拆成 instanceof 兜底＋留痕。
+     */
+    private ConfigListener target() {
+        Fragment parent = getParentFragment();
+        ConfigListener listener = parent instanceof ConfigListener ? (ConfigListener) parent : null;
+        android.util.Log.d("FireFlySetting", "config pick host=" + (listener != null ? "resolved" : "none") + " action=setConfig");
+        return listener;
+    }
+
     private void onChoose(View view) {
         FileChooser.from(launcher).show();
     }
@@ -123,13 +135,15 @@ public class ConfigDialog extends BaseAlertDialog {
         if ("dovisliu".equalsIgnoreCase(url)) url = "https://download.dovisliu.cn/firefly/firefly.json";
         if (edit) Config.find(ori, type).url(url).name(name).update();
         if (url.isEmpty()) Config.delete(ori, type);
-        ((ConfigListener) requireParentFragment()).setConfig(name.isEmpty() ? Config.find(url, type) : Config.find(url, name, type));
+        ConfigListener target = target();
+        if (target != null) target.setConfig(name.isEmpty() ? Config.find(url, type) : Config.find(url, name, type));
         dismiss();
     }
 
     private final ActivityResultLauncher<Intent> launcher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
         if (result.getResultCode() != Activity.RESULT_OK || result.getData() == null || result.getData().getData() == null) return;
-        ((ConfigListener) requireParentFragment()).setConfig(Config.find("file:/" + FileChooser.getPathFromUri(result.getData().getData()).replace(Path.rootPath(), ""), type));
+        ConfigListener target = target();
+        if (target != null) target.setConfig(Config.find("file:/" + FileChooser.getPathFromUri(result.getData().getData()).replace(Path.rootPath(), ""), type));
         dismiss();
     });
 }

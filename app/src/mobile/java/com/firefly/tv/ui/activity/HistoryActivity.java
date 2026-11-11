@@ -3,13 +3,17 @@ package com.firefly.tv.ui.activity;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.GestureDetector;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewbinding.ViewBinding;
 
 import com.firefly.tv.Product;
@@ -19,7 +23,6 @@ import com.firefly.tv.databinding.ActivityHistoryBinding;
 import com.firefly.tv.event.RefreshEvent;
 import com.firefly.tv.ui.adapter.HistoryAdapter;
 import com.firefly.tv.utils.ResUtil;
-import com.firefly.tv.ui.activity.DetailActivity;
 import com.firefly.tv.ui.base.BaseActivity;
 import com.firefly.tv.ui.dialog.SyncDialog;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -59,6 +62,34 @@ public class HistoryActivity extends BaseActivity implements HistoryAdapter.OnCl
         mBinding.recycler.setLayoutManager(new GridLayoutManager(this, Product.getColumn(this)));
         mBinding.recycler.setAdapter(mAdapter = new HistoryAdapter(this));
         mAdapter.setSize(Product.getSpec(this));
+        // β32 B2：列表空白被 RecyclerView 自身消费（onTouchEvent 返回 true、不调 performClick）⇒ β31 的 setOnClickListener 不触发。
+        // 改用 OnItemTouchListener＋GestureDetector：删除态点空白（findChildViewUnder==null）即退；onInterceptTouchEvent 恒 return false 不夺滚动/卡片点击。
+        GestureDetector detector = new GestureDetector(this, new GestureDetector.SimpleOnGestureListener() {
+            @Override
+            public boolean onSingleTapUp(@NonNull MotionEvent e) {
+                if (mAdapter.isDelete() && mBinding.recycler.findChildViewUnder(e.getX(), e.getY()) == null) {
+                    mAdapter.setDelete(false);
+                    Log.d("FireFlyHistory", "history blank cancel page=history");
+                    return true;
+                }
+                return false;
+            }
+        });
+        mBinding.recycler.addOnItemTouchListener(new RecyclerView.OnItemTouchListener() {
+            @Override
+            public boolean onInterceptTouchEvent(@NonNull RecyclerView rv, @NonNull MotionEvent e) {
+                detector.onTouchEvent(e);
+                return false;
+            }
+
+            @Override
+            public void onTouchEvent(@NonNull RecyclerView rv, @NonNull MotionEvent e) {
+            }
+
+            @Override
+            public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
+            }
+        });
     }
 
     private void getHistory() {
@@ -87,7 +118,13 @@ public class HistoryActivity extends BaseActivity implements HistoryAdapter.OnCl
 
     @Override
     public void onItemClick(History item) {
-        DetailActivity.confirm(this, item.getSiteKey(), item.getVodId(), item.getVodName(), item.getVodPic());
+        // β31 B3：删除态点卡片（非垃圾桶）＝退出删除态，不跳转（root 恒 onItemClick，垃圾桶独立走 onItemDelete）
+        if (mAdapter.isDelete()) {
+            mAdapter.setDelete(false);
+            Log.d("FireFlyHistory", "history delete cancel page=history");
+            return;
+        }
+        VideoActivity.start(this, item.getSiteKey(), item.getVodId(), item.getVodName(), item.getVodPic());
     }
 
     @Override
@@ -106,7 +143,7 @@ public class HistoryActivity extends BaseActivity implements HistoryAdapter.OnCl
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_history, menu);
-        ResUtil.tintMenuIcons(menu);
+        ResUtil.tintMenuIcons(this, menu);
         return true;
     }
 

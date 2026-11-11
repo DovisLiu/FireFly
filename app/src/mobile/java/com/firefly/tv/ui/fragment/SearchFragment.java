@@ -25,10 +25,14 @@ import androidx.viewbinding.ViewBinding;
 
 import com.firefly.tv.App;
 import com.firefly.tv.R;
+import com.firefly.tv.api.config.VodConfig;
+import com.firefly.tv.bean.Site;
 import com.firefly.tv.bean.Word;
 import com.firefly.tv.databinding.FragmentSearchBinding;
 import com.firefly.tv.impl.Callback;
+import com.firefly.tv.impl.SiteListener;
 import com.firefly.tv.setting.Setting;
+import com.firefly.tv.ui.activity.SearchActivity;
 import com.firefly.tv.ui.adapter.RecordAdapter;
 import com.firefly.tv.ui.adapter.WordAdapter;
 import com.firefly.tv.ui.base.BaseFragment;
@@ -48,7 +52,7 @@ import java.util.Optional;
 import okhttp3.Call;
 import okhttp3.Response;
 
-public class SearchFragment extends BaseFragment implements MenuProvider, WordAdapter.OnClickListener, RecordAdapter.OnClickListener {
+public class SearchFragment extends BaseFragment implements MenuProvider, SiteListener, WordAdapter.OnClickListener, RecordAdapter.OnClickListener {
 
     private FragmentSearchBinding mBinding;
     private RecordAdapter mRecordAdapter;
@@ -104,7 +108,10 @@ public class SearchFragment extends BaseFragment implements MenuProvider, WordAd
     @Override
     protected void initEvent() {
         mBinding.keyword.setOnEditorActionListener((textView, actionId, event) -> {
-            if (actionId == EditorInfo.IME_ACTION_SEARCH) search();
+            if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                SearchActivity.clearJump(requireActivity());
+                search();
+            }
             return true;
         });
         mBinding.keyword.addTextChangedListener(new CustomTextListener() {
@@ -193,8 +200,19 @@ public class SearchFragment extends BaseFragment implements MenuProvider, WordAd
         mBinding.keyword.post(() -> SiteDialog.create().search().show(this));
     }
 
+    // β28 批一（A GO 封裁⑥＝进批一，清单外新增面已由 A 单列声明并给回退选项）：
+    // 本类原先不 implements SiteListener ⇒ 左上角那枚换源入口选完源只关弹层、不换源、零日志（现网缺陷）。
+    // 补的是第 4 个宿主，动作与点播页、设置页那两份逐字同构＝只写主源，不新建任何刷新机制；
+    // 代价（A 裁①＝乙已登记的同类限制）＝换源后不当场反映新主源，要等该页下一次真取数才生效。
+    // 回滚＝本方法、implements 里那一个接口名与三条 import 一起删（备份＝backup-b28b1）。
+    @Override
+    public void setSite(Site item) {
+        VodConfig.get().setHome(item);
+    }
+
     @Override
     public void onItemClick(String text) {
+        SearchActivity.clearJump(requireActivity());
         setKeyword(text);
         search();
     }
@@ -209,7 +227,7 @@ public class SearchFragment extends BaseFragment implements MenuProvider, WordAd
     @Override
     public void onCreateMenu(@NonNull Menu menu, @NonNull MenuInflater menuInflater) {
         menuInflater.inflate(R.menu.menu_search, menu);
-        ResUtil.tintMenuIcons(menu);
+        ResUtil.tintMenuIcons(requireActivity(), menu);
     }
 
     @Override

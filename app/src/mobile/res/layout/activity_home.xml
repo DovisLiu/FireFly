@@ -24,6 +24,7 @@
         app:itemActiveIndicatorStyle="@style/Widget.App.Nav.Indicator"
         app:itemIconTint="@color/selector_nav"
         app:itemPaddingTop="12dp"
+        app:itemBackground="@drawable/selector_nav_item"
         app:itemPaddingBottom="0dp"
         app:itemTextColor="@color/selector_nav"
         app:labelVisibilityMode="labeled"

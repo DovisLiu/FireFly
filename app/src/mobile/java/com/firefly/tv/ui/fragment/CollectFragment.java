@@ -24,8 +24,8 @@ import com.firefly.tv.bean.Site;
 import com.firefly.tv.bean.Vod;
 import com.firefly.tv.databinding.FragmentCollectBinding;
 import com.firefly.tv.model.SiteViewModel;
-import com.firefly.tv.ui.activity.DetailActivity;
 import com.firefly.tv.ui.activity.FolderActivity;
+import com.firefly.tv.ui.activity.SearchActivity;
 import com.firefly.tv.ui.activity.VideoActivity;
 import com.firefly.tv.ui.adapter.CollectAdapter;
 import com.firefly.tv.ui.adapter.SearchAdapter;
@@ -164,8 +164,13 @@ public class CollectFragment extends BaseFragment implements MenuProvider, Colle
     @Override
     public void onItemClick(Vod item) {
         if (item.isFolder()) FolderActivity.start(requireActivity(), item.getSiteKey(), Result.folder(item));
-            // 搜索结果已带源：进详情页确认态（§3.9 入口判定），集数进播放时保留 collect 标记
-        else DetailActivity.confirm(requireActivity(), item.getSiteKey(), item.getId(), item.getName(), item.getPic(), true);
+            // 搜索结果已带源：进合并页确认态（§3.9 入口判定），集数进播放时保留 collect 标记
+        else {
+            VideoActivity.collect(requireActivity(), item.getSiteKey(), item.getId(), item.getName(), item.getPic());
+            // β85 第10条：本页由卡片点击当跳板打开时（首页推荐／点播页聚合卡），进完合并页就收掉自己，
+            // 让合并页的返回一拍落回进入前的页面；用户主动搜索不收页（返回还要能看结果列表）。
+            SearchActivity.finishIfJump(requireActivity());
+        }
     }
 
     @Override

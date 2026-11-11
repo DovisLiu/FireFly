@@ -7,6 +7,7 @@ import com.firefly.tv.bean.Vod;
 import com.firefly.tv.databinding.AdapterVodListBinding;
 import com.firefly.tv.ui.adapter.VodAdapter;
 import com.firefly.tv.ui.base.BaseVodHolder;
+import com.firefly.tv.ui.custom.GlassEdgeDrawable;
 import com.firefly.tv.utils.ImgUtil;
 
 public class VodListHolder extends BaseVodHolder {
@@ -18,6 +19,8 @@ public class VodListHolder extends BaseVodHolder {
         super(binding.getRoot());
         this.binding = binding;
         this.listener = listener;
+        // β84 玻璃批 2：列表卡海报叠同一条方向性高光边。本卡叠 3 层、顺序＝①海报图 ②**高光** ③根布局的水波——实测 adapter_vod_list.xml 的 image **没有 background**（无底板层），且画面之上没有任何兄弟节点（文字在右侧列、不是角标），所以高光落在第 2 层；圆角走 Vod.Grid.Large＝12dp，与 radius_card 同档。
+        binding.image.setForeground(new GlassEdgeDrawable(binding.image.getContext()));
     }
 
     @Override

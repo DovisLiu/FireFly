@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- β77 选台页返工（刘先生「上方菜单一屏只有一个」）：分组 chip 的专用 item。
+     与播放页浮层那份 adapter_group 的唯一差异＝根宽 match_parent→wrap_content——
+     浮层里"满列宽"是对的，放进横向 LinearLayoutManager 后 match_parent 被按父宽 EXACTLY 测量 ⇒ 一屏只见一个。
+     视觉（shape_live 含水波＋选中色＋8/12dp 内边距＋4dp 圆角）与播放页同族，不新造样式。 -->
+<androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="4dp"
+    android:layout_marginEnd="8dp"
+    android:layout_marginBottom="4dp"
+    android:gravity="center"
+    android:orientation="horizontal">
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/shape_live"
+        android:duplicateParentState="true"
+        android:ellipsize="marquee"
+        android:singleLine="true"
+        android:textColor="@color/selector_text"
+        android:textSize="14sp"
+        tools:text="收藏" />
+
+</androidx.appcompat.widget.LinearLayoutCompat>
